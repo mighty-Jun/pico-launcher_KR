@@ -49,5 +49,12 @@ const char16_t* NdsInternalFileInfo::GetGameTitle() const
 {
     if (!_hasBanner)
         return nullptr;
-    return _banner.title[NDS_BANNER_TITLE_LANGUAGE_ENGLISH];
+
+    if(_banner.header.version < NDS_BANNER_VERSION_3)
+        return _banner.title[NDS_BANNER_TITLE_LANGUAGE_ENGLISH];
+        
+    if(_banner.title[NDS_BANNER_TITLE_LANGUAGE_KOREAN][0] == 0)
+        return _banner.title[NDS_BANNER_TITLE_LANGUAGE_ENGLISH];
+    else
+        return _banner.title[NDS_BANNER_TITLE_LANGUAGE_KOREAN];
 }
