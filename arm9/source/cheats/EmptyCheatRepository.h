@@ -1,6 +1,7 @@
 #pragma once
 #include "ICheatRepository.h"
 
+/// @brief Class implementing an empty cheat repository.
 class EmptyCheatRepository : public ICheatRepository
 {
 public:

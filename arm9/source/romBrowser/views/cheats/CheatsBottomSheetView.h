@@ -11,6 +11,7 @@ class MaterialColorScheme;
 class IFontRepository;
 class IVramManager;
 
+/// @brief Bottom sheet for browsing and enabling/disabling cheats.
 class CheatsBottomSheetView : public BottomSheetView
 {
 public:
@@ -40,7 +41,7 @@ public:
 private:
     std::unique_ptr<CheatsViewModel> _viewModel;
     Label2DView _titleLabel;
-    Label2DView _noCheatsFoundLabel;
+    Label2DView _secondaryLabel;
     Label2DView _descriptionLabel;
     std::unique_ptr<RecyclerView> _cheatListRecycler;
     CheatsAdapter* _cheatsAdapter = nullptr;

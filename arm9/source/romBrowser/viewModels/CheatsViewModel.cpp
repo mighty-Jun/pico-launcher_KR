@@ -24,7 +24,7 @@ CheatsViewModel::CheatsViewModel(const FileInfo& romFileInfo, IRomBrowserControl
     });
 }
 
-void CheatsViewModel::ItemActivated()
+void CheatsViewModel::ActivateSelectedItem()
 {
     auto cheatCategory = GetCurrentCheatCategory();
     u32 numberOfCategories = 0;
@@ -58,21 +58,25 @@ void CheatsViewModel::ItemActivated()
     }
 }
 
-void CheatsViewModel::Back()
+bool CheatsViewModel::NavigateUp()
 {
     if (_categoryStackLevel == 0)
     {
         Close();
+        return false;
     }
     else
     {
         _selectedItem = _categoryStack[_categoryStackLevel].index;
         _categoryStack[_categoryStackLevel--] = { nullptr, 0 };
+        return true;
     }
 }
 
 void CheatsViewModel::Close()
 {
+    _categoryStack.fill({ nullptr, 0 });
+
     if (_changed)
     {
         // Save which cheats are enabled/disabled

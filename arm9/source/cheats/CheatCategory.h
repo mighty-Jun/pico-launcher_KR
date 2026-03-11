@@ -1,19 +1,16 @@
 #pragma once
 #include <memory>
-#include "CheatTreeItem.h"
-#include "Cheat.h"
 #include "ICheatCategory.h"
 
-class CheatCategory : public CheatTreeItem, public ICheatCategory
+/// @brief Class representing a cheat category, containing sub-categories and cheats.
+class CheatCategory : public ICheatCategory
 {
 public:
-    CheatCategory()
-        : _isMaxOneCheatActive(false), _subCategories(nullptr), _numberOfSubCategories(0)
-        , _cheats(nullptr), _numberOfCheats(0) { }
+    CheatCategory() { }
 
     CheatCategory(const char* name, const char* description, bool isMaxOneCheatActive,
         CheatCategory* subCategories, u32 numberOfSubCategories, Cheat* cheats, u32 numberOfCheats)
-        : CheatTreeItem(name, description), _isMaxOneCheatActive(isMaxOneCheatActive)
+        : _name(name), _description(description), _isMaxOneCheatActive(isMaxOneCheatActive)
         , _subCategories(subCategories), _numberOfSubCategories(numberOfSubCategories)
         , _cheats(cheats), _numberOfCheats(numberOfCheats) { }
 
@@ -56,6 +53,18 @@ public:
         }
     }
 
+    const char* GetName() const override
+    {
+        return _name;
+    }
+
+    /// @brief Gets the description of this cheat category.
+    /// @return A pointer to the description of this cheat category.
+    const char* GetDescription() const
+    {
+        return _description;
+    }
+
     bool GetIsMaxOneCheatActive() const override
     {
         return _isMaxOneCheatActive;
@@ -74,9 +83,11 @@ public:
     }
 
 private:
-    bool _isMaxOneCheatActive;
-    CheatCategory* _subCategories;
-    u32 _numberOfSubCategories;
-    Cheat* _cheats;
-    u32 _numberOfCheats;
+    const char* _name = nullptr;
+    const char* _description = nullptr;
+    bool _isMaxOneCheatActive = false;
+    CheatCategory* _subCategories = nullptr;
+    u32 _numberOfSubCategories = 0;
+    Cheat* _cheats = nullptr;
+    u32 _numberOfCheats = 0;
 };

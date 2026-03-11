@@ -45,7 +45,7 @@ App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService)
     , _bgmService(bgmService)
     , _inputProvider(&_inputSource)
     , _inputRepeater(&_inputProvider,
-        InputKey::DpadLeft | InputKey::DpadRight | InputKey::DpadUp | InputKey::DpadDown,
+        InputKey::DpadLeft | InputKey::DpadRight | InputKey::DpadUp | InputKey::DpadDown | InputKey::L | InputKey::R,
         25, 8)
     , _romBrowserController(&appSettingsService, &_ioTaskQueue, &_bgTaskQueue)
     , _displaySettingsBottomSheetViewModel(&_romBrowserController)

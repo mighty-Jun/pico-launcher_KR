@@ -4,6 +4,7 @@
 #include "ICheatRepository.h"
 #include "UsrCheatDat.h"
 
+/// @brief Class implementing a cheat repository for usrcheat.dat.
 class UsrCheatRepository : public ICheatRepository
 {
 public:

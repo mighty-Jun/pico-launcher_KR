@@ -7,6 +7,7 @@
 class MaterialColorScheme;
 class IFontRepository;
 
+/// @brief List item view for the cheats panel, representing a single cheat or cheat category.
 class CheatListItemView : public ViewContainer
 {
 public:

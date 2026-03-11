@@ -15,6 +15,7 @@ This repository contains Pico Launcher, which is a front-end for [Pico Loader](h
 - [Covers](docs/Covers.md)
 - [Material Design 3 and custom themes](docs/Themes.md)
 - Support for background music (see [Themes](docs/Themes.md))
+- Support for cheats (See [Cheats](docs/Cheats.md))
 
 General usage documentation can be found here: [Usage](docs/Usage.md).
 
