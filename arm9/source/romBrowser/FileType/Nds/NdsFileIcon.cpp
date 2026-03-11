@@ -1,5 +1,4 @@
 #include "common.h"
-#include <libtwl/math/mathDiv.h>
 #include <libtwl/dma/dmaNitro.h>
 #include "gui/PaletteManager.h"
 #include "gui/OamManager.h"
@@ -25,30 +24,37 @@ NdsFileIcon::NdsFileIcon(const nds_banner_t* banner)
             const auto& token = _banner->animation.animTokens[i];
             if (token.duration == NDS_BANNER_ANIM_DURATION_CONTROL_FRAME)
             {
-                _loop = token.control != NDS_BANNER_ANIM_CONTROL_STOP; 
+                _loop = token.control != NDS_BANNER_ANIM_CONTROL_STOP;
                 _lastAnimToken = i - 1;
                 break;
             }
             else
+            {
                 length += token.duration;
+            }
         }
         _animLength = length;
         _tokenStartTimes[NDS_BANNER_ANIM_TOKEN_COUNT] = _animLength;
     }
 }
 
-void NdsFileIcon::UploadGraphics(vu16* vram) const
+void NdsFileIcon::UploadGraphics(vu16* vram)
 {
-    if (_animated)
-        dma_ntrCopy32(3, _banner->animation.iconGfx, vram, sizeof(_banner->animation.iconGfx));
-    else
+    _vramAddress = vram;
+    _currentVramSlot = 0;
+    _currentGfxIdx = -1;
+    if (!_animated)
+    {
         dma_ntrCopy32(3, _banner->iconGfx, vram, sizeof(_banner->iconGfx));
+    }
 }
 
 void NdsFileIcon::Update()
 {
     if (!_animated)
+    {
         return;
+    }
 
     _frame %= _animLength;
 
@@ -71,48 +77,30 @@ void NdsFileIcon::Update()
                 break;
             }
             else if (_frame < midTime)
+            {
                 end = mid - 1;
+            }
             else
+            {
                 start = mid + 1;
+            }
         }
 
         _animTokenIdx = start;
     }
 
     if (++_frame == _animLength)
+    {
         _frame = 0;
-
-
-    // if (++_durationCounter < _banner->animation.animTokens[_animTokenIdx].duration)
-    //     return;
-
-    // _durationCounter = 0;
-    
-    // if (++_animTokenIdx >= NDS_BANNER_ANIM_TOKEN_COUNT)
-    // {
-    //     _animTokenIdx = 0;
-    //     return;
-    // }
-
-    // if (_banner->animation.animTokens[_animTokenIdx].duration == NDS_BANNER_ANIM_DURATION_CONTROL_FRAME)
-    // {
-    //     switch (_banner->animation.animTokens[_animTokenIdx].control)
-    //     {
-    //         case NDS_BANNER_ANIM_CONTROL_LOOP:
-    //             _animTokenIdx = 0;
-    //             break;
-
-    //         case NDS_BANNER_ANIM_CONTROL_STOP:
-    //             _animTokenIdx--;
-    //             break;
-    //     }
-    // }
+    }
 }
 
 void NdsFileIcon::Draw(GraphicsContext& graphicsContext, const Rgb<8, 8, 8>& backgroundColor)
 {
     if (!graphicsContext.IsVisible(Rectangle(_position, 32, 32)))
+    {
         return;
+    }
 
     const u16* palette = _animated
         ? _banner->animation.iconPltt[_banner->animation.animTokens[_animTokenIdx].plttIdx]
@@ -123,7 +111,17 @@ void NdsFileIcon::Draw(GraphicsContext& graphicsContext, const Rgb<8, 8, 8>& bac
 
     u32 vramOffset = _vramOffset;
     if (_animated)
-        vramOffset += _banner->animation.animTokens[_animTokenIdx].gfxIdx * 512;
+    {
+        int gfxIdx = _banner->animation.animTokens[_animTokenIdx].gfxIdx;
+        if (gfxIdx != _currentGfxIdx)
+        {
+            _currentVramSlot = 1 - _currentVramSlot;
+            _currentGfxIdx = gfxIdx;
+            dma_ntrCopy32(3, &_banner->animation.iconGfx[gfxIdx][0], (u8*)_vramAddress + (_currentVramSlot * NDS_BANNER_ICON_SIZE), NDS_BANNER_ICON_SIZE);
+        }
+
+        vramOffset += _currentVramSlot * NDS_BANNER_ICON_SIZE;
+    }
 
     auto builder = OamBuilder::OamWithSize<32, 32>(
             _position, vramOffset >> 7)

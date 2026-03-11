@@ -9,6 +9,7 @@
 #include "CoverRepository.h"
 #include "FileType/ExtensionFileTypeProvider.h"
 #include "services/settings/IAppSettingsService.h"
+#include "cheats/ICheatRepository.h"
 
 class RomBrowserController : public IRomBrowserController
 {
@@ -23,7 +24,7 @@ public:
 
     void NavigateToPath(const TCHAR* name) override;
     void LaunchFile(const FileInfo& fileInfo) override;
-    void ShowGameInfo() override;
+    void ShowGameInfo(const FileInfo& fileInfo) override;
     void HideGameInfo() override;
     void ShowDisplaySettings() override;
     void HideDisplaySettings() override;
@@ -39,6 +40,7 @@ public:
     TaskQueueBase* GetIoTaskQueue() const override { return _ioTaskQueue; }
     TaskQueueBase* GetBgTaskQueue() const override { return _bgTaskQueue; }
     const ICoverRepository& GetCoverRepository() const override { return *_coverRepository; }
+    const ICheatRepository& GetCheatRepository() const override { return *_cheatRepository; }
 
     void SetRomBrowserDisplaySettings(const RomBrowserDisplaySettings& romBrowserDisplaySettings) override;
 
@@ -46,6 +48,8 @@ public:
     {
         return _appSettingsService->GetAppSettings().romBrowserDisplaySettings;
     }
+
+    virtual const FileInfo& GetTriggerFileInfo() const override { return _triggerFileInfo; }
 
 private:
     IAppSettingsService* _appSettingsService;
@@ -58,15 +62,19 @@ private:
     RomBrowserStateMachine _stateMachine;
     TCHAR _navigatePath[256];
     TCHAR* _navigateFileName;
-    FileInfo _launchFileInfo;
+    FileInfo _triggerFileInfo;
     QueueTask<void> _navigateTask;
     bool _saveSettingsPending = false;
     std::unique_ptr<CoverRepository> _coverRepository;
     ExtensionFileTypeProvider _fileTypeProvider;
+    std::unique_ptr<ICheatRepository> _cheatRepository;
 
     void HandleTrigger();
     void HandleNavigateTrigger();
     void HandleFolderLoadDoneTrigger();
     void HandleLaunchTrigger();
     void HandleChangeDisplayModeTrigger();
+    void UpdateLastUsedFilepath();
+    void SetPicoLoaderParams() const;
+    void LoadCheats() const;
 };

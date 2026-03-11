@@ -22,7 +22,7 @@ MaterialFileInfoCardView::MaterialFileInfoCardView(const MaterialColorScheme* ma
     AddChildTail(&_firstLine);
     AddChildTail(&_secondLine);
     AddChildTail(&_thirdLine);
-    _filenameLabelView.SetEllipsis(true);
+    _filenameLabelView.SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
     AddChildTail(&_filenameLabelView);
 }
 

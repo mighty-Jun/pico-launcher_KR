@@ -8,6 +8,7 @@ class RomBrowserViewModel;
 class FileInfo;
 class TaskQueueBase;
 class ICoverRepository;
+class ICheatRepository;
 
 class IRomBrowserController
 {
@@ -17,7 +18,7 @@ public:
     virtual void NavigateUp() = 0;
     virtual void NavigateToPath(const TCHAR* name) = 0;
     virtual void LaunchFile(const FileInfo& fileInfo) = 0;
-    virtual void ShowGameInfo() = 0;
+    virtual void ShowGameInfo(const FileInfo& fileInfo) = 0;
     virtual void HideGameInfo() = 0;
     virtual void ShowDisplaySettings() = 0;
     virtual void HideDisplaySettings() = 0;
@@ -33,11 +34,14 @@ public:
     virtual TaskQueueBase* GetIoTaskQueue() const = 0;
     virtual TaskQueueBase* GetBgTaskQueue() const = 0;
     virtual const ICoverRepository& GetCoverRepository() const = 0;
+    virtual const ICheatRepository& GetCheatRepository() const = 0;
 
     virtual const RomBrowserDisplaySettings& GetRomBrowserDisplaySettings() const = 0;
 
     virtual void SetRomBrowserDisplaySettings(
         const RomBrowserDisplaySettings& romBrowserDisplaySettings) = 0;
+
+    virtual const FileInfo& GetTriggerFileInfo() const = 0;
 };
 
 inline IRomBrowserController::~IRomBrowserController() { }

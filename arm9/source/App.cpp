@@ -20,6 +20,7 @@
 #include "romBrowser/DisplayMode/RomBrowserDisplayModeFactory.h"
 #include "romBrowser/Theme/Material/MaterialThemeFileIconFactory.h"
 #include "romBrowser/views/NdsGameDetailsBottomSheetView.h"
+#include "romBrowser/views/cheats/CheatsBottomSheetView.h"
 #include "romBrowser/views/DisplaySettingsBottomSheetView.h"
 #include "bgm/AudioStreamPlayer.h"
 #include "bgm/BgmService.h"
@@ -295,10 +296,15 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
 
 void App::HandleShowGameInfoTrigger()
 {
-    auto gameInfoDialog = std::make_unique<NdsGameDetailsBottomSheetView>(
-        &_romBrowserController, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
-    gameInfoDialog->SetGraphics(_chipViewVram);
-    _dialogPresenter.ShowDialog(std::move(gameInfoDialog));
+    // auto gameInfoDialog = std::make_unique<NdsGameDetailsBottomSheetView>(
+    //     &_romBrowserController, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository());
+    // gameInfoDialog->SetGraphics(_chipViewVram);
+    // _dialogPresenter.ShowDialog(std::move(gameInfoDialog));
+
+    auto cheatsViewModel = std::make_unique<CheatsViewModel>(_romBrowserController.GetTriggerFileInfo(), &_romBrowserController);
+    auto cheatsDialog = std::make_unique<CheatsBottomSheetView>(
+        std::move(cheatsViewModel), &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_focusManager);
+    _dialogPresenter.ShowDialog(std::move(cheatsDialog));
 }
 
 void App::HandleHideGameInfoTrigger()

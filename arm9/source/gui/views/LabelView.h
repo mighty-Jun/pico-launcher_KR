@@ -14,6 +14,15 @@ class MaterialGraphicsContext;
 class LabelView : public View
 {
 public:
+    enum class EllipsisStyle
+    {
+        None,
+        Ellipsis,
+        Marquee
+    };
+
+    void Update() override;
+
     void SetText(const char* text);
     void SetText(const char16_t* text);
     void SetText(const char16_t* text, u32 length);
@@ -43,7 +52,14 @@ public:
         return Rectangle(_position, _width, _height);
     }
 
-    void SetEllipsis(bool ellipsis) { _ellipsis = ellipsis; }
+    void SetEllipsisStyle(EllipsisStyle ellipsisStyle)
+    {
+        if (_ellipsisStyle != ellipsisStyle)
+        {
+            _ellipsisStyle = ellipsisStyle;
+            _ellipsisStyleChanged = true;
+        }
+    }
 
 protected:
     u32 _width;
@@ -61,8 +77,10 @@ protected:
     Rgb<8, 8, 8> _backgroundColor;
     Rgb<8, 8, 8> _foregroundColor;
     int _paletteRow = -1;
-    bool _ellipsis = false;
+    EllipsisStyle _ellipsisStyle = EllipsisStyle::None;
     bool _a5i3;
+
+    LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font, bool a5i3);
 
     void SetTextBuffer(const char* text);
     void SetTextBuffer(const char16_t* text);
@@ -70,5 +88,19 @@ protected:
     virtual void UpdateTileBuffer();
     QueueTask<void> UpdateTileBufferAsync(TaskQueueBase* taskQueue);
 
-    LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font, bool a5i3);
+private:
+    enum class MarqueeState
+    {
+        StartWait,
+        Moving,
+        EndWait
+    };
+
+    MarqueeState _marqueeState = MarqueeState::StartWait;
+    int _marqueeOffset = 0;
+    int _marqueeCounter = 0;
+    bool _ellipsisStyleChanged = false;
+
+    void RestartMarquee();
+    void UpdateMarquee();
 };
