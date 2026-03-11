@@ -39,6 +39,7 @@ struct nft2_string_render_params_t
     u32 textWidth;
     // u32 textHeight;
     bool a5i3;
+    bool onlyRenderWholeGlyphs = true;
 };
 
 /// @brief Prepares the ntf2 data of the given \p font for runtime use.

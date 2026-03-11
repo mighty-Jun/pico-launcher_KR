@@ -9,6 +9,10 @@
 #include "gui/palette/GradientPalette.h"
 #include "LabelView.h"
 
+#define MARQUEE_START_FRAMES    60
+#define MARQUEE_STEP_FRAMES     3
+#define MARQUEE_END_FRAMES      90
+
 LabelView::LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font, bool a5i3)
     : _width(width), _height(height)
     , _maxStringLength(maxStringLength), _font(font)
@@ -34,14 +38,30 @@ LabelView::LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_head
     SetText(u"");
 }
 
+void LabelView::Update()
+{
+    if (_ellipsisStyleChanged)
+    {
+        RestartMarquee();
+        UpdateTileBuffer();
+        _ellipsisStyleChanged = false;
+    }
+    else if (_ellipsisStyle == EllipsisStyle::Marquee)
+    {
+        UpdateMarquee();
+    }
+}
+
 void LabelView::SetTextBuffer(const char* text)
 {
     StringUtil::Copy(_textBuffer.get(), text, _maxStringLength + 1);
+    RestartMarquee();
 }
 
 void LabelView::SetTextBuffer(const char16_t* text)
 {
     StringUtil::Copy(_textBuffer.get(), text, _maxStringLength + 1);
+    RestartMarquee();
 }
 
 void LabelView::SetTextBuffer(const char16_t* text, u32 length)
@@ -50,6 +70,7 @@ void LabelView::SetTextBuffer(const char16_t* text, u32 length)
     if (copyLength > 0)
         memcpy(_textBuffer.get(), text, copyLength * 2);
     _textBuffer[copyLength] = 0;
+    RestartMarquee();
 }
 
 void LabelView::UpdateTileBuffer()
@@ -63,10 +84,19 @@ void LabelView::UpdateTileBuffer()
         renderParams.width = _width;
         renderParams.height = _height;
         renderParams.a5i3 = _a5i3;
-        if (_ellipsis)
+        if (_ellipsisStyle == EllipsisStyle::Ellipsis)
+        {
             nft2_renderStringEllipsis(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams, u" ... ");
+        }
         else
+        {
+            if (_ellipsisStyle == EllipsisStyle::Marquee)
+            {
+                renderParams.x = -_marqueeOffset;
+                renderParams.onlyRenderWholeGlyphs = false;
+            }
             nft2_renderString(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams);
+        }
         _newStringWidth = renderParams.textWidth;
     }
     else
@@ -118,4 +148,60 @@ QueueTask<void> LabelView::SetTextAsync(TaskQueueBase* taskQueue, const char16_t
 {
     SetTextBuffer(text, length);
     return UpdateTileBufferAsync(taskQueue);
+}
+
+void LabelView::RestartMarquee()
+{
+    _marqueeOffset = 0;
+    _marqueeCounter = MARQUEE_START_FRAMES;
+    _marqueeState = MarqueeState::StartWait;
+}
+
+void LabelView::UpdateMarquee()
+{
+    UpdateTileBuffer();
+    if (_newStringWidth <= _width)
+    {
+        _marqueeOffset = 0;
+    }
+    else
+    {
+        switch (_marqueeState)
+        {
+            case MarqueeState::StartWait:
+            {
+                if (--_marqueeCounter <= 0)
+                {
+                    _marqueeState = MarqueeState::Moving;
+                    _marqueeOffset = 0;
+                    _marqueeCounter = MARQUEE_STEP_FRAMES;
+                }
+                break;
+            }
+            case MarqueeState::Moving:
+            {
+                if (--_marqueeCounter == 0)
+                {
+                    _marqueeCounter = MARQUEE_STEP_FRAMES;
+                    _marqueeOffset++;
+                    if (_newStringWidth - _marqueeOffset < _width)
+                    {
+                        _marqueeState = MarqueeState::EndWait;
+                        _marqueeCounter = MARQUEE_END_FRAMES;
+                    }
+                }
+                break;
+            }
+            case MarqueeState::EndWait:
+            {
+                if (--_marqueeCounter <= 0)
+                {
+                    _marqueeState = MarqueeState::StartWait;
+                    _marqueeCounter = MARQUEE_START_FRAMES;
+                    _marqueeOffset = 0;
+                }
+                break;
+            }
+        }
+    }
 }

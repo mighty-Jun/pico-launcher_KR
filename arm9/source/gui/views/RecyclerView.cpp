@@ -39,6 +39,10 @@ void RecyclerView::SetAdapter(const RecyclerAdapter* adapter, int initialSelecte
         _viewPool.reset();
         _viewPoolFreeCount = 0;
         _viewPoolTotalCount = 0;
+        _xOffset = 0;
+        _yOffset = 0;
+        _curRangeStart = 0;
+        _curRangeLength = 0;
     }
     _adapter = adapter;
     _adapter->GetViewSize(_itemWidth, _itemHeight);

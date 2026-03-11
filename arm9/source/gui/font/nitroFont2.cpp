@@ -28,24 +28,28 @@ int nft2_findGlyphIdxForCharacter(const nft2_header_t* font, u16 character)
 }
 
 static inline void renderGlyph(const nft2_header_t* font, const nft2_glyph_t* glyph,
-    int xPos, int yPos, int width, int height, u8* dst, u32 stride, bool a5i3)
+    int xPos, int yPos, const nft2_string_render_params_t* renderParams, u8* dst, u32 stride, bool a5i3)
 {
     int yOffset = glyph->spacingTop;
     u32 xStart = xPos < 0 ? -xPos : 0;
     u32 yStart = yPos + yOffset < 0 ? -(yPos + yOffset) : 0;
 
     int xEnd = glyph->glyphWidth;
-    if (xPos + xEnd > width)
+    if (xPos + xEnd > (int)renderParams->width)
     {
-        // by returning we only render complete glyphs
-        return;
-        // old code for rendering partial glyphs
-        // xEnd = width - xPos;
+        if (renderParams->onlyRenderWholeGlyphs)
+        {
+            return;
+        }
+
+        xEnd = renderParams->width - xPos;
     }
 
     int yEnd = glyph->glyphHeight;
-    if (yPos + yOffset + yEnd > height)
-        yEnd = height - (yPos + yOffset); // allow partial glyphs in the vertical direction
+    if (yPos + yOffset + yEnd > (int)renderParams->height)
+    {
+        yEnd = renderParams->height - (yPos + yOffset); // allow partial glyphs in the vertical direction
+    }
 
     const u8* glyphData = &font->glyphDataPtr[glyph->dataOffset];
     glyphData += yStart * ((glyph->glyphWidth + 1) >> 1);
@@ -97,15 +101,15 @@ static inline void renderGlyph(const nft2_header_t* font, const nft2_glyph_t* gl
 }
 
 static ITCM_CODE void renderGlyphTiled(const nft2_header_t* font, const nft2_glyph_t* glyph,
-    int xPos, int yPos, int width, int height, u8* dst, u32 stride)
+    int xPos, int yPos, const nft2_string_render_params_t* renderParams, u8* dst, u32 stride)
 {
-    renderGlyph(font, glyph, xPos, yPos, width, height, dst, stride, false);
+    renderGlyph(font, glyph, xPos, yPos, renderParams, dst, stride, false);
 }
 
 static ITCM_CODE void renderGlyphA5I3(const nft2_header_t* font, const nft2_glyph_t* glyph,
-    int xPos, int yPos, int width, int height, u8* dst, u32 stride)
+    int xPos, int yPos, const nft2_string_render_params_t* renderParams, u8* dst, u32 stride)
 {
-    renderGlyph(font, glyph, xPos, yPos, width, height, dst, stride, true);
+    renderGlyph(font, glyph, xPos, yPos, renderParams, dst, stride, true);
 }
 
 ITCM_CODE void nft2_renderString(const nft2_header_t* font, const char16_t* string, u8* dst, u32 stride,
@@ -134,18 +138,18 @@ ITCM_CODE void nft2_renderString(const nft2_header_t* font, const char16_t* stri
         xPos += glyph->spacingLeft;
         if (a5i3)
         {
-            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         else
         {
-            renderGlyphTiled(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphTiled(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         xPos += glyph->glyphWidth;
         if (xPos > (int)textWidth)
             textWidth = xPos;
         xPos += glyph->spacingRight;
     }
-    renderParams->textWidth = textWidth;
+    renderParams->textWidth = textWidth - renderParams->x;
 }
 
 ITCM_CODE void nft2_measureString(const nft2_header_t* font, const char16_t* string, u32& width, u32& height)
@@ -265,11 +269,11 @@ ITCM_CODE void nft2_renderStringEllipsis(const nft2_header_t* font, const char16
         xPos += glyph->spacingLeft;
         if (a5i3)
         {
-            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         else
         {
-            renderGlyphTiled(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphTiled(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         xPos += glyph->glyphWidth;
         if (xPos > (int)textWidth)
@@ -287,11 +291,11 @@ ITCM_CODE void nft2_renderStringEllipsis(const nft2_header_t* font, const char16
         xPos += glyph->spacingLeft;
         if (a5i3)
         {
-            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         else
         {
-            renderGlyphTiled(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphTiled(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         xPos += glyph->glyphWidth;
         if (xPos > (int)textWidth)
@@ -309,16 +313,16 @@ ITCM_CODE void nft2_renderStringEllipsis(const nft2_header_t* font, const char16
         xPos += glyph->spacingLeft;
         if (a5i3)
         {
-            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphA5I3(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         else
         {
-            renderGlyphTiled(font, glyph, xPos, yPos, renderParams->width, renderParams->height, dst, stride);
+            renderGlyphTiled(font, glyph, xPos, yPos, renderParams, dst, stride);
         }
         xPos += glyph->glyphWidth;
         if (xPos > (int)textWidth)
             textWidth = xPos;
         xPos += glyph->spacingRight;
     }
-    renderParams->textWidth = textWidth;
+    renderParams->textWidth = textWidth - renderParams->x;
 }

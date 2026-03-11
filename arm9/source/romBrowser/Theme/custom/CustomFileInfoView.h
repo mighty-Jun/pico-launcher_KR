@@ -16,7 +16,7 @@ public:
 
     void SetFirstLineAsync(TaskQueueBase* taskQueue, const char* firstLine, bool ellipsis) override
     {
-        _firstLine.SetEllipsis(ellipsis);
+        _firstLine.SetEllipsisStyle(ellipsis ? LabelView::EllipsisStyle::Ellipsis : LabelView::EllipsisStyle::None);
         if (taskQueue)
             _firstLine.SetTextAsync(taskQueue, firstLine);
         else
@@ -25,7 +25,7 @@ public:
 
     void SetFirstLineAsync(TaskQueueBase* taskQueue, const char16_t* firstLine, u32 length, bool ellipsis) override
     {
-        _firstLine.SetEllipsis(ellipsis);
+        _firstLine.SetEllipsisStyle(ellipsis ? LabelView::EllipsisStyle::Ellipsis : LabelView::EllipsisStyle::None);
         if (taskQueue)
             _firstLine.SetTextAsync(taskQueue, firstLine, length);
         else
