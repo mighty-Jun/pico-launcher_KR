@@ -10,25 +10,56 @@
 class CheatsViewModel
 {
 public:
+    /// @brief Enum representing the state of the cheats panel.
     enum class State
     {
+        /// @brief Cheats are being loaded.
         Loading,
+
+        /// @brief No cheats were found.
         NoCheats,
+
+        /// @brief Cheats are being displayed.
         DisplayCheats
     };
 
     CheatsViewModel(const FileInfo& romFileInfo, IRomBrowserController* romBrowserController);
 
-    void ItemActivated();
-    void Back();
+    /// @brief Activates the selected cheat or category.
+    void ActivateSelectedItem();
+
+    /// @brief Navigates up in the cheat hierachy, or closes the cheats panel when at the root.
+    /// @return \c true when navigation happened in the cheats tree, or \c false when the cheats panel was closed.
+    bool NavigateUp();
+
+    /// @brief Closes the cheats panel.
     void Close();
+
+    /// @brief Disables all cheats.
     void DisableAllCheats();
 
+    /// @brief Gets the current state of the cheats panel.
+    /// @return The current state of the cheats panel.
     State GetState() const { return _state; }
+
+    /// @brief Gets the current cheat category.
+    /// @return The current cheat category.
     const ICheatCategory* GetCurrentCheatCategory() const { return _categoryStack[_categoryStackLevel].cheatCategory; }
 
+    /// @brief Gets the index of the selected item.
+    /// @return The index of the selected item.
     constexpr int GetSelectedItem() const { return _selectedItem; }
+
+    /// @brief Sets the index of the selected item.
+    /// @param selectedItem The index of the selected item to set.
     void SetSelectedItem(int selectedItem) { _selectedItem = selectedItem; }
+
+    /// @brief Returns whether the category name should be displayed.
+    /// @return \c true when the category name should be displayed, or \c false otherwise.
+    bool ShouldShowCategoryName() const
+    {
+        return _categoryStackLevel > 0;
+    }
 
 private:
     struct CategoryStackEntry

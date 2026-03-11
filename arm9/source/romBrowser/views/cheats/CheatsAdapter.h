@@ -4,6 +4,7 @@
 #include "cheats/Cheat.h"
 #include "CheatListItemView.h"
 
+/// @brief Recycler adapter for cheats.
 class CheatsAdapter : public RecyclerAdapter
 {
 public:

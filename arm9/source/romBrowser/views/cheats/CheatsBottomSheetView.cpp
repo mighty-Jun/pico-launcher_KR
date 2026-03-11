@@ -16,6 +16,9 @@
 #define TITLE_LABEL_X               20
 #define TITLE_LABEL_Y               16
 
+#define CATEGORY_NAME_LABEL_X       (TITLE_LABEL_X + 43)
+#define CATEGORY_NAME_LABEL_Y       (TITLE_LABEL_Y + 1)
+
 #define NO_CHEATS_FOUND_LABEL_X     20
 #define NO_CHEATS_FOUND_LABEL_Y     36
 
@@ -32,7 +35,7 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
     FocusManager* focusManager)
     : _viewModel(std::move(viewModel))
     , _titleLabel(64, 16, 25, fontRepository->GetFont(FontType::Medium11))
-    , _noCheatsFoundLabel(96, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _secondaryLabel(177, 16, 64, fontRepository->GetFont(FontType::Regular10))
     , _descriptionLabel(224, 16, 256, fontRepository->GetFont(FontType::Medium7_5))
     , _cheatListRecycler(std::make_unique<RecyclerView>(
         LIST_X, LIST_Y, LIST_WIDTH, LIST_HEIGHT, RecyclerView::Mode::VerticalList))
@@ -41,11 +44,12 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
     , _focusManager(focusManager)
 {
     _titleLabel.SetText(u"Cheats");
-    _noCheatsFoundLabel.SetText(u"No cheats found.");
+    _secondaryLabel.SetText(u"No cheats found.");
+    _secondaryLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
     _descriptionLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
     _descriptionLabel.SetText("");
     AddChildTail(&_titleLabel);
-    AddChildTail(&_noCheatsFoundLabel);
+    AddChildTail(&_secondaryLabel);
     AddChildTail(&_descriptionLabel);
     AddChildTail(_cheatListRecycler.get());
 }
@@ -80,7 +84,14 @@ void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
 void CheatsBottomSheetView::Update()
 {
     _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
-    _noCheatsFoundLabel.SetPosition(NO_CHEATS_FOUND_LABEL_X, _position.y + NO_CHEATS_FOUND_LABEL_Y);
+    if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
+    {
+        _secondaryLabel.SetPosition(CATEGORY_NAME_LABEL_X, _position.y + CATEGORY_NAME_LABEL_Y);
+    }
+    else
+    {
+        _secondaryLabel.SetPosition(NO_CHEATS_FOUND_LABEL_X, _position.y + NO_CHEATS_FOUND_LABEL_Y);
+    }
     _descriptionLabel.SetPosition(DESCRIPTION_LABEL_X, _position.y + DESCRIPTION_LABEL_Y);
     _cheatListRecycler->SetPosition(LIST_X, _position.y + LIST_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
@@ -168,11 +179,12 @@ void CheatsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _titleLabel.SetForegroundColor(_materialColorScheme->onSurface);
         _titleLabel.Draw(graphicsContext);
 
-        if (_viewModel->GetState() == CheatsViewModel::State::NoCheats)
+        if (_viewModel->GetState() == CheatsViewModel::State::NoCheats ||
+            _viewModel->ShouldShowCategoryName())
         {
-            _noCheatsFoundLabel.SetBackgroundColor(backColor);
-            _noCheatsFoundLabel.SetForegroundColor(_materialColorScheme->onSurface);
-            _noCheatsFoundLabel.Draw(graphicsContext);
+            _secondaryLabel.SetBackgroundColor(backColor);
+            _secondaryLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+            _secondaryLabel.Draw(graphicsContext);
         }
 
         _descriptionLabel.SetBackgroundColor(backColor);
@@ -190,9 +202,10 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
         if (focusManager.IsFocusInside(_cheatListRecycler.get()))
         {
             auto oldCategory = _viewModel->GetCurrentCheatCategory();
-            _viewModel->ItemActivated();
+            _viewModel->ActivateSelectedItem();
             if (oldCategory != _viewModel->GetCurrentCheatCategory())
             {
+                _secondaryLabel.SetText(_viewModel->GetCurrentCheatCategory()->GetName());
                 UpdateCheatList();
             }
 
@@ -202,8 +215,8 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
     else if (inputProvider.Triggered(InputKey::B))
     {
         auto oldCategory = _viewModel->GetCurrentCheatCategory();
-        _viewModel->Back();
-        if (oldCategory != _viewModel->GetCurrentCheatCategory())
+        if (_viewModel->NavigateUp() &&
+            oldCategory != _viewModel->GetCurrentCheatCategory())
         {
             UpdateCheatList();
         }

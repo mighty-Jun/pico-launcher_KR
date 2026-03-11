@@ -3,6 +3,7 @@
 #include "CheatCategory.h"
 #include "ICheatCategory.h"
 
+/// @brief Class holding the cheats for a game.
 class GameCheats : public ICheatCategory
 {
 public:
@@ -24,14 +25,11 @@ public:
         }
     }
 
+    /// @brief Gets the name of the game.
+    /// @return A pointer to the name of the game.
     const char* GetGameName() const
     {
         return _gameName;
-    }
-
-    bool GetIsMaxOneCheatActive() const override
-    {
-        return false;
     }
 
     const CheatCategory* GetCategories(u32& numberOfCategories) const override
@@ -46,6 +44,9 @@ public:
         return _cheats;
     }
 
+    /// @brief Gets a pointer to the cheat data.
+    /// @param cheatDataLength The length of the cheat data is returned in this reference.
+    /// @return A pointer to the cheat data. This pointer is only valid for the lifetime of this \see GameCheats instance.
     u8* GetCheatData(u32& cheatDataLength) const
     {
         cheatDataLength = _cheatDataLength;
@@ -66,4 +67,15 @@ private:
     u32 _numberOfCategories;
     Cheat* _cheats;
     u32 _numberOfCheats;
+
+    // From ICheatCategory
+    const char* GetName() const override
+    {
+        return "";
+    }
+
+    bool GetIsMaxOneCheatActive() const override
+    {
+        return false;
+    }
 };

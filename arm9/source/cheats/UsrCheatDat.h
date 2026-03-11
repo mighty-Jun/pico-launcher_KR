@@ -1,5 +1,6 @@
 #pragma once
 
+/// @brief Struct representing an index entry of usrcheat.dat.
 struct usr_cheat_index_entry_t
 {
     u32 gameCode;
