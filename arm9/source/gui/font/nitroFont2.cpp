@@ -1,6 +1,18 @@
 #include "common.h"
 #include "nitroFont2.h"
 
+#define MAX_CACHED_FONTS 4
+#define MAX_BLOCKS_PER_FONT 2048
+
+struct FontIndexCache {
+    const nft2_header_t* font;
+    const nft2_char_map_entry_t* blocks[MAX_BLOCKS_PER_FONT];
+    int count;
+};
+
+static FontIndexCache s_fontCaches[MAX_CACHED_FONTS];
+static int s_fontCacheCount = 0;
+
 bool nft2_unpack(nft2_header_t* font)
 {
     if (font->signature != NFT2_SIGNATURE)
@@ -10,11 +22,60 @@ bool nft2_unpack(nft2_header_t* font)
     font->charMapPtr = (const nft2_char_map_entry_t*)((u32)font + (u32)font->charMapPtr);
     font->glyphDataPtr = (const u8*)((u32)font + (u32)font->glyphDataPtr);
 
+    FontIndexCache* cache = nullptr;
+    for (int i = 0; i < s_fontCacheCount; i++) {
+        if (s_fontCaches[i].font == font) {
+            cache = &s_fontCaches[i];
+            break;
+        }
+    }
+    if (!cache && s_fontCacheCount < MAX_CACHED_FONTS) {
+        cache = &s_fontCaches[s_fontCacheCount++];
+        cache->font = font;
+    }
+
+    if (cache) {
+        cache->count = 0;
+        const nft2_char_map_entry_t* charMapEntry = font->charMapPtr;
+        while (charMapEntry->count > 0 && cache->count < MAX_BLOCKS_PER_FONT)
+        {
+            cache->blocks[cache->count++] = charMapEntry;
+            charMapEntry = (const nft2_char_map_entry_t*)((u32)charMapEntry + 4 + 2 * charMapEntry->count);
+        }
+    }
+
     return true;
 }
 
 int nft2_findGlyphIdxForCharacter(const nft2_header_t* font, u16 character)
 {
+    FontIndexCache* cache = nullptr;
+    for (int i = 0; i < s_fontCacheCount; i++) {
+        if (s_fontCaches[i].font == font) {
+            cache = &s_fontCaches[i];
+            break;
+        }
+    }
+    //Apply binary search on the cached blocks to find the correct block for the character
+    if (cache) {
+        int left = 0;
+        int right = cache->count - 1;
+
+        while (left <= right)
+        {
+            int mid = (left + right) / 2;
+            const nft2_char_map_entry_t* entry = cache->blocks[mid];
+
+            if (character < entry->startChar) {
+                right = mid - 1;
+            } else if (character >= entry->startChar + entry->count) {
+                left = mid + 1;
+            } else {
+                return entry->glyphs[character - entry->startChar];
+            }
+        }
+    }
+
     const nft2_char_map_entry_t* charMapEntry = font->charMapPtr;
     while (charMapEntry->count > 0)
     {
