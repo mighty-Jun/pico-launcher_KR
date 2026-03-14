@@ -26,11 +26,23 @@ CheatsViewModel::CheatsViewModel(const FileInfo& romFileInfo, IRomBrowserControl
 
 void CheatsViewModel::ActivateSelectedItem()
 {
+    if (_state != State::DisplayCheats)
+    {
+        // No cheats or not yet loaded
+        return;
+    }
+
     auto cheatCategory = GetCurrentCheatCategory();
     u32 numberOfCategories = 0;
     auto categories = cheatCategory->GetCategories(numberOfCategories);
     u32 numberOfCheats = 0;
     auto cheats = cheatCategory->GetCheats(numberOfCheats);
+
+    if (numberOfCategories + numberOfCheats == 0)
+    {
+        // There is nothing to activate
+        return;
+    }
 
     if (_selectedItem < (int)numberOfCategories)
     {
@@ -93,7 +105,10 @@ void CheatsViewModel::Close()
 
 void CheatsViewModel::DisableAllCheats()
 {
-    DisableAllCheats(_cheats.get());
+    if (_state == State::DisplayCheats)
+    {
+        DisableAllCheats(_cheats.get());
+    }
 }
 
 void CheatsViewModel::DisableAllCheats(const ICheatCategory* cheatCategory)
