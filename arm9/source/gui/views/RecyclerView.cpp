@@ -309,7 +309,7 @@ View* RecyclerView::MoveFocusVertical(View* currentFocus, FocusMoveDirection dir
 
 bool RecyclerView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    if (inputProvider.Triggered(InputKey::L | InputKey::R))
+    if (_itemCount != 0 && inputProvider.Triggered(InputKey::L | InputKey::R))
     {
         int direction = inputProvider.Triggered(InputKey::L) ? 1 : -1;
         int selected = _selectedItem->itemIdx;
