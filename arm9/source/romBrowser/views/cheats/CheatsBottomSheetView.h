@@ -10,6 +10,7 @@
 class MaterialColorScheme;
 class IFontRepository;
 class IVramManager;
+class ILanguagePackService;
 
 /// @brief Bottom sheet for browsing and enabling/disabling cheats.
 class CheatsBottomSheetView : public BottomSheetView
@@ -17,7 +18,7 @@ class CheatsBottomSheetView : public BottomSheetView
 public:
     CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        FocusManager* focusManager);
+        FocusManager* focusManager, ILanguagePackService* languagePackService);
 
     ~CheatsBottomSheetView() override
     {
@@ -51,6 +52,7 @@ private:
     FocusManager* _focusManager;
     CheatListItemView::VramOffsets _vramOffsets;
     u32 _savedVramState = 0;
+    ILanguagePackService* _languagePackService;
 
     void UpdateCheatList();
     void UpdateDescriptionText();
