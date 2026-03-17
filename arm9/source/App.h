@@ -3,6 +3,7 @@
 #include <memory>
 #include "services/settings/IAppSettingsService.h"
 #include "bgm/IBgmService.h"
+#include "services/Language/ILanguagePackService.h"
 #include "services/process/IProcess.h"
 #include "gui/SimplePaletteManager.h"
 #include "gui/AdvancedPaletteManager.h"
@@ -34,7 +35,7 @@
 class alignas(32) App : public IProcess
 {
 public:
-    App(IAppSettingsService& appSettingsService, IBgmService& bgmService);
+    App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILanguagePackService& languagePackService);
 
     void Run() override;
     void Exit() override;
@@ -74,6 +75,7 @@ private:
 
     IAppSettingsService& _appSettingsService;
     IBgmService& _bgmService;
+    ILanguagePackService& _languagePackService;
     volatile bool _exit = false;
 
     PadInputSource _inputSource;

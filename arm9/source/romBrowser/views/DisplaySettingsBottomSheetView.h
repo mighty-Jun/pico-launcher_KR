@@ -8,12 +8,15 @@
 class IRomBrowserController;
 class MaterialColorScheme;
 class IFontRepository;
+class ILanguagePackService;
+
 
 class DisplaySettingsBottomSheetView : public BottomSheetView
 {
 public:
     DisplaySettingsBottomSheetView(DisplaySettingsViewModel* viewModel,
-        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository);
+        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
+        ILanguagePackService* languagePackService);
 
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
@@ -42,6 +45,7 @@ private:
     // std::array<IconButton2DView, 5> _filterOptions;
 
     const MaterialColorScheme* _materialColorScheme;
+    const ILanguagePackService* _languagePackService;
 
     IconButton2DView CreateLayoutOptionIconButton();
     IconButton2DView CreateSortOptionIconButton();

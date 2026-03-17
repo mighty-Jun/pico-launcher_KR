@@ -20,6 +20,7 @@
 #include "themes/material/MaterialColorScheme.h"
 #include "themes/IFontRepository.h"
 #include "DisplaySettingsBottomSheetView.h"
+#include <services/Language/ILanguagePackService.h>
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -50,7 +51,7 @@ static RomBrowserSortMode sRomBrowserSortModes[4] =
 
 DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     DisplaySettingsViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
-    const IFontRepository* fontRepository)
+    const IFontRepository* fontRepository, ILanguagePackService* languagePackService)
     : _viewModel(viewModel)
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
@@ -58,14 +59,23 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
-    _titleLabel.SetText(u"Display Settings");
+    const auto& langPack = languagePackService->GetLanguagePack();
+
+    // 2. 하드코딩된 u"..." 대신 언어팩의 문자열을 세팅합니다.
+    // 주의: SetText가 UTF-16(char16_t, u"")을 요구한다면, 
+    // Pico 런처 내부의 UTF-8 to UTF-16 변환 함수를 거쳐야 할 수 있습니다.
+    
+    // (만약 SetText가 UTF-8(const char*) 오버로딩을 지원한다면 아래처럼 바로 사용)
+    _titleLabel.SetText(langPack.displaySettings_title.GetString());
+    _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
+    _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
+
+    // (만약 강제로 UTF-16 변환이 필요하다면, 프로젝트 내의 변환 유틸리티를 사용해야 합니다)
+    // 예: _titleLabel.SetText(Utf8ToUtf16(langPack.displaySettings_title.GetString()).c_str());
+
     AddChildTail(&_titleLabel);
-    _layoutLabel.SetText(u"Layout");
     AddChildTail(&_layoutLabel);
-    _sortingLabel.SetText(u"Sorting");
     AddChildTail(&_sortingLabel);
-    // _filtersLabel.SetText(u"Filters");
-    // AddChildTail(&_filtersLabel);
 
     for (auto& layoutOption : _layoutOptions)
     {

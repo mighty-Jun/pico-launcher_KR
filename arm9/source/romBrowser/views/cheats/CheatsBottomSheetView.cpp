@@ -12,6 +12,7 @@
 #include "cheatSelector.h"
 #include "gui/DescendingStackVramManager.h"
 #include "CheatsBottomSheetView.h"
+#include <services/Language/ILanguagePackService.h>
 
 #define TITLE_LABEL_X               20
 #define TITLE_LABEL_Y               16
@@ -32,7 +33,7 @@
 
 CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> viewModel,
     const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-    FocusManager* focusManager)
+    FocusManager* focusManager, ILanguagePackService* languagePackService)
     : _viewModel(std::move(viewModel))
     , _titleLabel(64, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _secondaryLabel(177, 16, 64, fontRepository->GetFont(FontType::Regular10))
@@ -42,9 +43,12 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
     , _materialColorScheme(materialColorScheme)
     , _fontRepository(fontRepository)
     , _focusManager(focusManager)
+    , _languagePackService(languagePackService)
 {
-    _titleLabel.SetText(u"Cheats");
-    _secondaryLabel.SetText(u"No cheats found.");
+    const auto& langPack = languagePackService->GetLanguagePack();
+
+    _titleLabel.SetText(langPack.cheatSettings_title.GetString());
+    _secondaryLabel.SetText(langPack.cheatSettings_noCheatsMsg.GetString());
     _secondaryLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
     _descriptionLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
     _descriptionLabel.SetText("");
