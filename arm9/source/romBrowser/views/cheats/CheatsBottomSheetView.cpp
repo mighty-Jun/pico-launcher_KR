@@ -241,6 +241,9 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
 
 void CheatsBottomSheetView::UpdateCheatList()
 {
+    // Need to unfocus first, otherwise the focus manager still contains a pointer to a view that is going to be destroyed
+    _focusManager->Unfocus();
+
     auto oldAdapter = _cheatsAdapter;
     _cheatsAdapter = new CheatsAdapter(
         _viewModel->GetCurrentCheatCategory(), _materialColorScheme, _fontRepository, _vramOffsets);
@@ -265,21 +268,8 @@ void CheatsBottomSheetView::UpdateDescriptionText()
     else
     {
         auto cheatCategory = _viewModel->GetCurrentCheatCategory();
-        u32 numberOfCategories = 0;
-        auto categories = cheatCategory->GetCategories(numberOfCategories);
-        u32 numberOfCheats = 0;
-        auto cheats = cheatCategory->GetCheats(numberOfCheats);
-        if ((u32)selectedItem < numberOfCategories)
-        {
-            _descriptionLabel.SetText(categories[selectedItem].GetDescription());
-        }
-        else if ((u32)selectedItem < numberOfCategories + numberOfCheats)
-        {
-            _descriptionLabel.SetText(cheats[selectedItem - numberOfCategories].GetDescription());
-        }
-        else
-        {
-            _descriptionLabel.SetText("");
-        }
+        u32 numberOfSubEntries = 0;
+        auto subEntries = cheatCategory->GetSubEntries(numberOfSubEntries);
+        _descriptionLabel.SetText(subEntries[selectedItem].GetDescription());
     }
 }

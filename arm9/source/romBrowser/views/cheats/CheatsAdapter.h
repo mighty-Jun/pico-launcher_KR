@@ -1,25 +1,22 @@
 #pragma once
 #include "gui/views/RecyclerAdapter.h"
-#include "cheats/CheatCategory.h"
-#include "cheats/Cheat.h"
+#include "cheats/CheatEntry.h"
 #include "CheatListItemView.h"
 
 /// @brief Recycler adapter for cheats.
 class CheatsAdapter : public RecyclerAdapter
 {
 public:
-    CheatsAdapter(const ICheatCategory* cheatCategory, const MaterialColorScheme* materialColorScheme,
+    CheatsAdapter(const CheatEntry* cheatCategory, const MaterialColorScheme* materialColorScheme,
         const IFontRepository* fontRepository, const CheatListItemView::VramOffsets& vramOffsets)
         : _cheatCategory(cheatCategory), _materialColorScheme(materialColorScheme)
         , _fontRepository(fontRepository), _vramOffsets(vramOffsets) { }
 
     u32 GetItemCount() const override
     {
-        u32 numberOfCategories = 0;
-        _cheatCategory->GetCategories(numberOfCategories);
-        u32 numberOfCheats = 0;
-        _cheatCategory->GetCheats(numberOfCheats);
-        return numberOfCategories + numberOfCheats;
+        u32 numberOfSubEntries = 0;
+        _cheatCategory->GetSubEntries(numberOfSubEntries);
+        return numberOfSubEntries;
     }
 
     void GetViewSize(int& width, int& height) const override
@@ -41,19 +38,9 @@ public:
     void BindView(View* view, int index) const override
     {
         auto listItemView = static_cast<CheatListItemView*>(view);
-        u32 numberOfCategories = 0;
-        auto categories = _cheatCategory->GetCategories(numberOfCategories);
-        if ((u32)index < numberOfCategories)
-        {
-            listItemView->SetCategory(&categories[index]);
-        }
-        else
-        {
-            index -= numberOfCategories;
-            u32 numberOfCheats = 0;
-            auto cheats = _cheatCategory->GetCheats(numberOfCheats);
-            listItemView->SetCheat(&cheats[index]);
-        }
+        u32 numberOfSubEntries = 0;
+        auto subEntries = _cheatCategory->GetSubEntries(numberOfSubEntries);
+        listItemView->SetEntry(&subEntries[index]);
     }
 
     void ReleaseView(View* view, int index) const override
@@ -62,7 +49,7 @@ public:
     }
 
 private:
-    const ICheatCategory* _cheatCategory;
+    const CheatEntry* _cheatCategory;
     const MaterialColorScheme* _materialColorScheme;
     const IFontRepository* _fontRepository;
     CheatListItemView::VramOffsets _vramOffsets;

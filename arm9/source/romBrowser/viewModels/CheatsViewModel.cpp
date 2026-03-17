@@ -33,39 +33,40 @@ void CheatsViewModel::ActivateSelectedItem()
     }
 
     auto cheatCategory = GetCurrentCheatCategory();
-    u32 numberOfCategories = 0;
-    auto categories = cheatCategory->GetCategories(numberOfCategories);
-    u32 numberOfCheats = 0;
-    auto cheats = cheatCategory->GetCheats(numberOfCheats);
+    u32 numberOfSubEntries = 0;
+    auto subEntries = cheatCategory->GetSubEntries(numberOfSubEntries);
 
-    if (numberOfCategories + numberOfCheats == 0)
+    if (numberOfSubEntries == 0)
     {
         // There is nothing to activate
         return;
     }
 
-    if (_selectedItem < (int)numberOfCategories)
+    auto& entry = subEntries[_selectedItem];
+    if (entry.IsCheatCategory())
     {
         // Category activated
         if (_categoryStackLevel + 1 != _categoryStack.size())
         {
-            _categoryStack[++_categoryStackLevel] = { &categories[_selectedItem], (u32)_selectedItem };
+            _categoryStack[++_categoryStackLevel] = { &entry, (u32)_selectedItem };
             _selectedItem = 0;
         }
     }
     else
     {
         // Toggle cheat on/off
-        auto& cheat = cheats[_selectedItem - numberOfCategories];
-        bool isEnabled = !cheat.GetIsCheatActive();
+        bool isEnabled = !entry.GetIsCheatActive();
         if (isEnabled && cheatCategory->GetIsMaxOneCheatActive())
         {
-            for (u32 i = 0; i < numberOfCheats; i++)
+            for (u32 i = 0; i < numberOfSubEntries; i++)
             {
-                cheats[i].SetIsCheatActive(false);
+                if (!subEntries[i].IsCheatCategory())
+                {
+                    subEntries[i].SetIsCheatActive(false);
+                }
             }
         }
-        cheat.SetIsCheatActive(isEnabled);
+        entry.SetIsCheatActive(isEnabled);
         _changed = true;
     }
 }
@@ -111,23 +112,24 @@ void CheatsViewModel::DisableAllCheats()
     }
 }
 
-void CheatsViewModel::DisableAllCheats(const ICheatCategory* cheatCategory)
+void CheatsViewModel::DisableAllCheats(const CheatEntry* cheatCategory)
 {
-    u32 numberOfCategories = 0;
-    auto categories = cheatCategory->GetCategories(numberOfCategories);
-    for (u32 i = 0; i < numberOfCategories; i++)
+    u32 numberOfSubEntries = 0;
+    auto subEntries = cheatCategory->GetSubEntries(numberOfSubEntries);
+    for (u32 i = 0; i < numberOfSubEntries; i++)
     {
-        DisableAllCheats(&categories[i]);
-    }
-
-    u32 numberOfCheats = 0;
-    auto cheats = cheatCategory->GetCheats(numberOfCheats);
-    for (u32 i = 0; i < numberOfCheats; i++)
-    {
-        if (cheats[i].GetIsCheatActive())
+        auto& entry = subEntries[i];
+        if (entry.IsCheatCategory())
         {
-            cheats[i].SetIsCheatActive(false);
-            _changed = true;
+            DisableAllCheats(&entry);
+        }
+        else
+        {
+            if (entry.GetIsCheatActive())
+            {
+                entry.SetIsCheatActive(false);
+                _changed = true;
+            }
         }
     }
 }
