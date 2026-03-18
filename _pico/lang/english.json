@@ -1,0 +1,8 @@
+{
+  "displaySettings.title": "Display Settings",
+  "displaySettings.layout": "Layout",
+  "displaySettings.sorting": "Sorting",
+  "displaySettings.filters": "Filters",
+  "cheatSettings.title" : "Cheats",
+  "cheatSettings.noCheatsMsg" : "No cheats found."
+}
