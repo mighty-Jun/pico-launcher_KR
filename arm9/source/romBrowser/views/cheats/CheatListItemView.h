@@ -1,8 +1,7 @@
 #pragma once
 #include "gui/views/ViewContainer.h"
 #include "gui/views/Label2DView.h"
-#include "cheats/CheatCategory.h"
-#include "cheats/Cheat.h"
+#include "cheats/CheatEntry.h"
 
 class MaterialColorScheme;
 class IFontRepository;
@@ -34,17 +33,14 @@ public:
         _nameLabel.SetText(name);
     }
 
-    void SetCategory(const CheatCategory* cheatCategory)
+    void SetEntry(const CheatEntry* cheatEntry)
     {
-        _cheat = nullptr;
-        _nameLabel.SetText(cheatCategory->GetName());
-        _iconVramOffset = _vramOffsets.folderIconVramOffset;
-    }
-
-    void SetCheat(const Cheat* cheat)
-    {
-        _cheat = cheat;
-        _nameLabel.SetText(_cheat->GetName());
+        _cheatEntry = cheatEntry;
+        _nameLabel.SetText(cheatEntry->GetName());
+        if (cheatEntry->IsCheatCategory())
+        {
+            _iconVramOffset = _vramOffsets.folderIconVramOffset;
+        }
     }
 
 private:
@@ -52,5 +48,5 @@ private:
     VramOffsets _vramOffsets;
     const MaterialColorScheme* _materialColorScheme;
     u32 _iconVramOffset = 0;
-    const Cheat* _cheat = nullptr;
+    const CheatEntry* _cheatEntry = nullptr;
 };

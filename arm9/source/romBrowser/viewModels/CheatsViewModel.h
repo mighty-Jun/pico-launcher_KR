@@ -44,7 +44,7 @@ public:
 
     /// @brief Gets the current cheat category.
     /// @return The current cheat category.
-    const ICheatCategory* GetCurrentCheatCategory() const { return _categoryStack[_categoryStackLevel].cheatCategory; }
+    const CheatEntry* GetCurrentCheatCategory() const { return _categoryStack[_categoryStackLevel].cheatCategory; }
 
     /// @brief Gets the index of the selected item.
     /// @return The index of the selected item.
@@ -64,7 +64,7 @@ public:
 private:
     struct CategoryStackEntry
     {
-        const ICheatCategory* cheatCategory;
+        const CheatEntry* cheatCategory;
         u32 index;
     };
 
@@ -78,5 +78,5 @@ private:
     u32 _categoryStackLevel = 0;
     std::array<CategoryStackEntry, 8> _categoryStack;
 
-    void DisableAllCheats(const ICheatCategory* cheatCategory);
+    void DisableAllCheats(const CheatEntry* cheatCategory);
 };
