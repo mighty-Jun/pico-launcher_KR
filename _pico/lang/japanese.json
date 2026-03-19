@@ -1,0 +1,8 @@
+{
+  "displaySettings.title": "表示設定",
+  "displaySettings.layout": "レイアウト",
+  "displaySettings.sorting": "並べ替え",
+  "displaySettings.filters": "フィルター",
+  "cheatSettings.title" : "チート",
+  "cheatSettings.noCheatsMsg" : "チートが見つかりません"
+}

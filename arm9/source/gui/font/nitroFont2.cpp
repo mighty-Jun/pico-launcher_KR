@@ -2,12 +2,18 @@
 #include "nitroFont2.h"
 
 #define MAX_CACHED_FONTS 4
-#define MAX_BLOCKS_PER_FONT 2048
+#define MAX_BLOCKS_PER_FONT 8192
 
 struct FontIndexCache {
     const nft2_header_t* font;
     const nft2_char_map_entry_t* blocks[MAX_BLOCKS_PER_FONT];
     int count;
+
+    int asciiEndIdx;
+    int koreanStartIdx;
+    int koreanEndIdx;
+    int japaneseStartIdx;
+    int japaneseEndIdx;
 };
 
 static FontIndexCache s_fontCaches[MAX_CACHED_FONTS];
@@ -36,10 +42,34 @@ bool nft2_unpack(nft2_header_t* font)
 
     if (cache) {
         cache->count = 0;
+        
+        cache->asciiEndIdx = -1;
+        cache->koreanStartIdx = -1;
+        cache->koreanEndIdx = -1;
+        cache->japaneseStartIdx = -1;
+        cache->japaneseEndIdx = -1;
+
         const nft2_char_map_entry_t* charMapEntry = font->charMapPtr;
         while (charMapEntry->count > 0 && cache->count < MAX_BLOCKS_PER_FONT)
         {
-            cache->blocks[cache->count++] = charMapEntry;
+            int currentIdx = cache->count;
+            cache->blocks[currentIdx] = charMapEntry;
+            
+            u16 start = charMapEntry->startChar;
+
+            if (start < 0x0080) {
+                cache->asciiEndIdx = currentIdx;
+            }
+            else if ((start >= 0x3131 && start <= 0x318F) || (start >= 0xAC00 && start <= 0xD7A3)) {
+                if (cache->koreanStartIdx == -1) cache->koreanStartIdx = currentIdx;
+                cache->koreanEndIdx = currentIdx;
+            }
+            else if ((start >= 0x3040 && start <= 0x30FF) || (start >= 0x4E00 && start <= 0x9FFF)) {
+                if (cache->japaneseStartIdx == -1) cache->japaneseStartIdx = currentIdx;
+                cache->japaneseEndIdx = currentIdx;
+            }
+
+            cache->count++;
             charMapEntry = (const nft2_char_map_entry_t*)((u32)charMapEntry + 4 + 2 * charMapEntry->count);
         }
     }
@@ -61,6 +91,20 @@ int nft2_findGlyphIdxForCharacter(const nft2_header_t* font, u16 character)
         int left = 0;
         int right = cache->count - 1;
 
+        if (character < 0x0080 && cache->asciiEndIdx != -1) {
+            right = cache->asciiEndIdx;
+        } 
+        else if (((character >= 0x3131 && character <= 0x318F) || 
+                  (character >= 0xAC00 && character <= 0xD7A3)) && cache->koreanStartIdx != -1) {
+            left = cache->koreanStartIdx;
+            right = cache->koreanEndIdx;
+        } 
+        else if (((character >= 0x3040 && character <= 0x30FF) || 
+                  (character >= 0x4E00 && character <= 0x9FFF)) && cache->japaneseStartIdx != -1) {
+            left = cache->japaneseStartIdx;
+            right = cache->japaneseEndIdx;
+        }
+
         while (left <= right)
         {
             int mid = (left + right) / 2;
@@ -74,15 +118,6 @@ int nft2_findGlyphIdxForCharacter(const nft2_header_t* font, u16 character)
                 return entry->glyphs[character - entry->startChar];
             }
         }
-    }
-
-    const nft2_char_map_entry_t* charMapEntry = font->charMapPtr;
-    while (charMapEntry->count > 0)
-    {
-        if (charMapEntry->startChar <= character && character < charMapEntry->startChar + charMapEntry->count)
-            return charMapEntry->glyphs[character - charMapEntry->startChar];
-
-        charMapEntry = (const nft2_char_map_entry_t*)((u32)charMapEntry + 4 + 2 * charMapEntry->count);
     }
 
     return 0;
