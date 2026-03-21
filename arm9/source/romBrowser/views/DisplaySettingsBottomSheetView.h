@@ -38,7 +38,9 @@ private:
     Label2DView _titleLabel;
     Label2DView _layoutLabel;
     Label2DView _sortingLabel;
-    // LabelView _filtersLabel;
+// LabelView _filtersLabel;
+    Label2DView _themeLabel;
+    Label2DView _languageLabel;
 
     std::array<IconButton2DView, 4> _layoutOptions;
     std::array<IconButton2DView, /*3*/2> _sortOptions;

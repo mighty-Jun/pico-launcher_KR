@@ -34,6 +34,12 @@
 #define FILTERS_LABEL_X     20
 #define FILTERS_LABEL_Y     112
 
+#define THEME_LABEL_X       20
+#define THEME_LABEL_Y       107
+
+#define LANGUAGE_LABEL_X    20
+#define LANGUAGE_LABEL_Y    131 // +24
+
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
     [0] = RomBrowserLayout::HorizontalIconGrid,
@@ -56,26 +62,25 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _sortingLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _themeLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _languageLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
     const auto& langPack = languagePackService->GetLanguagePack();
 
-    // 2. 하드코딩된 u"..." 대신 언어팩의 문자열을 세팅합니다.
-    // 주의: SetText가 UTF-16(char16_t, u"")을 요구한다면, 
-    // Pico 런처 내부의 UTF-8 to UTF-16 변환 함수를 거쳐야 할 수 있습니다.
-    
-    // (만약 SetText가 UTF-8(const char*) 오버로딩을 지원한다면 아래처럼 바로 사용)
+    //load langPack string instead of hard coding
     _titleLabel.SetText(langPack.displaySettings_title.GetString());
     _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
     _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
-
-    // (만약 강제로 UTF-16 변환이 필요하다면, 프로젝트 내의 변환 유틸리티를 사용해야 합니다)
-    // 예: _titleLabel.SetText(Utf8ToUtf16(langPack.displaySettings_title.GetString()).c_str());
+    _themeLabel.SetText(langPack.displaySettings_theme.GetString());
+    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());
 
     AddChildTail(&_titleLabel);
     AddChildTail(&_layoutLabel);
     AddChildTail(&_sortingLabel);
+    AddChildTail(&_themeLabel);
+    AddChildTail(&_languageLabel);
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -179,6 +184,8 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _layoutLabel.SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
     _sortingLabel.SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
     // _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
+    _themeLabel.SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
+    _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -230,6 +237,10 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _sortingLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         // _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _themeLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _themeLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         BottomSheetView::Draw(graphicsContext);
     }
     graphicsContext.SetPriority(oldPrio);
