@@ -105,6 +105,7 @@ private:
     IconButton2DView::VramToken _iconButtonViewVram;
 
     bool _vcountIrqStarted = false;
+    bool _pendingAppRestart = false;
 
     void InitVramMapping() const;
     void DisplaySplashScreen() const;

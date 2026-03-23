@@ -43,6 +43,21 @@ public:
         _romBrowserController->HideDisplaySettings();
     }
 
+    void MarkSettingsDirty()
+    {
+        _romBrowserController->MarkSettingsDirty();
+    }
+
+    void SaveSettingsNow()
+    {
+        _romBrowserController->SaveSettingsNow();
+    }
+
+    void RequestThemeReload()
+    {
+        _romBrowserController->RequestThemeReload();
+    }
+
 private:
     IRomBrowserController* _romBrowserController;
     RomBrowserDisplaySettings _romBrowserDisplaySettings;

@@ -20,7 +20,9 @@
 #include "themes/material/MaterialColorScheme.h"
 #include "themes/IFontRepository.h"
 #include "DisplaySettingsBottomSheetView.h"
+#include <services/settings/IAppSettingsService.h>
 #include <services/Language/ILanguagePackService.h>
+#include "fat/Directory.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -40,6 +42,9 @@
 #define LANGUAGE_LABEL_X    20
 #define LANGUAGE_LABEL_Y    131 // +24
 
+#define THEME_FIELD_X       100
+#define LANGUAGE_FIELD_X    100
+
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
     [0] = RomBrowserLayout::HorizontalIconGrid,
@@ -57,30 +62,46 @@ static RomBrowserSortMode sRomBrowserSortModes[4] =
 
 DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     DisplaySettingsViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
-    const IFontRepository* fontRepository, ILanguagePackService* languagePackService)
+    const IFontRepository* fontRepository, IAppSettingsService* appSettingsService,
+    ILanguagePackService* languagePackService)
     : _viewModel(viewModel)
+    , _appSettingsService(appSettingsService)
+    , _languagePackService(languagePackService)
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _sortingLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _themeLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _themeFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
     , _languageLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _languageFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
-    const auto& langPack = languagePackService->GetLanguagePack();
-
+    const auto& langPack = _languagePackService->GetLanguagePack();
+    //langPack = languagePackService->GetLanguagePack();
     //load langPack string instead of hard coding
     _titleLabel.SetText(langPack.displaySettings_title.GetString());
     _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
     _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
     _themeLabel.SetText(langPack.displaySettings_theme.GetString());
     _languageLabel.SetText(langPack.displaySettings_langugage.GetString());
+    
+    const char* currTheme = _appSettingsService->GetAppSettings().theme.GetString();
+    _pendingThemeName = (currTheme && currTheme[0] != 0) ? currTheme : "material";
+    
+    const char* currLang = _appSettingsService->GetAppSettings().language.GetString();
+    _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
+
+    _themeFieldLabel.SetText(_pendingThemeName.GetString());
+    _languageFieldLabel.SetText(_pendingLanguageName.GetString());
 
     AddChildTail(&_titleLabel);
     AddChildTail(&_layoutLabel);
     AddChildTail(&_sortingLabel);
     AddChildTail(&_themeLabel);
+    AddChildTail(&_themeFieldLabel);
     AddChildTail(&_languageLabel);
+    AddChildTail(&_languageFieldLabel);
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -185,12 +206,29 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _sortingLabel.SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
     // _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
     _themeLabel.SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
+    _themeFieldLabel.SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
     _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
+    _languageFieldLabel.SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
 }
 
 void DisplaySettingsBottomSheetView::Update()
 {
     BottomSheetView::Update();
+    if (_themeSettleCounter > 0)
+    {
+        if (--_themeSettleCounter == 0)
+        {
+            _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
+            _settingsDirty = true;
+            SaveIfDirty();
+        }
+    }
+    if (_languageSettleCounter > 0)
+    {
+        if (--_languageSettleCounter == 0)
+            SaveIfDirty();
+    }
+    
     UpdateLabels();
     auto selectedDisplayMode = _viewModel->GetRomBrowserDisplayMode();
     int x = 70;
@@ -239,8 +277,26 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _themeLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _themeLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        // ★ 테마 값 라벨: 포커스 여부에 따라 색상 반전 처리
+        bool themeFocused = _themeFieldLabel.IsFocused();
+        _themeFieldLabel.SetBackgroundColor(themeFocused
+            ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
+            : _materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _themeFieldLabel.SetForegroundColor(themeFocused
+            ? _materialColorScheme->GetColor(md::sys::color::primary)
+            : _materialColorScheme->onSurfaceVariant);
+            
         _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+
+        // ★ 언어 값 라벨: 포커스 여부에 따라 색상 반전 처리
+        bool langFocused = _languageFieldLabel.IsFocused();
+        _languageFieldLabel.SetBackgroundColor(langFocused
+            ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
+            : _materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _languageFieldLabel.SetForegroundColor(langFocused
+            ? _materialColorScheme->GetColor(md::sys::color::primary)
+            : _materialColorScheme->onSurfaceVariant);
         BottomSheetView::Draw(graphicsContext);
     }
     graphicsContext.SetPriority(oldPrio);
@@ -250,8 +306,26 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
+    if (_themeFieldLabel.IsFocused()) EnsureThemesLoaded();
+    if (_languageFieldLabel.IsFocused()) EnsureLanguagesLoaded();
+
+    if (_themeFieldLabel.IsFocused() && inputProvider.Triggered(InputKey::A))
+    {
+        ApplyTheme();
+        return true;
+    }
+
     if (inputProvider.Triggered(InputKey::B))
     {
+        if (_themeSettleCounter > 0)
+        {
+            _themeSettleCounter = 0;
+            _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
+            _settingsDirty = true;
+        }
+        SaveIfDirty();
+        ReleaseLazyLists();
+        
         _viewModel->Close();
         return true;
     }
@@ -284,6 +358,11 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             //         idx = _filterOptions.size() - 1;
             //     return &_filterOptions[idx];
             // }
+            else if (direction == FocusMoveDirection::Up)
+            {
+                // 최상단이므로 맨 아래 언어 라벨로 순환 이동
+                return &_languageFieldLabel;
+            }
             else //if (direction == FocusMoveDirection::Down)
             {
                 if (idx >= (int)_sortOptions.size())
@@ -310,12 +389,22 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
                     idx = 0;
                 return &_sortOptions[idx];
             }
-            else //if (direction == FocusMoveDirection::Up)
+            else if (direction == FocusMoveDirection::Up)
             {
-                if (idx >= (int)_layoutOptions.size())
-                    idx = _layoutOptions.size() - 1;
+                if (idx >= (int)_layoutOptions.size()) idx = _layoutOptions.size() - 1;
                 return &_layoutOptions[idx];
             }
+            else // Down
+            {
+                // Sort 아래에는 Theme가 있음
+                return &_themeFieldLabel;
+            }
+            //else //if (direction == FocusMoveDirection::Up)
+            //{
+            //    if (idx >= (int)_layoutOptions.size())
+            //        idx = _layoutOptions.size() - 1;
+            //    return &_layoutOptions[idx];
+            //}
             // else //if (direction == FocusMoveDirection::Down)
             // {
             //     if (idx >= (int)_filterOptions.size())
@@ -357,6 +446,63 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
     //     }
     //     idx++;
     // }
+    // 3. Theme Value Label 탐색
+    if (currentFocus == &_themeFieldLabel)
+    {
+        // ★ 추가: 테마 값 변경 전에 목록이 로드되어 있는지 확인
+        EnsureThemesLoaded();
+        
+        if (direction == FocusMoveDirection::Left)
+        {
+            if (_themeCount > 0) {
+                int newIdx = (_selectedThemeIdx - 1 + _themeCount) % _themeCount;
+                ChangeTheme(newIdx);
+            }
+            return &_themeFieldLabel;
+        }
+        else if (direction == FocusMoveDirection::Right)
+        {
+            if (_themeCount > 0) {
+                int newIdx = (_selectedThemeIdx + 1) % _themeCount;
+                ChangeTheme(newIdx);
+            }
+            return &_themeFieldLabel;
+        }
+        
+        if (direction == FocusMoveDirection::Up)
+            return &_sortOptions[0]; // 위로 가면 Sort
+        if (direction == FocusMoveDirection::Down)
+            return &_languageFieldLabel; // 아래로 가면 Language
+    }
+    
+    // 4. Language Value Label 탐색
+    if (currentFocus == &_languageFieldLabel)
+    {
+        // ★ 추가: 언어 값 변경 전에 목록이 로드되어 있는지 확인
+        EnsureLanguagesLoaded();
+        
+        if (direction == FocusMoveDirection::Left)
+        {
+            if (_languageCount > 0) {
+                int newIdx = (_selectedLanguageIdx - 1 + _languageCount) % _languageCount;
+                ChangeLanguage(newIdx);
+            }
+            return &_languageFieldLabel;
+        }
+        else if (direction == FocusMoveDirection::Right)
+        {
+            if (_languageCount > 0) {
+                int newIdx = (_selectedLanguageIdx + 1) % _languageCount;
+                ChangeLanguage(newIdx);
+            }
+            return &_languageFieldLabel;
+        }
+        
+        if (direction == FocusMoveDirection::Up)
+            return &_themeFieldLabel; // 위로 가면 Theme
+        if (direction == FocusMoveDirection::Down)
+            return &_layoutOptions[0]; // 아래로 가면 다시 최상단 Layout으로 순환
+    }
     return nullptr;
 }
 
@@ -377,4 +523,225 @@ u32 DisplaySettingsBottomSheetView::LoadIcon(IVramManager& vramManager,
     u32 vramOffset = vramManager.Alloc(tilesLength);
     dma_ntrCopy32(3, tiles, vramManager.GetVramAddress(vramOffset), tilesLength);
     return vramOffset;
+}
+
+void DisplaySettingsBottomSheetView::ChangeLanguage(int newIdx)
+{
+    EnsureLanguagesLoaded();
+    if (_languageCount <= 0)
+        return;
+    
+    const auto& langPack = _languagePackService->GetLanguagePack();
+    _selectedLanguageIdx = newIdx;
+    _appSettingsService->GetAppSettings().language = _languageEntries[_selectedLanguageIdx].fileName.GetString();
+    _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
+    _settingsDirty = true;
+    _languageSettleCounter = kSettleFrames;
+    UpdateLanguageUI();
+    _titleLabel.SetText(langPack.displaySettings_title.GetString());
+    _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
+    _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
+    _themeLabel.SetText(langPack.displaySettings_theme.GetString());
+    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());
+}
+
+void DisplaySettingsBottomSheetView::EnsureThemesLoaded()
+{
+    if (_themesLoaded)
+        return;
+
+    LoadThemes();
+    _themesLoaded = true;
+    _selectedThemeIdx = 0;
+
+    for (int i = 0; i < _themeCount; ++i)
+    {
+        if (strcasecmp(_pendingThemeName.GetString(), _themeNames[i].GetString()) == 0)
+        {
+            _selectedThemeIdx = i;
+            break;
+        }
+    }
+
+    _pendingThemeName = _themeNames[_selectedThemeIdx];
+    UpdateThemeUI();
+}
+
+void DisplaySettingsBottomSheetView::LoadThemes()
+{
+    _themeCount = 0;
+    Directory directory;
+    if (directory.Open("/_pico/themes") == FR_OK)
+    {
+        FILINFO fileInfo;
+        
+        while (true)
+        {
+            if (directory.Read(&fileInfo) != FR_OK)
+                break;
+            if (fileInfo.fname[0] == 0)
+                break;
+            if (fileInfo.fname[0] == '.')
+                continue;
+            if ((fileInfo.fattrib & AM_DIR) == 0)
+                continue;
+            if (_themeCount >= kMaxThemeCount)
+                break;
+
+            _themeNames[_themeCount++] = fileInfo.fname;
+        }
+    }
+
+    if (_themeCount == 0)
+    {
+        _themeNames[0] = "material";
+        _themeCount = 1;
+    }
+    else
+    {
+        _themeNames[_themeCount++] = "RANDOM";
+    }
+}
+
+void DisplaySettingsBottomSheetView::LoadLanguages()
+{
+    _languageCount = 0;
+    Directory directory;
+    if (directory.Open("/_pico/lang") != FR_OK)
+    {
+        _languageEntries[0].fileName = "english";
+        _languageCount = 1;
+    }
+    else
+    {
+        FILINFO fileInfo;
+        while (true)
+        {
+            if (directory.Read(&fileInfo) != FR_OK)
+                break;
+            if (fileInfo.fname[0] == 0)
+                break;
+            if (fileInfo.fname[0] == '.')
+                continue;
+            if (fileInfo.fattrib & AM_DIR)
+                continue;
+            if (_languageCount >= kMaxLanguageCount)
+                break;
+
+            const char* dot = strrchr(fileInfo.fname, '.');
+            if (!dot || strcasecmp(dot, ".json") != 0)
+                continue;
+
+            char baseName[64];
+            size_t len = (size_t)(dot - fileInfo.fname);
+            if (len >= sizeof(baseName))
+                len = sizeof(baseName) - 1;
+            memcpy(baseName, fileInfo.fname, len);
+            baseName[len] = '\0';
+
+            auto& entry = _languageEntries[_languageCount];
+            entry.fileName = baseName;
+            for (size_t i = 0; i < len && i < 63; ++i)
+                entry.displayName[i] = (char16_t)baseName[i];
+            entry.displayName[len < 63 ? len : 63] = 0;
+            _languageCount++;
+        }
+    }
+
+    // If no languages found, add a default English entry
+    if (_languageCount == 0)
+    {
+        _languageEntries[0].fileName = "english";
+        StringUtil::Copy(_languageEntries[0].displayName, u"english", 64);
+        _languageCount = 1;
+    }
+}
+
+void DisplaySettingsBottomSheetView::EnsureLanguagesLoaded()
+{
+    if (_languagesLoaded)
+        return;
+
+    LoadLanguages();
+    _languagesLoaded = true;
+    _selectedLanguageIdx = 0;
+
+    for (int i = 0; i < _languageCount; ++i)
+    {
+        if (strcasecmp(_pendingLanguageName.GetString(), _languageEntries[i].fileName.GetString()) == 0)
+        {
+            _selectedLanguageIdx = i;
+            break;
+        }
+    }
+
+    _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
+    UpdateLanguageUI();
+}
+
+void DisplaySettingsBottomSheetView::ChangeTheme(int newIdx)
+{
+    EnsureThemesLoaded();
+    if (_themeCount <= 0)
+        return;
+
+    _selectedThemeIdx = newIdx;
+    _pendingThemeName = _themeNames[_selectedThemeIdx];
+    _themeSettleCounter = kSettleFrames;
+    UpdateThemeUI();
+}
+
+void DisplaySettingsBottomSheetView::ApplyTheme()
+{
+    if (strcasecmp(_pendingThemeName.GetString(), _appliedThemeName.GetString()) == 0)
+        return;
+
+    _themeSettleCounter = 0;
+    _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
+    _settingsDirty = true;
+    SaveIfDirty();
+    ReleaseLazyLists();
+    _viewModel->RequestThemeReload();
+    _viewModel->Close();
+}
+
+void DisplaySettingsBottomSheetView::UpdateThemeUI()
+{
+    _themeLabel.SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
+    _themeFieldLabel.SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
+    _themeFieldLabel.SetText(_themesLoaded
+        ? _themeNames[_selectedThemeIdx].GetString()
+        : _pendingThemeName.GetString());
+}
+
+void DisplaySettingsBottomSheetView::UpdateLanguageUI()
+{
+    _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
+    _languageFieldLabel.SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
+    if (_languagesLoaded && _languageCount > 0)
+        _languageFieldLabel.SetText(_languageEntries[_selectedLanguageIdx].displayName);
+    else
+        _languageFieldLabel.SetText(_pendingLanguageName.GetString());
+}
+
+void DisplaySettingsBottomSheetView::ReleaseLazyLists()
+{
+    _themesLoaded = false;
+    _themeCount = 0;
+    _selectedThemeIdx = 0;
+    _themeSettleCounter = 0;
+
+    _languagesLoaded = false;
+    _languageCount = 0;
+    _selectedLanguageIdx = 0;
+    _languageSettleCounter = 0;
+}
+
+void DisplaySettingsBottomSheetView::SaveIfDirty()
+{
+    if (_settingsDirty)
+    {
+        _viewModel->SaveSettingsNow();
+        _settingsDirty = false;
+    }
 }

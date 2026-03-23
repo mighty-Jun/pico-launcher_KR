@@ -43,6 +43,28 @@ public:
     const ICheatRepository& GetCheatRepository() const override { return *_cheatRepository; }
 
     void SetRomBrowserDisplaySettings(const RomBrowserDisplaySettings& romBrowserDisplaySettings) override;
+    
+    void MarkSettingsDirty() override { _saveSettingsPending = true; }
+
+    void SaveSettingsNow() override;
+
+    void MarkStateDirty() override { _saveStateBinPending = true; }
+
+    bool ConsumeStateDirty()
+    {
+        const bool dirty = _saveStateBinPending;
+        _saveStateBinPending = false;
+        return dirty;
+    }
+
+    void RequestThemeReload() override { _themeReloadRequested = true; }
+
+    bool ConsumeThemeReloadRequest()
+    {
+        const bool requested = _themeReloadRequested;
+        _themeReloadRequested = false;
+        return requested;
+    }
 
     const RomBrowserDisplaySettings& GetRomBrowserDisplaySettings() const override
     {
@@ -65,6 +87,9 @@ private:
     FileInfo _triggerFileInfo;
     QueueTask<void> _navigateTask;
     bool _saveSettingsPending = false;
+    bool _saveStateBinPending = false;
+    bool _viewModelInvalidated = false;
+    bool _themeReloadRequested = false;
     std::unique_ptr<CoverRepository> _coverRepository;
     ExtensionFileTypeProvider _fileTypeProvider;
     std::unique_ptr<ICheatRepository> _cheatRepository;
@@ -77,4 +102,5 @@ private:
     void UpdateLastUsedFilepath();
     void SetPicoLoaderParams() const;
     void LoadCheats() const;
+    void SaveSettingsAsync();
 };

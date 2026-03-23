@@ -238,3 +238,18 @@ void RomBrowserController::LoadCheats() const
     auto cheatData = PicoLoaderCheatDataFactory().CreateCheatData(cheats);
     pload_setCheatData(cheatData);
 }
+
+void RomBrowserController::SaveSettingsNow()
+{
+    _saveSettingsPending = false;
+    SaveSettingsAsync();
+}
+
+void RomBrowserController::SaveSettingsAsync()
+{
+    _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
+    {
+        _appSettingsService->Save();
+        return TaskResult<void>::Completed();
+    });
+}
