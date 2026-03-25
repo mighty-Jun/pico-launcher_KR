@@ -88,9 +88,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     
     const char* currTheme = _appSettingsService->GetAppSettings().theme.GetString();
     _pendingThemeName = (currTheme && currTheme[0] != 0) ? currTheme : "material";
+    _appliedThemeName = _pendingThemeName;
     
     const char* currLang = _appSettingsService->GetAppSettings().language.GetString();
     _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
+    _appliedLanguageName = _pendingLanguageName;
 
     _themeFieldLabel.SetText(_pendingThemeName.GetString());
     _languageFieldLabel.SetText(_pendingLanguageName.GetString());
@@ -214,7 +216,7 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
 void DisplaySettingsBottomSheetView::Update()
 {
     BottomSheetView::Update();
-    if (_themeSettleCounter > 0)
+    /*if (_themeSettleCounter > 0)
     {
         if (--_themeSettleCounter == 0)
         {
@@ -227,7 +229,7 @@ void DisplaySettingsBottomSheetView::Update()
     {
         if (--_languageSettleCounter == 0)
             SaveIfDirty();
-    }
+    }*/
     
     UpdateLabels();
     auto selectedDisplayMode = _viewModel->GetRomBrowserDisplayMode();
@@ -309,23 +311,28 @@ bool DisplaySettingsBottomSheetView::HandleInput(
     if (_themeFieldLabel.IsFocused()) EnsureThemesLoaded();
     if (_languageFieldLabel.IsFocused()) EnsureLanguagesLoaded();
 
-    if (_themeFieldLabel.IsFocused() && inputProvider.Triggered(InputKey::A))
+    if ((_themeFieldLabel.IsFocused() || _languageFieldLabel.IsFocused()) && inputProvider.Triggered(InputKey::A))
     {
-        ApplyTheme();
+        _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
+        _appSettingsService->GetAppSettings().language = _pendingLanguageName.GetString();
+        
+        _viewModel->SaveSettingsNow();
+
+        if (strcasecmp(_pendingThemeName.GetString(), _appliedThemeName.GetString()) != 0 ||
+            strcasecmp(_pendingLanguageName.GetString(), _appliedLanguageName.GetString()) != 0)
+        {
+            _viewModel->RequestThemeReload();
+        }
+
+        ReleaseLazyLists();
+        _viewModel->Close();
         return true;
     }
 
     if (inputProvider.Triggered(InputKey::B))
     {
-        if (_themeSettleCounter > 0)
-        {
-            _themeSettleCounter = 0;
-            _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
-            _settingsDirty = true;
-        }
-        SaveIfDirty();
         ReleaseLazyLists();
-        
+
         _viewModel->Close();
         return true;
     }
@@ -449,7 +456,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
     // 3. Theme Value Label 탐색
     if (currentFocus == &_themeFieldLabel)
     {
-        // ★ 추가: 테마 값 변경 전에 목록이 로드되어 있는지 확인
         EnsureThemesLoaded();
         
         if (direction == FocusMoveDirection::Left)
@@ -478,7 +484,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
     // 4. Language Value Label 탐색
     if (currentFocus == &_languageFieldLabel)
     {
-        // ★ 추가: 언어 값 변경 전에 목록이 로드되어 있는지 확인
         EnsureLanguagesLoaded();
         
         if (direction == FocusMoveDirection::Left)
@@ -531,18 +536,17 @@ void DisplaySettingsBottomSheetView::ChangeLanguage(int newIdx)
     if (_languageCount <= 0)
         return;
     
-    const auto& langPack = _languagePackService->GetLanguagePack();
     _selectedLanguageIdx = newIdx;
-    _appSettingsService->GetAppSettings().language = _languageEntries[_selectedLanguageIdx].fileName.GetString();
     _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
-    _settingsDirty = true;
-    _languageSettleCounter = kSettleFrames;
     UpdateLanguageUI();
+
+    /*const auto& langPack = _languagePackService->GetLanguagePack();
+
     _titleLabel.SetText(langPack.displaySettings_title.GetString());
     _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
     _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
     _themeLabel.SetText(langPack.displaySettings_theme.GetString());
-    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());
+    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());*/
 }
 
 void DisplaySettingsBottomSheetView::EnsureThemesLoaded()
@@ -596,10 +600,6 @@ void DisplaySettingsBottomSheetView::LoadThemes()
     {
         _themeNames[0] = "material";
         _themeCount = 1;
-    }
-    else
-    {
-        _themeNames[_themeCount++] = "RANDOM";
     }
 }
 
@@ -687,22 +687,7 @@ void DisplaySettingsBottomSheetView::ChangeTheme(int newIdx)
 
     _selectedThemeIdx = newIdx;
     _pendingThemeName = _themeNames[_selectedThemeIdx];
-    _themeSettleCounter = kSettleFrames;
     UpdateThemeUI();
-}
-
-void DisplaySettingsBottomSheetView::ApplyTheme()
-{
-    if (strcasecmp(_pendingThemeName.GetString(), _appliedThemeName.GetString()) == 0)
-        return;
-
-    _themeSettleCounter = 0;
-    _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
-    _settingsDirty = true;
-    SaveIfDirty();
-    ReleaseLazyLists();
-    _viewModel->RequestThemeReload();
-    _viewModel->Close();
 }
 
 void DisplaySettingsBottomSheetView::UpdateThemeUI()
@@ -729,19 +714,8 @@ void DisplaySettingsBottomSheetView::ReleaseLazyLists()
     _themesLoaded = false;
     _themeCount = 0;
     _selectedThemeIdx = 0;
-    _themeSettleCounter = 0;
 
     _languagesLoaded = false;
     _languageCount = 0;
     _selectedLanguageIdx = 0;
-    _languageSettleCounter = 0;
-}
-
-void DisplaySettingsBottomSheetView::SaveIfDirty()
-{
-    if (_settingsDirty)
-    {
-        _viewModel->SaveSettingsNow();
-        _settingsDirty = false;
-    }
 }

@@ -55,6 +55,7 @@ private:
     const MaterialColorScheme* _materialColorScheme;
 
     String<char, 64> _appliedThemeName;
+    String<char, 64> _appliedLanguageName;
 
     static constexpr int kMaxThemeCount = 16;
     std::array<String<char, 64>, kMaxThemeCount> _themeNames;
@@ -62,10 +63,6 @@ private:
     int _selectedThemeIdx = 0;
     bool _themesLoaded = false;
     String<char, 64> _pendingThemeName;
-
-    static constexpr int kSettleFrames = 30;
-    int _themeSettleCounter = 0;
-    int _languageSettleCounter = 0;
 
     static constexpr int kMaxLanguageCount = 16;
     struct LanguageEntry
@@ -89,17 +86,14 @@ private:
     void EnsureThemesLoaded();
     void UpdateThemeUI();
     void ChangeTheme(int newIdx);
-    void ApplyTheme();
     void LoadLanguages();
     void EnsureLanguagesLoaded();
     void UpdateLanguageUI();
     void ChangeLanguage(int newIdx);
     void ReleaseLazyLists();
-    void SaveIfDirty();
 
     u32 LoadIcon(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;
 
-    bool _settingsDirty = false;
     bool _themeLongPressConsumed = false;
     bool _usePreloadedIcons = false;
 };

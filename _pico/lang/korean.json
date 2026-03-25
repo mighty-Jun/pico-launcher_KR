@@ -3,6 +3,8 @@
   "displaySettings.layout": "레이아웃",
   "displaySettings.sorting": "정렬",
   "displaySettings.filters": "필터",
+  "displaySettings.theme" : "테마",
+  "displaySettings.language" : "언어",
   "cheatSettings.title" : "치트",
   "cheatSettings.noCheatsMsg" : "치트가 없습니다."
 }

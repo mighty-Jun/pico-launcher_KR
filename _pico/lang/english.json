@@ -3,6 +3,8 @@
   "displaySettings.layout": "Layout",
   "displaySettings.sorting": "Sorting",
   "displaySettings.filters": "Filters",
+  "displaySettings.theme" : "Theme",
+  "displaySettings.language" : "Language",
   "cheatSettings.title" : "Cheats",
   "cheatSettings.noCheatsMsg" : "No cheats found."
 }
