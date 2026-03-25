@@ -29,8 +29,22 @@
 #include "gui/Gx.h"
 #include "splashTop.h"
 #include "App.h"
+#include "PicoLoaderProcess.h"
 
 #define SPLASH_FRAMES       44
+
+static bool TryGetThemeReloadLauncherPath(const char*& outLauncherPath)
+{
+    FILINFO fileInfo;
+    if (f_stat("/_picoboot.nds", &fileInfo) == FR_OK && (fileInfo.fattrib & AM_DIR) == 0)
+    {
+        outLauncherPath = "/_picoboot.nds";
+        return true;
+    }
+
+    outLauncherPath = nullptr;
+    return false;
+}
 
 App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILanguagePackService& languagePackService)
     : _mainObjPltt(GFX_PLTT_OBJ_MAIN)
@@ -318,7 +332,7 @@ void App::HandleHideGameInfoTrigger()
 void App::HandleShowDisplaySettingsTrigger()
 {
     auto displaySettingsDialog = std::make_unique<DisplaySettingsBottomSheetView>(
-        &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_languagePackService);
+        &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_appSettingsService, &_languagePackService);
     displaySettingsDialog->SetGraphics(_iconButtonViewVram);
     _dialogPresenter.ShowDialog(std::move(displaySettingsDialog));
 }
@@ -326,6 +340,12 @@ void App::HandleShowDisplaySettingsTrigger()
 void App::HandleHideDisplaySettingsTrigger()
 {
     _dialogPresenter.CloseDialog();
+
+    if (_romBrowserController.ConsumeThemeReloadRequest())
+    {
+        _pendingAppRestart = true;
+    }
+
     if (!_dialogPresenter.GetOldFocus())
         _romBrowserBottomScreenView->Focus(_focusManager);
 }
@@ -415,6 +435,26 @@ void App::Update()
         _bottomBackground->Update();
 
     _dialogPresenter.Update();
+    
+    if (_pendingAppRestart && _dialogPresenter.IsIdle())
+    {
+        _pendingAppRestart = false;
+
+        const char* launcherPath = nullptr;
+        if (!TryGetThemeReloadLauncherPath(launcherPath))
+        {
+            return;
+        }
+
+        auto loadParams = pload_getLoadParams();
+        StringUtil::Copy(loadParams->romPath, launcherPath, sizeof(loadParams->romPath));
+        loadParams->savePath[0] = 0;
+        loadParams->arguments[0] = 0;
+        loadParams->argumentsLength = 0;
+        pload_setCheatData(nullptr);
+        gProcessManager.Goto<PicoLoaderProcess>();
+        return;
+    }
 
     _romBrowserBottomScreenView->Update();
     if (isRomBrowserVisible)

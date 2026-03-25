@@ -53,6 +53,8 @@ public:
     {
         return _oldFocus;
     }
+    /// @brief Returns true if no dialog is being shown or animated.
+    bool IsIdle() const { return _curState == State::Idle && !_nextDialog; }
 
 private:
     enum class State

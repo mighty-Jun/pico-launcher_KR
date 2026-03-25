@@ -16,6 +16,8 @@
 #define KEY_DISPLAY_SETTINGS_LAYOUT  "displaySettings.layout"
 #define KEY_DISPLAY_SETTINGS_SORTING "displaySettings.sorting"
 #define KEY_DISPLAY_SETTINGS_FILTERS "displaySettings.filters"
+#define KEY_DISPLAY_SETTINGS_THEME "displaySettings.theme"
+#define KEY_DISPLAY_SETTINGS_LANGUAGE "displaySettings.language"
 #define KEY_CHEAT_SETTINGS_TITLE     "cheatSettings.title"
 #define KEY_CHEAT_SETTINGS_NO_CHEATS "cheatSettings.noCheatsMsg"
 
@@ -28,6 +30,8 @@ static std::unique_ptr<u8[]> writeJson(const LanguagePack* languagePack, u32& le
     json[KEY_DISPLAY_SETTINGS_LAYOUT] = languagePack->displaySettings_layout.GetString();
     json[KEY_DISPLAY_SETTINGS_SORTING] = languagePack->displaySettings_sorting.GetString();
     json[KEY_DISPLAY_SETTINGS_FILTERS] = languagePack->displaySettings_filters.GetString();
+    json[KEY_DISPLAY_SETTINGS_THEME] = languagePack->displaySettings_theme.GetString();
+    json[KEY_DISPLAY_SETTINGS_LANGUAGE] = languagePack->displaySettings_langugage.GetString();
 
     u32 outputSize = measureJsonPretty(json);
     std::unique_ptr<u8[]> fileData(new(cache_align) u8[outputSize]);
@@ -70,6 +74,8 @@ static void readJson(LanguagePack* languagePack, const JsonDocument& json)
     languagePack->displaySettings_layout = json[KEY_DISPLAY_SETTINGS_LAYOUT] | languagePack->displaySettings_layout.GetString();
     languagePack->displaySettings_sorting = json[KEY_DISPLAY_SETTINGS_SORTING] | languagePack->displaySettings_sorting.GetString();
     languagePack->displaySettings_filters = json[KEY_DISPLAY_SETTINGS_FILTERS] | languagePack->displaySettings_filters.GetString();
+    languagePack->displaySettings_theme = json[KEY_DISPLAY_SETTINGS_THEME] | languagePack->displaySettings_theme.GetString();
+    languagePack->displaySettings_langugage = json[KEY_DISPLAY_SETTINGS_LANGUAGE] | languagePack->displaySettings_theme.GetString();
     languagePack->cheatSettings_title = json[KEY_CHEAT_SETTINGS_TITLE] | languagePack->cheatSettings_title.GetString();
     languagePack->cheatSettings_noCheatsMsg = json[KEY_CHEAT_SETTINGS_NO_CHEATS] | languagePack->cheatSettings_noCheatsMsg.GetString();
 }

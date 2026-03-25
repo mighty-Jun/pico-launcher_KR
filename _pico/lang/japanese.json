@@ -3,6 +3,8 @@
   "displaySettings.layout": "レイアウト",
   "displaySettings.sorting": "並べ替え",
   "displaySettings.filters": "フィルター",
+  "displaySettings.theme": "テーマ",
+  "displaySettings.language": "言語",
   "cheatSettings.title" : "チート",
   "cheatSettings.noCheatsMsg" : "チートが見つかりません"
 }
