@@ -1,16 +1,16 @@
-# Covers
-Pico Launcher supports showing covers for any kind of file by placing `.bmp` files in the right folders.
+# 커버 이미지 (Covers)
+Pico Launcher는 올바른 폴더에 `.bmp` 파일을 배치하여 모든 종류의 파일에 대한 커버 이미지를 표시할 수 있습니다.
 
-## Where to place covers
-Covers are placed in subfolders of the `/_pico/covers` folder.
-- The `/_pico/covers/nds` and `/_pico/covers/gba` folders contain DS and GBA covers, respectively, by game code. For example `ABCD.bmp`.
-- The `/_pico/covers/user` folder contains covers for specific file names. For example `myGame.nds.bmp` will be used for any file named `myGame.nds`. This takes precedence over a game code based cover. Since most consoles other than DS and GBA don't have game codes, this folder is suited to provide covers for games of other systems, for example NES or GB(C).
+## 커버 이미지 배치 경로
+커버 이미지는 `/_pico/covers` 폴더의 하위 폴더에 배치합니다.
+- `/_pico/covers/nds` 및 `/_pico/covers/gba` 폴더에는 각각 게임 코드별로 분류된 DS 및 GBA 커버 이미지가 포함됩니다. 예: `ABCD.bmp`.
+- `/_pico/covers/user` 폴더에는 특정 파일 이름에 해당하는 커버 이미지가 포함됩니다. 예를 들어, `myGame.nds.bmp`는 파일 이름이 `myGame.nds`인 모든 파일에 사용됩니다. 이 설정은 게임 코드 기반 커버보다 우선순위가 높습니다. DS 및 GBA 이외의 대부분의 콘솔은 게임 코드가 없으므로, 이 폴더는 NES나 GB(C)와 같은 다른 시스템 게임의 커버 이미지를 제공하는 데 적합합니다.
 
-## Cover format
-The covers should be 8 bpp (256 colors) `.bmp` files of 128x96 pixels.
-Only the top-left 106x96 pixels are used. The remaining part on the right is padding and is ignored.
+## 커버 이미지 형식
+커버 이미지는 128x96 픽셀 크기의 **8 bpp (256색)** `.bmp` 파일이어야 합니다.
+실제로는 왼쪽 상단의 **106x96 픽셀**만 사용됩니다. 오른쪽의 나머지 부분은 패딩(여백)이며 무시됩니다.
 
-### Example
-Note how the black part on the right is not used.
+### 예시
+오른쪽의 검은색 부분이 사용되지 않는다는 점에 유의해 주십시오.
 
-![Cover example](images/CoverExample.bmp)
+![커버 이미지 예시](images/CoverExample.bmp)

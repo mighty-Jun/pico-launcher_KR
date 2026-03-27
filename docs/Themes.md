@@ -1,23 +1,23 @@
-# Themes
-Using themes, the look and feel of Pico Launcher can be customized. Themes are placed in subfolders of the `/_pico/themes` folder. For example `/_pico/themes/my_theme`.
+# 테마 (Themes)
+테마를 사용하여 Pico Launcher의 외관과 느낌을 사용자 정의할 수 있습니다. 테마는 `/_pico/themes` 폴더의 하위 폴더에 배치합니다. 예: `/_pico/themes/my_theme`.
 
-## JSON file
-Each theme has a `theme.json` file with information about the theme.
+## JSON 파일
+각 테마에는 테마 정보를 담고 있는 `theme.json` 파일이 있습니다.
 
-- **type** - Type of theme. Currently `material` and `custom` are supported. See below for information about each type.
-- **name** - The name of the theme.
-- **description** - Description of the theme.
-- **author** - Author of the theme.
-- **primaryColor** - Material Design 3 primary color to use. `r`, `g` and `b` are provided in range 0-255.
-- **darkTheme** - When `true`, a dark Material Design 3 palette will be used.
+- **type** - 테마의 유형입니다. 현재 `material`과 `custom` 유형을 지원합니다. 각 유형에 대한 자세한 내용은 아래를 참조하십시오.
+- **name** - 테마의 이름입니다.
+- **description** - 테마에 대한 설명입니다.
+- **author** - 테마 제작자입니다.
+- **primaryColor** - 사용할 'Material Design 3' 주 색상(Primary Color)입니다. `r`, `g`, `b` 값은 0-255 범위로 제공됩니다.
+- **darkTheme** - `true`로 설정하면 어두운(Dark) 'Material Design 3' 팔레트가 사용됩니다.
 
-### Example
+### 예시
 ```json
 {
     "type": "material",
-    "name": "Theme name",
-    "description": "Theme description here.",
-    "author": "Author Name",
+    "name": "테마 이름",
+    "description": "여기에 테마 설명을 입력하세요.",
+    "author": "제작자 이름",
     "primaryColor": {
         "r": 149,
         "g": 143,
@@ -27,31 +27,32 @@ Each theme has a `theme.json` file with information about the theme.
 }
 ```
 
-## Material type
-![Horizontal display mode with custom theme](images/Horizontal.png)
+## Material 유형
+![Material 유형 가로 디스플레이 모드](images/Horizontal.png)
 
-The `material` type theme is a pure Material Design 3 theme. It will be fully themed based on the `primaryColor` and `darkTheme` settings from the `theme.json`. In coverflow mode, this theme type uses a Material Design 3 style carousel.
+`material` 유형은 순수 'Material Design 3' 테마입니다. `theme.json`에 설정된 `primaryColor`와 `darkTheme` 값을 기반으로 전체 테마가 적용됩니다. 커버플로우 모드에서 이 테마 유형은 'Material Design 3' 스타일의 캐러셀(Carousel)을 사용합니다.
 
-## Custom type
-![Horizontal display mode with custom theme](images/HorizontalCustom.png)
+## Custom 유형
+![커스텀 테마 가로 디스플레이 모드](images/HorizontalCustom.png)
 
-The `custom` type theme is much more customizable, compared to the `material` type theme.
-Note that the `primaryColor` and `darkTheme` settings from the `theme.json` are still used to color some parts of the UI.
+`custom` 유형은 `material` 유형에 비해 훨씬 더 자유로운 사용자 정의가 가능합니다.
+다만, UI의 일부 요소에는 여전히 `theme.json`의 `primaryColor` 및 `darkTheme` 설정이 색상 적용에 사용된다는 점에 유의해 주십시오.
 
-The following additional files are needed:
-| Files                                                        | Size                 | Format                   | Description                                                    |
+추가로 다음과 같은 파일들이 필요합니다:
+
+| 파일 이름 | 크기 | 형식 | 설명 |
 |--------------------------------------------------------------|----------------------|--------------------------|----------------------------------------------------------------|
-| bannerListCell.bin<br>bannerListCellPltt.bin                 | 256x49 (209x49 used) | A3I5<br>32 color palette | Unselected item background for banner list mode.               |
-| bannerListCellSelected.bin<br>bannerListCellSelectedPltt.bin | 256x49 (209x49 used) | A3I5<br>32 color palette | Selected item background for banner list mode.                 |
-| bottombg.bin                                                 | 256x192              | 15 bpp bitmap            | Bottom screen background.                                      |
-| gridcell.bin<br>gridcellPltt.bin                             | 64x48 (48x48 used)   | A3I5<br>32 color palette | Unselected item background for grid modes.                     |
-| gridcellSelected.bin<br>gridcellPlttSelected.bin             | 64x48 (48x48 used)   | A3I5<br>32 color palette | Selected item background for grid modes.                       |
-| scrim.bin<br>scrimPltt.bin                                   | 8x42                 | A5I3<br>8 color palette  | Background for the toolbar. Intended to be a translucent fade. |
-| topbg.bin                                                    | 256x192              | 15 bpp bitmap            | Top screen background.                                         |
+| bannerListCell.bin<br>bannerListCellPltt.bin | 256x49 (209x49 사용) | A3I5<br>32색 팔레트 | 배너 리스트 모드에서 선택되지 않은 항목의 배경입니다. |
+| bannerListCellSelected.bin<br>bannerListCellSelectedPltt.bin | 256x49 (209x49 사용) | A3I5<br>32색 팔레트 | 배너 리스트 모드에서 선택된 항목의 배경입니다. |
+| bottombg.bin | 256x192 | 15 bpp 비트맵 | 하단 화면 배경입니다. |
+| gridcell.bin<br>gridcellPltt.bin | 64x48 (48x48 사용) | A3I5<br>32색 팔레트 | 그리드 모드에서 선택되지 않은 항목의 배경입니다. |
+| gridcellSelected.bin<br>gridcellPlttSelected.bin | 64x48 (48x48 사용) | A3I5<br>32색 팔레트 | 그리드 모드에서 선택된 항목의 배경입니다. |
+| scrim.bin<br>scrimPltt.bin | 8x42 | A5I3<br>8색 팔레트 | 툴바용 배경입니다. 반투명한 페이드 효과를 의도한 설정입니다. |
+| topbg.bin | 256x192 | 15 bpp 비트맵 | 상단 화면 배경입니다. |
 
-These files can be created, for example, using [NitroPaint](https://github.com/Garhoogin/NitroPaint).
+이 파일들은 예를 들어 [NitroPaint](https://github.com/Garhoogin/NitroPaint)와 같은 도구를 사용하여 생성할 수 있습니다.
 
-The top screen background should include a box in which the banner text and icon of the selected item will be shown.
+상단 화면 배경에는 선택된 항목의 배너 텍스트와 아이콘이 표시될 박스 영역이 포함되어야 합니다.
 
-## Background music
-All themes support background music by placing DSP-ADPCM encoded `.bcstm` files in a `bgm` folder inside the theme folder. Looping is supported. When multiple `.bcstm` files are provided, the background music will be selected at random each time Pico Launcher is started.
+## 배경 음악 (BGM)
+테마 폴더 내의 `bgm` 폴더에 DSP-ADPCM으로 인코딩된 `.bcstm` 파일을 배치하여 배경 음악을 재생할 수 있습니다. 반복 재생(Looping)이 지원됩니다. 여러 개의 `.bcstm` 파일이 있는 경우, Pico Launcher가 실행될 때마다 배경 음악이 무작위로 선택됩니다.
