@@ -23,6 +23,8 @@
 #include <services/settings/IAppSettingsService.h>
 #include <services/Language/ILanguagePackService.h>
 #include "fat/Directory.h"
+#include "left_icon.h"
+#include "right_icon.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -104,6 +106,16 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     AddChildTail(&_themeFieldLabel);
     AddChildTail(&_languageLabel);
     AddChildTail(&_languageFieldLabel);
+
+    _themeLeftArrow = CreateArrowIcon();
+    _themeRightArrow = CreateArrowIcon();
+    _langLeftArrow = CreateArrowIcon();
+    _langRightArrow = CreateArrowIcon();
+
+    AddChildTail(&_themeLeftArrow);
+    AddChildTail(&_themeRightArrow);
+    AddChildTail(&_langLeftArrow);
+    AddChildTail(&_langRightArrow);
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -198,6 +210,16 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _filterOptions[2].SetIconVramOffset(LoadIcon(objVramManager, musicIconTiles, musicIconTilesLen));
         // _filterOptions[3].SetIconVramOffset(LoadIcon(objVramManager, moviesIconTiles, moviesIconTilesLen));
         // _filterOptions[4].SetIconVramOffset(LoadIcon(objVramManager, unknownIconTiles, unknownIconTilesLen));
+        
+        // 1. VRAM에 그래픽을 한 번만 올립니다.
+        _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
+        _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
+
+        // 2. ★ 수정: 올린 그래픽 주소를 4개의 객체에 각각 연결해 줍니다.
+        _themeLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
+        _themeRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
+        _langLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
+        _langRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
     }
 }
 
@@ -211,6 +233,12 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _themeFieldLabel.SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
     _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
     _languageFieldLabel.SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
+
+    _themeLeftArrow.SetPosition(82, _position.y + THEME_LABEL_Y - 7);
+    _themeRightArrow.SetPosition(180, _position.y + THEME_LABEL_Y - 7);
+    
+    _langLeftArrow.SetPosition(82, _position.y + LANGUAGE_LABEL_Y - 7);
+    _langRightArrow.SetPosition(180, _position.y + LANGUAGE_LABEL_Y - 7);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -287,6 +315,8 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _themeFieldLabel.SetForegroundColor(themeFocused
             ? _materialColorScheme->GetColor(md::sys::color::primary)
             : _materialColorScheme->onSurfaceVariant);
+
+
             
         _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
@@ -718,4 +748,16 @@ void DisplaySettingsBottomSheetView::ReleaseLazyLists()
     _languagesLoaded = false;
     _languageCount = 0;
     _selectedLanguageIdx = 0;
+}
+
+IconButton2DView DisplaySettingsBottomSheetView::CreateArrowIcon()
+{
+    IconButton2DView arrowIcon
+    {
+        IconButtonView::Type::Standard, // Standard: 배경 없이 아이콘만 깔끔하게 나옵니다.
+        IconButtonView::State::ToggleUnselected,
+        md::sys::color::surfaceContainerLow,
+        _materialColorScheme
+    };
+    return arrowIcon;
 }
