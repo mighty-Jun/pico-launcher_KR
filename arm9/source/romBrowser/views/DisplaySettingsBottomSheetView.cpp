@@ -44,8 +44,8 @@
 #define LANGUAGE_LABEL_X    20
 #define LANGUAGE_LABEL_Y    131 // +24
 
-#define THEME_FIELD_X       100
-#define LANGUAGE_FIELD_X    100
+#define THEME_FIELD_X       80
+#define LANGUAGE_FIELD_X    80
 
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
@@ -95,6 +95,9 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     const char* currLang = _appSettingsService->GetAppSettings().language.GetString();
     _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
     _appliedLanguageName = _pendingLanguageName;
+
+    _themeFieldLabel.SetHorizontalAlignment(Alignment::Center);
+    _languageFieldLabel.SetHorizontalAlignment(Alignment::Center);
 
     _themeFieldLabel.SetText(_pendingThemeName.GetString());
     _languageFieldLabel.SetText(_pendingLanguageName.GetString());
@@ -234,11 +237,11 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
     _languageFieldLabel.SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
 
-    _themeLeftArrow.SetPosition(82, _position.y + THEME_LABEL_Y - 7);
-    _themeRightArrow.SetPosition(180, _position.y + THEME_LABEL_Y - 7);
+    _themeLeftArrow.SetPosition(60, _position.y + THEME_LABEL_Y - 8);
+    _themeRightArrow.SetPosition(186, _position.y + THEME_LABEL_Y - 8);
     
-    _langLeftArrow.SetPosition(82, _position.y + LANGUAGE_LABEL_Y - 7);
-    _langRightArrow.SetPosition(180, _position.y + LANGUAGE_LABEL_Y - 7);
+    _langLeftArrow.SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
+    _langRightArrow.SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -338,6 +341,22 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
+    // 1. 현재 포커스 상태 확인
+    bool themeFocused = _themeFieldLabel.IsFocused();
+    bool langFocused = _languageFieldLabel.IsFocused();
+    
+    // 2. ★ 수정: inputProvider.Current()를 사용하여 현재 물리적으로 눌려있는지 실시간 감지
+    bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
+    bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
+
+    // 3. 테마 화살표 상태 실시간 업데이트 (포커스가 있고 && 키가 눌려있을 때만 불이 켜짐)
+    _themeLeftArrow.SetState((themeFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _themeRightArrow.SetState((themeFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+
+    // 4. 언어 화살표 상태 실시간 업데이트
+    _langLeftArrow.SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _langRightArrow.SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+
     if (_themeFieldLabel.IsFocused()) EnsureThemesLoaded();
     if (_languageFieldLabel.IsFocused()) EnsureLanguagesLoaded();
 
@@ -756,8 +775,9 @@ IconButton2DView DisplaySettingsBottomSheetView::CreateArrowIcon()
     {
         IconButtonView::Type::Standard, // Standard: 배경 없이 아이콘만 깔끔하게 나옵니다.
         IconButtonView::State::ToggleUnselected,
-        md::sys::color::surfaceContainerLow,
+        md::sys::color::onPrimary,
         _materialColorScheme
+
     };
     return arrowIcon;
 }

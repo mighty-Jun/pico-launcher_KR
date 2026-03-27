@@ -34,10 +34,13 @@ void Label2DView::Draw(GraphicsContext& graphicsContext)
     u32 cellCount = hCellCount * vCellCount;
     auto oams = graphicsContext.GetOamManager().AllocOams(cellCount);
     int xOffset = _position.x;
+
+    int currentWidth = _tileBufferUpdated ? _newStringWidth : _stringWidth;
+
     if (_hAlign == Alignment::Center)
-        xOffset += ((int)_width - (int)_stringWidth) / 2;
+        xOffset += ((int)_width - currentWidth) / 2;
     else if (_hAlign == Alignment::End)
-        xOffset += (int)_width - (int)_stringWidth;
+        xOffset += (int)_width - currentWidth;
     u32 paletteRow = graphicsContext.GetPaletteManager().AllocRow(
         GradientPalette(_backgroundColor, _foregroundColor), _position.y, _position.y + _height);
     u32 i = 0;
