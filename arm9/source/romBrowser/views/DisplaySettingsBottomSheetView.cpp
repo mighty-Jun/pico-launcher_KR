@@ -23,6 +23,8 @@
 #include <services/settings/IAppSettingsService.h>
 #include <services/Language/ILanguagePackService.h>
 #include "fat/Directory.h"
+#include "left_icon.h"
+#include "right_icon.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -42,8 +44,8 @@
 #define LANGUAGE_LABEL_X    20
 #define LANGUAGE_LABEL_Y    131 // +24
 
-#define THEME_FIELD_X       100
-#define LANGUAGE_FIELD_X    100
+#define THEME_FIELD_X       80
+#define LANGUAGE_FIELD_X    80
 
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
@@ -94,6 +96,9 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
     _appliedLanguageName = _pendingLanguageName;
 
+    _themeFieldLabel.SetHorizontalAlignment(Alignment::Center);
+    _languageFieldLabel.SetHorizontalAlignment(Alignment::Center);
+
     _themeFieldLabel.SetText(_pendingThemeName.GetString());
     _languageFieldLabel.SetText(_pendingLanguageName.GetString());
 
@@ -104,6 +109,16 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     AddChildTail(&_themeFieldLabel);
     AddChildTail(&_languageLabel);
     AddChildTail(&_languageFieldLabel);
+
+    _themeLeftArrow = CreateArrowIcon();
+    _themeRightArrow = CreateArrowIcon();
+    _langLeftArrow = CreateArrowIcon();
+    _langRightArrow = CreateArrowIcon();
+
+    AddChildTail(&_themeLeftArrow);
+    AddChildTail(&_themeRightArrow);
+    AddChildTail(&_langLeftArrow);
+    AddChildTail(&_langRightArrow);
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -198,6 +213,15 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _filterOptions[2].SetIconVramOffset(LoadIcon(objVramManager, musicIconTiles, musicIconTilesLen));
         // _filterOptions[3].SetIconVramOffset(LoadIcon(objVramManager, moviesIconTiles, moviesIconTilesLen));
         // _filterOptions[4].SetIconVramOffset(LoadIcon(objVramManager, unknownIconTiles, unknownIconTilesLen));
+        
+        
+        _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
+        _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
+
+        _themeLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
+        _themeRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
+        _langLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
+        _langRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
     }
 }
 
@@ -211,6 +235,12 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _themeFieldLabel.SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
     _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
     _languageFieldLabel.SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
+
+    _themeLeftArrow.SetPosition(60, _position.y + THEME_LABEL_Y - 8);
+    _themeRightArrow.SetPosition(186, _position.y + THEME_LABEL_Y - 8);
+    
+    _langLeftArrow.SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
+    _langRightArrow.SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -279,7 +309,7 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _themeLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _themeLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        // ★ 테마 값 라벨: 포커스 여부에 따라 색상 반전 처리
+        
         bool themeFocused = _themeFieldLabel.IsFocused();
         _themeFieldLabel.SetBackgroundColor(themeFocused
             ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
@@ -287,11 +317,12 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _themeFieldLabel.SetForegroundColor(themeFocused
             ? _materialColorScheme->GetColor(md::sys::color::primary)
             : _materialColorScheme->onSurfaceVariant);
+
+
             
         _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
 
-        // ★ 언어 값 라벨: 포커스 여부에 따라 색상 반전 처리
         bool langFocused = _languageFieldLabel.IsFocused();
         _languageFieldLabel.SetBackgroundColor(langFocused
             ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
@@ -308,6 +339,18 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
+    bool themeFocused = _themeFieldLabel.IsFocused();
+    bool langFocused = _languageFieldLabel.IsFocused();
+    
+    bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
+    bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
+
+    _themeLeftArrow.SetState((themeFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _themeRightArrow.SetState((themeFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+
+    _langLeftArrow.SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _langRightArrow.SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+
     if (_themeFieldLabel.IsFocused()) EnsureThemesLoaded();
     if (_languageFieldLabel.IsFocused()) EnsureLanguagesLoaded();
 
@@ -403,7 +446,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             }
             else // Down
             {
-                // Sort 아래에는 Theme가 있음
                 return &_themeFieldLabel;
             }
             //else //if (direction == FocusMoveDirection::Up)
@@ -718,4 +760,17 @@ void DisplaySettingsBottomSheetView::ReleaseLazyLists()
     _languagesLoaded = false;
     _languageCount = 0;
     _selectedLanguageIdx = 0;
+}
+
+IconButton2DView DisplaySettingsBottomSheetView::CreateArrowIcon()
+{
+    IconButton2DView arrowIcon
+    {
+        IconButtonView::Type::Standard,
+        IconButtonView::State::ToggleUnselected,
+        md::sys::color::onPrimary,
+        _materialColorScheme
+
+    };
+    return arrowIcon;
 }

@@ -76,6 +76,16 @@ private:
     bool _languagesLoaded = false;
     String<char, 64> _pendingLanguageName;
 
+    u32 _leftArrowIconVramOffset = 0;
+    u32 _rightArrowIconVramOffset = 0;
+
+    IconButton2DView _themeLeftArrow;
+    IconButton2DView _themeRightArrow;
+    IconButton2DView _langLeftArrow;
+    IconButton2DView _langRightArrow;
+    
+    IconButton2DView CreateArrowIcon();
+
     IconButton2DView CreateLayoutOptionIconButton();
     IconButton2DView CreateSortOptionIconButton();
     // IconButton2DView CreateFilterOptionIconButton();
