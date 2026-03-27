@@ -44,8 +44,8 @@ Pico Launcher를 실행하면 다음과 같은 화면이 표시됩니다.
 설정 값은 SD 카드의 `/_pico/settings.json`에 저장됩니다. 일반적인 텍스트 편집기로 수정할 수 있으며, 다음 설정 항목들을 사용할 수 있습니다:
 
 - `language` - Pico Launcher의 표시 언어입니다. 비공식 한글패치에서는 `english`, `korean`, `japanese` 언어를 지원합니다.
-- `romBrowserLayout` - 폴더 내용이 표시되는 방식을 지정합니다. 이 설정은 Pico Launcher 내에서 직접 변경할 수 있습니다.
-- `romBrowserSortMode` - 폴더 내용을 이름 오름차순(`NameAscending`)으로 정렬할지, 내림차순(`NameDescending`)으로 정렬할지 지정합니다. 이 설정은 Pico Launcher 내에서 직접 변경할 수 있습니다.
+- `romBrowserLayout` - 폴더 내용이 표시되는 방식을 지정합니다.
+- `romBrowserSortMode` - 폴더 내용을 이름 오름차순(`NameAscending`)으로 정렬할지, 내림차순(`NameDescending`)으로 정렬할지 지정합니다.
 - `theme` - 사용할 테마의 폴더 이름을 지정합니다. 테마를 찾을 수 없는 경우 기본 테마(Fallback)가 사용됩니다.
 - `lastUsedFilePath` - 가장 최근에 실행한 홈브류 또는 게임의 경로를 지정하여, 다음 런처 실행 시 해당 파일이 자동으로 선택되도록 합니다. Pico Launcher에 의해 자동으로 업데이트됩니다.
 - `fileAssociations` - 이 설정의 사용법은 [FileAssociations.md](/docs/FileAssociations.md)를 참조해 주십시오.
