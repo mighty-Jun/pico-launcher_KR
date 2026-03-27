@@ -214,11 +214,10 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _filterOptions[3].SetIconVramOffset(LoadIcon(objVramManager, moviesIconTiles, moviesIconTilesLen));
         // _filterOptions[4].SetIconVramOffset(LoadIcon(objVramManager, unknownIconTiles, unknownIconTilesLen));
         
-        // 1. VRAM에 그래픽을 한 번만 올립니다.
+        
         _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
         _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
 
-        // 2. ★ 수정: 올린 그래픽 주소를 4개의 객체에 각각 연결해 줍니다.
         _themeLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
         _themeRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
         _langLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
@@ -310,7 +309,7 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _themeLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _themeLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        // ★ 테마 값 라벨: 포커스 여부에 따라 색상 반전 처리
+        
         bool themeFocused = _themeFieldLabel.IsFocused();
         _themeFieldLabel.SetBackgroundColor(themeFocused
             ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
@@ -324,7 +323,6 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
 
-        // ★ 언어 값 라벨: 포커스 여부에 따라 색상 반전 처리
         bool langFocused = _languageFieldLabel.IsFocused();
         _languageFieldLabel.SetBackgroundColor(langFocused
             ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
@@ -341,19 +339,15 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    // 1. 현재 포커스 상태 확인
     bool themeFocused = _themeFieldLabel.IsFocused();
     bool langFocused = _languageFieldLabel.IsFocused();
     
-    // 2. ★ 수정: inputProvider.Current()를 사용하여 현재 물리적으로 눌려있는지 실시간 감지
     bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
     bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
 
-    // 3. 테마 화살표 상태 실시간 업데이트 (포커스가 있고 && 키가 눌려있을 때만 불이 켜짐)
     _themeLeftArrow.SetState((themeFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
     _themeRightArrow.SetState((themeFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
 
-    // 4. 언어 화살표 상태 실시간 업데이트
     _langLeftArrow.SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
     _langRightArrow.SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
 
@@ -452,7 +446,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             }
             else // Down
             {
-                // Sort 아래에는 Theme가 있음
                 return &_themeFieldLabel;
             }
             //else //if (direction == FocusMoveDirection::Up)
@@ -773,7 +766,7 @@ IconButton2DView DisplaySettingsBottomSheetView::CreateArrowIcon()
 {
     IconButton2DView arrowIcon
     {
-        IconButtonView::Type::Standard, // Standard: 배경 없이 아이콘만 깔끔하게 나옵니다.
+        IconButtonView::Type::Standard,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::onPrimary,
         _materialColorScheme
