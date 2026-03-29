@@ -13,9 +13,17 @@ class FileIcon
 public:
     virtual ~FileIcon() = 0;
 
-    /// @brief Uploads the graphics of this icon to the specified \p vram address.
-    /// @param vram The vram address to load the graphics to.
-    virtual void UploadGraphics(vu16* vram) = 0;
+    /// @brief Sets the OBJ vram address and offset to use.
+    /// @param objVramAddress The OBJ vram address to use.
+    /// @param objVramOffset The OBJ vram offset to use.
+    virtual void SetVramAddress(vu16* objVramAddress, u32 objVramOffset)
+    {
+        _vramAddress = objVramAddress;
+        _vramOffset = objVramOffset;
+    }
+
+    /// @brief Uploads the graphics of this icon to the vram address specified by SetVramAddress.
+    virtual void UploadGraphics() = 0;
 
     /// @brief Updates this icon.
     virtual void Update() { }
@@ -24,10 +32,6 @@ public:
     /// @param graphicsContext The graphics context to use.
     /// @param backgroundColor The color on which the icon is drawn.
     virtual void Draw(GraphicsContext& graphicsContext, const Rgb<8, 8, 8>& backgroundColor) = 0;
-
-    /// @brief Sets the OBJ vram offset of this icon.
-    /// @param offset The OBJ vram offset.
-    void SetObjVramOffset(u32 offset) { _vramOffset = offset; }
 
     /// @brief Sets the icon animation frame.
     /// @param frame The animation frame.
@@ -50,6 +54,7 @@ public:
     }
 
 protected:
+    vu16* _vramAddress = nullptr;
     u32 _vramOffset = 0;
     u32 _frame = 0;
     Point _position;

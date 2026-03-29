@@ -27,13 +27,17 @@ public:
     void SetIcon(std::unique_ptr<FileIcon> icon)
     {
         _icon = std::move(icon);
+        if (_icon)
+        {
+            _icon->SetVramAddress(_iconVram, _iconVramOffset);
+        }
     }
 
     void UploadIconGraphics() const
     {
         if (_icon)
         {
-            _icon->UploadGraphics(_iconVram);
+            _icon->UploadGraphics();
         }
     }
 

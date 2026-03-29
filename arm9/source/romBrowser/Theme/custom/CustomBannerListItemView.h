@@ -4,11 +4,12 @@
 
 class MaterialColorScheme;
 class IFontRepository;
+class CustomThemeInfo;
 
 class CustomBannerListItemView : public BannerListItemView
 {
 public:
-    CustomBannerListItemView(const MaterialColorScheme* materialColorScheme,
+    CustomBannerListItemView(const CustomThemeInfo* customThemeInfo, const MaterialColorScheme* materialColorScheme,
         const IFontRepository* fontRepository, u32 texVramOffset, u32 plttVramOffset,
         u32 selectedTexVramOffset, u32 selectedPlttVramOffset, VBlankTextureLoader* vblankTextureLoader);
 
@@ -20,6 +21,7 @@ public:
     }
 
 private:
+    const CustomThemeInfo* _customThemeInfo;
     const MaterialColorScheme* _materialColorScheme;
     u32 _texVramOffset = 0;
     u32 _plttVramOffset = 0;

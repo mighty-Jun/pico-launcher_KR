@@ -54,5 +54,75 @@
 
 상단 화면 배경에는 선택된 항목의 배너 텍스트와 아이콘이 표시될 박스 영역이 포함되어야 합니다.
 
+### 추가 JSON 속성 (Additional JSON properties)
+커스텀 테마는 더욱 세밀한 사용자 정의를 위해 `theme.json` 파일에서 추가 속성을 지원합니다.
+
+- **topIcon** - 상단 화면에 표시되는 아이콘의 속성입니다.
+- **topBannerTextLine0** - 상단 화면에 표시되는 배너 텍스트의 첫 번째 줄 속성입니다.
+- **topBannerTextLine1** - 상단 화면에 표시되는 배너 텍스트의 두 번째 줄 속성입니다.
+- **topBannerTextLine2** - 상단 화면에 표시되는 배너 텍스트의 세 번째 줄 속성입니다.
+- **topFileNameText** - 상단 화면에 표시되는 파일 이름 텍스트의 속성입니다.
+- **gridIcon** - 그리드 디스플레이 모드 시 하단 화면에 표시되는 아이콘의 속성입니다.
+- **bannerListIcon** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 아이콘의 속성입니다.
+- **bannerListTextLine0** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 배너 텍스트의 첫 번째 줄 속성입니다.
+- **bannerListTextLine1** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 배너 텍스트의 두 번째 줄 속성입니다.
+- **bannerListTextLine2** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 배너 텍스트의 세 번째 줄 속성입니다.
+
+혼합 색상(Blend colors)은 가짜 투명도(fake translucency)를 구현하는 데 사용됩니다. 이 값은 배경색과 가장 유사한 색상으로 설정해 주시기 바랍니다.
+
+```json
+{
+    "type": "custom",
+    "name": "Raspberry",
+    "description": "Theme based on raspberries.",
+    "author": "Gericom",
+    "primaryColor": { "r": 138, "g": 217, "b": 255 },
+    "darkTheme": false,
+    "topIcon": {
+        "position": { "x": 24, "y": 132 },
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "topBannerTextLine0": {
+        "position": { "x": 70, "y": 126 },
+        "width": 176,
+        "textColor": { "r": 30, "g": 30, "b": 30 },
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "topBannerTextLine1": {
+        "position": { "x": 70, "y": 141 },
+        "width": 176,
+        "textColor": { "r": 30, "g": 30, "b": 30 },
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "topBannerTextLine2": {
+        "position": { "x": 70, "y": 155 },
+        "width": 176,
+        "textColor": { "r": 30, "g": 30, "b": 30 },
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "topFileNameText": {
+        "position": { "x": 18, "y": 170 },
+        "width": 220,
+        "textColor": { "r": 30, "g": 30, "b": 30 },
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "gridIcon": {
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "bannerListIcon": {
+        "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "bannerListTextLine0": {
+        "textColor": { "r": 30, "g": 30, "b": 30 }
+    },
+    "bannerListTextLine1": {
+        "textColor": { "r": 30, "g": 30, "b": 30 }
+    },
+    "bannerListTextLine2": {
+        "textColor": { "r": 30, "g": 30, "b": 30 }
+    }
+}
+```
+
 ## 배경 음악 (BGM)
 테마 폴더 내의 `bgm` 폴더에 DSP-ADPCM으로 인코딩된 `.bcstm` 파일을 배치하여 배경 음악을 재생할 수 있습니다. 반복 재생(Looping)이 지원됩니다. 여러 개의 `.bcstm` 파일이 있는 경우, Pico Launcher가 실행될 때마다 배경 음악이 무작위로 선택됩니다.

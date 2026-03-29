@@ -47,7 +47,6 @@ void MaterialIconGridItemView::Draw(GraphicsContext& graphicsContext)
 
     if (_icon)
     {
-        _icon->SetObjVramOffset(_iconVramOffset);
         _icon->SetPosition(6 + _position.x, 6 + _position.y);
         _icon->Draw(graphicsContext, frontColor);
     }

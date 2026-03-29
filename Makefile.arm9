@@ -105,17 +105,17 @@ INCLUDEFLAGS	:= $(foreach path,$(INCLUDEDIRS),-I$(path)) \
 LIBDIRSFLAGS	:= $(foreach path,$(LIBDIRS),-L$(path)/lib)
 
 ASFLAGS		+= -x assembler-with-cpp $(DEFINES) $(INCLUDEFLAGS) \
-		   $(ARCH) -ffunction-sections -fdata-sections \
+		   $(ARCH) -g -ffunction-sections -fdata-sections \
 		   -specs=$(SPECS)
 
 CFLAGS		+= -std=gnu17 $(WARNFLAGS) $(DEFINES) $(INCLUDEFLAGS) \
-		   $(ARCH) -O2 -ffunction-sections -fdata-sections \
+		   $(ARCH) -g -O2 -ffunction-sections -fdata-sections \
 		   -fno-devirtualize-speculatively \
 		   -Werror=return-type \
 		   -specs=$(SPECS)
 
 CXXFLAGS	+= -std=gnu++23 $(WARNFLAGS) $(DEFINES) $(INCLUDEFLAGS) \
-		   $(ARCH) -O2 -ffunction-sections -fdata-sections \
+		   $(ARCH) -g -O2 -ffunction-sections -fdata-sections \
 		   -fno-exceptions -fno-rtti \
 		   -fno-devirtualize-speculatively \
 		   -Werror=return-type \
