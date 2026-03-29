@@ -38,14 +38,18 @@ NdsFileIcon::NdsFileIcon(const nds_banner_t* banner)
     }
 }
 
-void NdsFileIcon::UploadGraphics(vu16* vram)
+void NdsFileIcon::SetVramAddress(vu16* objVramAddress, u32 objVramOffset)
 {
-    _vramAddress = vram;
+    FileIcon::SetVramAddress(objVramAddress, objVramOffset);
     _currentVramSlot = 0;
     _currentGfxIdx = -1;
-    if (!_animated)
+}
+
+void NdsFileIcon::UploadGraphics()
+{
+    if (_vramAddress != nullptr && !_animated)
     {
-        dma_ntrCopy32(3, _banner->iconGfx, vram, sizeof(_banner->iconGfx));
+        dma_ntrCopy32(3, _banner->iconGfx, _vramAddress, sizeof(_banner->iconGfx));
     }
 }
 

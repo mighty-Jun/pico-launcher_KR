@@ -1,12 +1,14 @@
 #pragma once
 #include "../../views/IconGridItemView.h"
 
+class CustomThemeInfo;
+
 class CustomIconGridItemView : public IconGridItemView
 {
 public:
-    CustomIconGridItemView(u32 texVramOffset, u32 plttVramOffset,
+    CustomIconGridItemView(const CustomThemeInfo* customThemeInfo, u32 texVramOffset, u32 plttVramOffset,
         u32 selectedTexVramOffset, u32 selectedPlttVramOffset)
-        : _texVramOffset(texVramOffset), _plttVramOffset(plttVramOffset)
+        : _customThemeInfo(customThemeInfo), _texVramOffset(texVramOffset), _plttVramOffset(plttVramOffset)
         , _selectedTexVramOffset(selectedTexVramOffset), _selectedPlttVramOffset(selectedPlttVramOffset) { }
 
     void Draw(GraphicsContext& graphicsContext) override;
@@ -17,8 +19,9 @@ public:
     }
 
 private:
-    u32 _texVramOffset = 0;
-    u32 _plttVramOffset = 0;
-    u32 _selectedTexVramOffset = 0;
-    u32 _selectedPlttVramOffset = 0;
+    const CustomThemeInfo* _customThemeInfo;
+    u32 _texVramOffset;
+    u32 _plttVramOffset;
+    u32 _selectedTexVramOffset;
+    u32 _selectedPlttVramOffset;
 };

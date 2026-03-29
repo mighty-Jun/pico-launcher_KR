@@ -75,3 +75,5 @@ public:
         return Rgb(r + other.r, g + other.g, b + other.b);
     }
 };
+
+using Rgb8 = Rgb<8, 8, 8>;

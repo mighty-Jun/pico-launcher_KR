@@ -10,7 +10,7 @@ class FileInfo
 public:
     FileInfo() { }
     FileInfo(const FileInfo& fileInfo);
-    FileInfo(const TCHAR* fileName, const FileType* type, const FastFileRef& fastFileRef);
+    FileInfo(const TCHAR* fileName, const FileType* type, const FastFileRef& fastFileRef, u8 attributes);
 
     FileInfo &operator=(FileInfo&& rhs)
     {
@@ -35,8 +35,13 @@ public:
 
     const FastFileRef& GetFastFileRef() const { return _fastFileRef; }
 
+    bool IsReadOnly() const { return _attributes & AM_RDO; }
+    bool IsHidden() const { return _attributes & AM_HID; }
+    bool IsSystem() const { return _attributes & AM_SYS; }
+
 private:
     std::unique_ptr<TCHAR[]> _name;
     const FileType* _type;
     FastFileRef _fastFileRef;
+    u8 _attributes;
 };

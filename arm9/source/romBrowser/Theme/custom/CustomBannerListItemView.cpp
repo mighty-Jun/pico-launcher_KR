@@ -12,6 +12,7 @@
 #include "core/math/RgbMixer.h"
 #include "themes/material/MaterialColorScheme.h"
 #include "themes/IFontRepository.h"
+#include "themes/custom/CustomThemeInfo.h"
 #include "bannerListItemBg0.h"
 #include "bannerListItemBg1.h"
 #include "bannerListItemBg2.h"
@@ -30,9 +31,10 @@
 #define LINE_HEIGHT             16
 #define MAX_LINE_STRING_LENGTH  50
 
-CustomBannerListItemView::CustomBannerListItemView(const MaterialColorScheme* materialColorScheme,
-    const IFontRepository* fontRepository, u32 texVramOffset, u32 plttVramOffset,
-    u32 selectedTexVramOffset, u32 selectedPlttVramOffset, VBlankTextureLoader* vblankTextureLoader)
+CustomBannerListItemView::CustomBannerListItemView(const CustomThemeInfo* customThemeInfo,
+    const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
+    u32 texVramOffset, u32 plttVramOffset, u32 selectedTexVramOffset, u32 selectedPlttVramOffset,
+    VBlankTextureLoader* vblankTextureLoader)
     : BannerListItemView(
         std::make_unique<Label3DView>(LINE_WIDTH, LINE_HEIGHT, MAX_LINE_STRING_LENGTH,
             fontRepository->GetFont(FontType::Medium10), vblankTextureLoader),
@@ -40,6 +42,7 @@ CustomBannerListItemView::CustomBannerListItemView(const MaterialColorScheme* ma
             fontRepository->GetFont(FontType::Regular10), vblankTextureLoader),
         std::make_unique<Label3DView>(LINE_WIDTH, LINE_HEIGHT, MAX_LINE_STRING_LENGTH,
             fontRepository->GetFont(FontType::Regular10), vblankTextureLoader))
+    , _customThemeInfo(customThemeInfo)
     , _materialColorScheme(materialColorScheme)
     , _texVramOffset(texVramOffset)
     , _plttVramOffset(plttVramOffset)
@@ -52,8 +55,6 @@ void CustomBannerListItemView::Draw(GraphicsContext& graphicsContext)
     {
         return;
     }
-
-    auto backgroundColor = Rgb<8, 8, 8>(200, 200, 200);
 
     Gx::MtxIdentity();
     Gx::PolygonAttr(GX_LIGHTMASK_NONE, GX_POLYGON_MODE_MODULATE, GX_DISPLAY_MODE_FRONT,
@@ -82,9 +83,9 @@ void CustomBannerListItemView::Draw(GraphicsContext& graphicsContext)
 
     graphicsContext.SetPolygonId(1);
 
-    _firstLine->SetForegroundColor(Rgb<8, 8, 8>(30, 30, 30));
-    _secondLine->SetForegroundColor(Rgb<8, 8, 8>(30, 30, 30));
-    _thirdLine->SetForegroundColor(Rgb<8, 8, 8>(30, 30, 30));
+    _firstLine->SetForegroundColor(_customThemeInfo->bannerListTextLine0Info.GetTextColor());
+    _secondLine->SetForegroundColor(_customThemeInfo->bannerListTextLine1Info.GetTextColor());
+    _thirdLine->SetForegroundColor(_customThemeInfo->bannerListTextLine2Info.GetTextColor());
 
     if (_lines == 1)
     {
@@ -117,8 +118,7 @@ void CustomBannerListItemView::Draw(GraphicsContext& graphicsContext)
 
     if (_icon)
     {
-        _icon->SetObjVramOffset(_iconVramOffset);
         _icon->SetPosition(6 + _position.x, 6 + _position.y);
-        _icon->Draw(graphicsContext, backgroundColor);
+        _icon->Draw(graphicsContext, _customThemeInfo->bannerListIconInfo.GetBlendColor());
     }
 }

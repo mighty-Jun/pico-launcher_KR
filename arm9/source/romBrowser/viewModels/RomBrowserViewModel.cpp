@@ -13,19 +13,19 @@ RomBrowserViewModel::RomBrowserViewModel(IRomBrowserController* romBrowserContro
         default:
         {
             filterSortParams = SdFolderFilterSortParams(
-                SdFolderSortType::Name, SdFolderSortDirection::Ascending);
+                SdFolderSortType::Name, SdFolderSortDirection::Ascending, false);
             break;
         }
         case RomBrowserSortMode::NameDescending:
         {
             filterSortParams = SdFolderFilterSortParams(
-                SdFolderSortType::Name, SdFolderSortDirection::Descending);
+                SdFolderSortType::Name, SdFolderSortDirection::Descending, false);
             break;
         }
         case RomBrowserSortMode::LastModified:
         {
             filterSortParams = SdFolderFilterSortParams(
-                SdFolderSortType::LastModified, SdFolderSortDirection::Descending);
+                SdFolderSortType::LastModified, SdFolderSortDirection::Descending, false);
             break;
         }
     }

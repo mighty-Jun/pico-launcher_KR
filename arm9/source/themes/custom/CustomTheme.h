@@ -7,19 +7,13 @@
 #include "romBrowser/Theme/custom/CustomRomBrowserViewFactory.h"
 #include "CustomTopBackgroundType.h"
 #include "../DefaultFontRepository.h"
+#include "CustomThemeInfo.h"
 #include "../Theme.h"
 
 class CustomTheme : public Theme
 {
-    String<TCHAR, 64> _folderName;
-    CustomRomBrowserViewFactory _romBrowserViewFactory;
-    CustomTopBackgroundType _topBackgroundType;
-    DefaultFontRepository _fontRepository;
-
 public:
-    CustomTheme(const TCHAR* folderName, const Rgb<8, 8, 8>& primaryColor, bool darkMode)
-        : Theme(folderName, primaryColor, darkMode)
-        , _romBrowserViewFactory(&_materialColorScheme, &_fontRepository) { }
+    CustomTheme(const TCHAR* folderName, const Rgb<8, 8, 8>& primaryColor, bool darkMode);
 
     const IFontRepository* GetFontRepository() const override
     {
@@ -47,4 +41,11 @@ public:
     }
 
     void LoadRomBrowserResources(const VramContext& mainVramContext, const VramContext& subVramContext) override;
+
+private:
+    String<TCHAR, 64> _folderName;
+    CustomThemeInfo _customThemeInfo;
+    CustomRomBrowserViewFactory _romBrowserViewFactory;
+    CustomTopBackgroundType _topBackgroundType;
+    DefaultFontRepository _fontRepository;
 };

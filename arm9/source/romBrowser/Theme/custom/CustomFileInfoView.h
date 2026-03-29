@@ -5,11 +5,12 @@
 
 class FileIcon;
 class IFontRepository;
+class CustomThemeInfo;
 
 class CustomFileInfoView : public BannerView
 {
 public:
-    explicit CustomFileInfoView(const IFontRepository* fontRepository);
+    CustomFileInfoView(const CustomThemeInfo* customThemeInfo, const IFontRepository* fontRepository);
 
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
@@ -67,6 +68,5 @@ private:
     Label2DView _secondLine;
     Label2DView _thirdLine;
     Label2DView _filenameLabelView;
-    Rgb<8, 8, 8> _backgroundColor;
-    Rgb<8, 8, 8> _textColor;
+    const CustomThemeInfo* _customThemeInfo;
 };

@@ -22,7 +22,7 @@ MaterialFileInfoCardView::MaterialFileInfoCardView(const MaterialColorScheme* ma
     AddChildTail(&_firstLine);
     AddChildTail(&_secondLine);
     AddChildTail(&_thirdLine);
-    _filenameLabelView.SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
+    _filenameLabelView.SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
     AddChildTail(&_filenameLabelView);
 }
 
@@ -78,7 +78,6 @@ void MaterialFileInfoCardView::Draw(GraphicsContext& graphicsContext)
 
     if (_icon)
     {
-        _icon->SetObjVramOffset(_iconVramOffset);
         _icon->Draw(graphicsContext, fgColor);
     }
 }

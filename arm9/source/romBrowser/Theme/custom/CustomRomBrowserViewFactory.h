@@ -12,23 +12,24 @@ class MaterialColorScheme;
 class ITheme;
 class VramContext;
 class IFontRepository;
+class CustomThemeInfo;
 
 class CustomRomBrowserViewFactory : public IRomBrowserViewFactory
 {
 public:
-    CustomRomBrowserViewFactory(const MaterialColorScheme* materialColorScheme,
+    CustomRomBrowserViewFactory(const CustomThemeInfo* customThemeInfo, const MaterialColorScheme* materialColorScheme,
         const IFontRepository* fontRepository)
-        : _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
+        : _customThemeInfo(customThemeInfo), _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
     IconGridItemView* CreateIconGridItemView() const override
     {
-        return new CustomIconGridItemView(_gridCellTexVramOffset, _gridCellPlttVramOffset,
+        return new CustomIconGridItemView(_customThemeInfo, _gridCellTexVramOffset, _gridCellPlttVramOffset,
             _gridCellSelectedTexVramOffset, _gridCellSelectedPlttVramOffset);
     }
 
     BannerListItemView* CreateBannerListItemView(VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return new CustomBannerListItemView(_materialColorScheme, _fontRepository,
+        return new CustomBannerListItemView(_customThemeInfo, _materialColorScheme, _fontRepository,
             _bannerListCellTexVramOffset, _bannerListCellPlttVramOffset,
             _bannerListCellSelectedTexVramOffset, _bannerListCellSelectedPlttVramOffset, vblankTextureLoader);
     }
@@ -47,7 +48,7 @@ public:
 
     std::unique_ptr<BannerView> CreateFileInfoView() const override
     {
-        return std::make_unique<CustomFileInfoView>(_fontRepository);
+        return std::make_unique<CustomFileInfoView>(_customThemeInfo, _fontRepository);
     }
 
     std::unique_ptr<RecyclerViewBase> CreateCoverFlowRecyclerView() const override
@@ -77,6 +78,7 @@ private:
     u32 _bannerListCellSelectedPlttVramOffset;
     u32 _scrimTexVramOffset;
     u32 _scrimPlttVramOffset;
+    const CustomThemeInfo* _customThemeInfo;
     const MaterialColorScheme* _materialColorScheme;
     const IFontRepository* _fontRepository;
 };
