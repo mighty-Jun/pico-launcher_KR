@@ -1,5 +1,6 @@
 #include "common.h"
 #include "nitroFont2.h"
+#include "DefaultFontRepository.h"
 
 #define MAX_CACHED_FONTS 4
 #define MAX_BLOCKS_PER_FONT 8192
@@ -19,7 +20,7 @@ struct FontIndexCache {
 static FontIndexCache s_fontCaches[MAX_CACHED_FONTS];
 static int s_fontCacheCount = 0;
 
-bool nft2_unpack(nft2_header_t* font)
+bool nft2_unpack(FontType fontType, nft2_header_t* font)
 {
     if (font->signature != NFT2_SIGNATURE)
         return false;
@@ -73,6 +74,8 @@ bool nft2_unpack(nft2_header_t* font)
             charMapEntry = (const nft2_char_map_entry_t*)((u32)charMapEntry + 4 + 2 * charMapEntry->count);
         }
     }
+
+    DefaultFontRepository::SetFont(fontType, font);
 
     return true;
 }

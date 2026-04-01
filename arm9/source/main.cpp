@@ -26,9 +26,14 @@
 #include "NotoSansJP-Medium-7_5_nft2.h"
 #include "NotoSansJP-Medium-10_nft2.h"
 #include "NotoSansJP-Medium-11_nft2.h"
+#include "Galmuri-Regular-10_nft2.h"
+#include "Galmuri-Medium-7_5_nft2.h"
+#include "Galmuri-Medium-10_nft2.h"
+#include "Galmuri-Medium-11_nft2.h"
 #include "gui/font/nitroFont2.h"
 #include "picoLoaderBootstrap.h"
 #include "rtcIpc.h"
+#include "themes/DefaultFontRepository.h"
 
 ProcessManager gProcessManager;
 ILogger* gLogger;
@@ -214,10 +219,25 @@ int main(int argc, char* argv[])
     // todo: make sure _pico folder exists
     // maybe warn if important files are missing as well?
 
-    nft2_unpack((nft2_header_t*)NotoSansJP_Regular_10_nft2);
-    nft2_unpack((nft2_header_t*)NotoSansJP_Medium_10_nft2);
-    nft2_unpack((nft2_header_t*)NotoSansJP_Medium_11_nft2);
-    nft2_unpack((nft2_header_t*)NotoSansJP_Medium_7_5_nft2);
+    // 1. 설정 서비스를 단독으로 생성하여 JSON에서 언어 설정을 읽어옵니다.
+    JsonAppSettingsService appSettingsService("/_pico/settings.json");
+    const char* currentLang = appSettingsService.GetAppSettings().language.GetString();
+
+    // 2. 언어 설정에 맞춰 폰트 압축 해제
+    if (currentLang && strcasecmp(currentLang, "korean") == 0)
+    {
+        nft2_unpack(FontType::Regular10, (nft2_header_t*)Galmuri_Regular_10_nft2);
+        nft2_unpack(FontType::Medium10, (nft2_header_t*)Galmuri_Medium_10_nft2);
+        nft2_unpack(FontType::Medium11, (nft2_header_t*)Galmuri_Medium_11_nft2);
+        nft2_unpack(FontType::Medium7_5, (nft2_header_t*)Galmuri_Medium_7_5_nft2);
+    }
+    else
+    {
+        nft2_unpack(FontType::Regular10, (nft2_header_t*)NotoSansJP_Regular_10_nft2);
+        nft2_unpack(FontType::Medium10, (nft2_header_t*)NotoSansJP_Medium_10_nft2);
+        nft2_unpack(FontType::Medium11, (nft2_header_t*)NotoSansJP_Medium_11_nft2);
+        nft2_unpack(FontType::Medium7_5, (nft2_header_t*)NotoSansJP_Medium_7_5_nft2);
+    }
 
     gProcessManager.Goto<App>();
     gProcessManager.MainLoop();
