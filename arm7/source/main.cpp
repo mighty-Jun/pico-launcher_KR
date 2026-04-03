@@ -177,6 +177,12 @@ static void updateArm7IdleState()
     {
         snd_setMasterVolume(0); // mute sound
     }
+    static int batteryTimer = 0;
+    if (++batteryTimer >= 60)
+    {
+        SHARED_BATTERY_LEVEL = getBatteryLevel();
+        batteryTimer = 0;
+    }
 }
 
 static bool performExit(ExitMode exitMode)

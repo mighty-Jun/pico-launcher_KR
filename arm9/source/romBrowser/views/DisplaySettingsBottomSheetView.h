@@ -106,4 +106,8 @@ private:
 
     bool _themeLongPressConsumed = false;
     bool _usePreloadedIcons = false;
+
+    Label2DView _batteryLabel;
+    int _batteryCheckTimer = 0; // ★ 쿨타임 타이머
+    u32 _lastBatteryValue = 0;  // ★ 마지막으로 읽은 값 캐싱
 };
