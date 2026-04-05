@@ -9,5 +9,6 @@ public:
     static void Launch();
 
 private:
-    static bool PrepareIni(const char* romPath, const char* savePath);
+    static bool PrepareIni(const char* romPath, const char* savePath, bool isDsiRom);
+    static bool HasValidDsiBinary(const char* romPath);
 };

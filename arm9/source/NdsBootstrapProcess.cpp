@@ -1,21 +1,120 @@
 #include "NdsBootstrapProcess.h"
 #include "core/Environment.h"
 #include "core/StringUtil.h"
+#include "core/mini-printf.h"
 #include "fat/ff.h"
 #include "logger/ILogger.h"
 #include "services/process/ProcessManager.h"
 #include "PicoLoaderProcess.h"
-#include <stdio.h>
+#include <string.h>
 #include "picoLoaderBootstrap.h"
+#include <nds/fifocommon.h>
+#include <nds/fifomessages.h>
 
-extern ProcessManager gProcessManager; // 전역 프로세스 매니저 참조
+#define FIFO_PICO_MSG_IS_3DS 0x1234
 
-bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath)
+extern ProcessManager gProcessManager;
+
+bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
 {
-    // 1. _nds 폴더 생성 (이미 존재하면 FR_EXIST 에러를 반환하므로 무시해도 무방함)
+    FIL file;
+    if (f_open(&file, romPath, FA_READ) != FR_OK)
+    {
+        return false;
+    }
+
+    UINT bytesRead;
+    u8 unitCode = 0;
+
+    // 1. Unit Code 검사 (오프셋 0x012)
+    f_lseek(&file, 0x012);
+    f_read(&file, &unitCode, 1, &bytesRead);
+
+    // 일반 DS 롬이면 켤 필요가 없으므로 즉시 false 반환
+    if (unitCode == 0x00)
+    {
+        f_close(&file);
+        return false;
+    }
+
+    // 2. DSi 바이너리 오프셋 읽기 (0x1C0: ARM9i Offset, 0x1C8: ARM7i Offset)
+    u32 arm9iOffset = 0;
+    u32 arm7iOffset = 0;
+
+    f_lseek(&file, 0x1C0);
+    f_read(&file, &arm9iOffset, 4, &bytesRead);
+
+    f_lseek(&file, 0x1C8);
+    f_read(&file, &arm7iOffset, 4, &bytesRead);
+
+    // 3. 오프셋 범위 유효성 검사 (TWLMenu 로직: 0x8000 미만이거나 512MB 이상인 경우)
+    if (arm9iOffset < 0x8000 || arm9iOffset >= 0x20000000 ||
+        arm7iOffset < 0x8000 || arm7iOffset >= 0x20000000)
+    {
+        f_close(&file);
+        LOG_DEBUG("Stripped DSi ROM detected (Invalid Offsets).\n");
+        return false;
+    }
+
+    // 4. 시그니처 검사를 위한 배열 (4바이트씩 4개 = 16바이트)
+    u32 arm9Sig[3][4] = {0};
+
+    // 기준이 되는 일반 ARM9 시그니처 (0x8000)
+    f_lseek(&file, 0x8000);
+    f_read(&file, arm9Sig[0], sizeof(u32) * 4, &bytesRead);
+
+    // ARM9i 시그니처
+    f_lseek(&file, arm9iOffset);
+    f_read(&file, arm9Sig[1], sizeof(u32) * 4, &bytesRead);
+
+    // ARM7i 시그니처
+    f_lseek(&file, arm7iOffset);
+    f_read(&file, arm9Sig[2], sizeof(u32) * 4, &bytesRead);
+
+    f_close(&file);
+
+    // 5. 시그니처 비교 분석 (TWLMenu 로직)
+    for (int i = 1; i < 3; i++)
+    {
+        // 트릭 1: 일반 ARM9 데이터를 복사해서 돌려막기 한 경우
+        if (arm9Sig[i][0] == arm9Sig[0][0] &&
+            arm9Sig[i][1] == arm9Sig[0][1] &&
+            arm9Sig[i][2] == arm9Sig[0][2] &&
+            arm9Sig[i][3] == arm9Sig[0][3])
+        {
+            LOG_DEBUG("Stripped DSi ROM detected (Cloned ARM9 Signature).\n");
+            return false;
+        }
+
+        // 트릭 2: 0x00으로 데이터를 날려버린 경우
+        if (arm9Sig[i][0] == 0 &&
+            arm9Sig[i][1] == 0 &&
+            arm9Sig[i][2] == 0 &&
+            arm9Sig[i][3] == 0)
+        {
+            LOG_DEBUG("Stripped DSi ROM detected (Zeroed Signature).\n");
+            return false;
+        }
+
+        // 트릭 3: 0xFF로 데이터를 날려버린 경우
+        if (arm9Sig[i][0] == 0xFFFFFFFF &&
+            arm9Sig[i][1] == 0xFFFFFFFF &&
+            arm9Sig[i][2] == 0xFFFFFFFF &&
+            arm9Sig[i][3] == 0xFFFFFFFF)
+        {
+            LOG_DEBUG("Stripped DSi ROM detected (0xFF Signature).\n");
+            return false;
+        }
+    }
+
+    LOG_DEBUG("Valid DSi binary detected.\n");
+    return true;
+}
+
+bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, bool isDsiRom)
+{
     f_mkdir("fat:/_nds");
 
-    // 2. nds-bootstrap.ini 파일 생성 및 쓰기 모드로 열기 (기존 파일이 있으면 덮어씀)
     FIL iniFile;
     FRESULT result = f_open(&iniFile, "fat:/_nds/nds-bootstrap.ini", FA_CREATE_ALWAYS | FA_WRITE);
     if (result != FR_OK)
@@ -24,9 +123,12 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath)
         return false;
     }
 
-    // 3. INI 파일 내용 포맷팅 (snprintf 사용)
-    char buffer[512];
-    int len = snprintf(buffer, sizeof(buffer),
+    // ★ 해결책: 스택 오버플로우 방지를 위해 배열을 힙(Heap) 메모리에 할당합니다.
+    char* buffer = new char[512];
+
+    bool enableDsiMode = Environment::IsDsiMode() && isDsiRom;
+
+    int len = mini_snprintf(buffer, 512,
         "[NDS-BOOTSTRAP]\n"
         "NDS_PATH = %s\n"
         "SAV_PATH = %s\n"
@@ -38,14 +140,16 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath)
         "DEBUG = 1\n",
         romPath,
         (savePath != nullptr) ? savePath : "",
-        Environment::IsDsiMode() ? "1" : "0",
+        enableDsiMode ? "1" : "0",
         Environment::IsDsiMode() ? "2" : "0"
     );
 
-    // 4. 버퍼의 내용을 파일에 쓰기
     UINT bytesWritten;
     result = f_write(&iniFile, buffer, len, &bytesWritten);
     f_close(&iniFile);
+    
+    // 사용이 끝난 힙 메모리는 누수(Leak)가 없도록 즉시 해제합니다.
+    delete[] buffer;
 
     if (result != FR_OK || bytesWritten != (UINT)len)
     {
@@ -61,30 +165,49 @@ void NdsBootstrapProcess::Launch()
 {
     auto loadParams = pload_getLoadParams();
 
-    // 1. 기존 파라미터에서 사용자가 선택한 타겟 게임 롬과 세이브 경로를 백업합니다.
-    char targetRom[256];
-    char targetSave[256];
-    StringUtil::Copy(targetRom, loadParams->romPath, sizeof(targetRom));
-    StringUtil::Copy(targetSave, loadParams->savePath, sizeof(targetSave));
+    // ★ 해결책: 경로를 담을 256바이트 배열들도 힙(Heap)에 할당합니다.
+    char* targetRom = new char[256];
+    char* targetSave = new char[256];
+    
+    StringUtil::Copy(targetRom, loadParams->romPath, 256);
 
-    // 2. 백업한 경로를 바탕으로 INI 지시서를 작성합니다.
-    if (!PrepareIni(targetRom, targetSave))
+    if (loadParams->savePath[0] != '\0')
+    {
+        StringUtil::Copy(targetSave, loadParams->savePath, 256);
+    }
+    else
+    {
+        StringUtil::Copy(targetSave, targetRom, 256);
+        char* ext = strrchr(targetSave, '.');
+        if (ext != nullptr)
+        {
+            strcpy(ext, ".sav");
+        }
+        else
+        {
+            strcat(targetSave, ".sav");
+        }
+    }
+
+    bool isValidDsi = HasValidDsiBinary(targetRom);
+    bool iniResult = PrepareIni(targetRom, targetSave, isValidDsi);
+    
+    // INI 작성이 끝났으므로 힙 메모리를 해제합니다.
+    delete[] targetRom;
+    delete[] targetSave;
+
+    if (!iniResult)
     {
         LOG_ERROR("Aborting launch due to INI generation failure.\n");
-        // TODO: 실패 시 다이얼로그나 에러 메시지를 띄우는 로직을 추가할 수 있습니다.
         return;
     }
 
-    // 3. 피코 로더에게 nds-bootstrap 자체를 롬으로써 실행하도록 파라미터를 '변조'합니다.
     StringUtil::Copy(loadParams->romPath, "fat:/_nds/nds-bootstrap-release.nds", sizeof(loadParams->romPath));
     
-    // nds-bootstrap이 INI를 보고 알아서 세이브와 치트를 마운트하므로, 
-    // 피코 런처 단의 세이브 마운트 및 인자 전달은 끕니다.
     loadParams->savePath[0] = 0; 
     loadParams->arguments[0] = 0;
     loadParams->argumentsLength = 0;
     pload_setCheatData(nullptr);
 
-    // 4. PicoLoaderProcess로 상태를 전환하여 체인로딩(부팅)을 시작합니다!
     gProcessManager.Goto<PicoLoaderProcess>();
 }
