@@ -8,8 +8,7 @@
 #include "PicoLoaderProcess.h"
 #include <string.h>
 #include "picoLoaderBootstrap.h"
-#include <nds/fifocommon.h>
-#include <nds/fifomessages.h>
+#include "sharedMemory.h"
 
 #define FIFO_PICO_MSG_IS_3DS 0x1234
 
@@ -127,6 +126,12 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
     char* buffer = new char[512];
 
     bool enableDsiMode = Environment::IsDsiMode() && isDsiRom;
+    const char* consoleModel = "0";
+    if (Environment::IsDsiMode())
+    {
+        // ARM7이 1을 적어두었다면 3DS(2), 아니면 일반 DSi(1)
+        consoleModel = (SHARED_IS_3DS_FLAG == 1) ? "2" : "1"; 
+    }
 
     int len = mini_snprintf(buffer, 512,
         "[NDS-BOOTSTRAP]\n"
@@ -141,7 +146,7 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
         romPath,
         (savePath != nullptr) ? savePath : "",
         enableDsiMode ? "1" : "0",
-        Environment::IsDsiMode() ? "2" : "0"
+        consoleModel
     );
 
     UINT bytesWritten;
