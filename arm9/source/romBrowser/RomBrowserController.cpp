@@ -193,8 +193,7 @@ void RomBrowserController::HandleLaunchTrigger()
     {
         UpdateLastUsedFilepath();
 
-        // TODO: 나중에 설정 창(AppSettings)에 토글을 만들면 이 변수와 연결합니다.
-        // 지금은 체인로딩 부팅 테스트를 위해 무조건 true로 강제 설정해 둡니다.
+        // TODO: 나중에 설정 창(AppSettings)에 토글을 만들면 이 변수와 연결
         bool useNdsBootstrap = true; 
 
         if (useNdsBootstrap)
@@ -205,14 +204,11 @@ void RomBrowserController::HandleLaunchTrigger()
             loadParams->arguments[0] = 0;
             loadParams->argumentsLength = 0;
             
-            // 파일 타입(롬 종류)에 맞게 기본 경로 파라미터를 세팅합니다.
             if (_triggerFileInfo.GetFileType()->TrySetLaunchParameters(loadParams, _navigatePath))
             {
-                // 준비가 끝났으면 nds-bootstrap 실행!
+                auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
+                NdsBootstrapProcess::PrepareCheats(cheats.get());
                 NdsBootstrapProcess::Launch();
-                
-                // 🚨 주의: nds-bootstrap은 독자적인 cheatData.bin을 사용하므로
-                // 기존 피코 로더의 LoadCheats()는 호출하지 않고 건너뜁니다.
             }
             else
             {
@@ -221,7 +217,6 @@ void RomBrowserController::HandleLaunchTrigger()
         }
         else
         {
-            // 기존 피코 로더 순정 구동 방식 (Fallback)
             SetPicoLoaderParams();
             LoadCheats();
         }

@@ -25,18 +25,15 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
     UINT bytesRead;
     u8 unitCode = 0;
 
-    // 1. Unit Code 검사 (오프셋 0x012)
     f_lseek(&file, 0x012);
     f_read(&file, &unitCode, 1, &bytesRead);
 
-    // 일반 DS 롬이면 켤 필요가 없으므로 즉시 false 반환
     if (unitCode == 0x00)
     {
         f_close(&file);
         return false;
     }
 
-    // 2. DSi 바이너리 오프셋 읽기 (0x1C0: ARM9i Offset, 0x1C8: ARM7i Offset)
     u32 arm9iOffset = 0;
     u32 arm7iOffset = 0;
 
@@ -46,7 +43,6 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
     f_lseek(&file, 0x1C8);
     f_read(&file, &arm7iOffset, 4, &bytesRead);
 
-    // 3. 오프셋 범위 유효성 검사 (TWLMenu 로직: 0x8000 미만이거나 512MB 이상인 경우)
     if (arm9iOffset < 0x8000 || arm9iOffset >= 0x20000000 ||
         arm7iOffset < 0x8000 || arm7iOffset >= 0x20000000)
     {
@@ -55,27 +51,21 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
         return false;
     }
 
-    // 4. 시그니처 검사를 위한 배열 (4바이트씩 4개 = 16바이트)
     u32 arm9Sig[3][4] = {0};
 
-    // 기준이 되는 일반 ARM9 시그니처 (0x8000)
     f_lseek(&file, 0x8000);
     f_read(&file, arm9Sig[0], sizeof(u32) * 4, &bytesRead);
 
-    // ARM9i 시그니처
     f_lseek(&file, arm9iOffset);
     f_read(&file, arm9Sig[1], sizeof(u32) * 4, &bytesRead);
 
-    // ARM7i 시그니처
     f_lseek(&file, arm7iOffset);
     f_read(&file, arm9Sig[2], sizeof(u32) * 4, &bytesRead);
 
     f_close(&file);
 
-    // 5. 시그니처 비교 분석 (TWLMenu 로직)
     for (int i = 1; i < 3; i++)
     {
-        // 트릭 1: 일반 ARM9 데이터를 복사해서 돌려막기 한 경우
         if (arm9Sig[i][0] == arm9Sig[0][0] &&
             arm9Sig[i][1] == arm9Sig[0][1] &&
             arm9Sig[i][2] == arm9Sig[0][2] &&
@@ -85,7 +75,6 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
             return false;
         }
 
-        // 트릭 2: 0x00으로 데이터를 날려버린 경우
         if (arm9Sig[i][0] == 0 &&
             arm9Sig[i][1] == 0 &&
             arm9Sig[i][2] == 0 &&
@@ -95,7 +84,6 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
             return false;
         }
 
-        // 트릭 3: 0xFF로 데이터를 날려버린 경우
         if (arm9Sig[i][0] == 0xFFFFFFFF &&
             arm9Sig[i][1] == 0xFFFFFFFF &&
             arm9Sig[i][2] == 0xFFFFFFFF &&
@@ -122,15 +110,13 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
         return false;
     }
 
-    // ★ 해결책: 스택 오버플로우 방지를 위해 배열을 힙(Heap) 메모리에 할당합니다.
     char* buffer = new char[512];
 
     bool enableDsiMode = Environment::IsDsiMode() && isDsiRom;
     const char* consoleModel = "0";
     if (Environment::IsDsiMode())
     {
-        // ARM7이 1을 적어두었다면 3DS(2), 아니면 일반 DSi(1)
-        consoleModel = (SHARED_IS_3DS_FLAG == 1) ? "2" : "1"; 
+        consoleModel = (SHARED_IS_3DS_FLAG == 1) ? "2" : "0"; 
     }
 
     int len = mini_snprintf(buffer, 512,
@@ -153,7 +139,6 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
     result = f_write(&iniFile, buffer, len, &bytesWritten);
     f_close(&iniFile);
     
-    // 사용이 끝난 힙 메모리는 누수(Leak)가 없도록 즉시 해제합니다.
     delete[] buffer;
 
     if (result != FR_OK || bytesWritten != (UINT)len)
@@ -166,11 +151,102 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
     return true;
 }
 
+u32 NdsBootstrapProcess::WriteActiveCheats(FIL* file, const CheatEntry* entry)
+{
+    if (entry == nullptr) return 0;
+    
+    u32 totalWritten = 0;
+
+    if (entry->IsCheatCategory())
+    {
+        u32 subCount = 0;
+        const CheatEntry* subEntries = entry->GetSubEntries(subCount);
+        if (subEntries != nullptr)
+        {
+            for (u32 i = 0; i < subCount; i++)
+            {
+                totalWritten += WriteActiveCheats(file, &subEntries[i]);
+            }
+        }
+    }
+    else
+    {
+        if (entry->GetIsCheatActive())
+        {
+            u32 len = 0;
+            const void* data = entry->GetCheatData(len);
+            
+            if (data != nullptr && len > 0)
+            {
+                UINT bytesWritten;
+                f_write(file, data, len, &bytesWritten);
+                totalWritten += bytesWritten;
+            }
+        }
+    }
+    
+    return totalWritten;
+}
+
+// 외부에서 호출될 치트 준비 함수
+bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
+{
+    const char* cheatPath = "fat:/_nds/nds-bootstrap/cheatData.bin";
+
+    // 1. 이전 게임의 치트 찌꺼기가 남아있지 않도록 일단 삭제(unlink)부터 합니다.
+    f_unlink(cheatPath);
+
+    // 치트 데이터 자체가 넘어오지 않았다면 여기서 바로 종료 (빈 파일 생성 안 함)
+    if (cheats == nullptr)
+    {
+        return true;
+    }
+
+    f_mkdir("fat:/_nds/nds-bootstrap");
+
+    FIL file;
+    if (f_open(&file, cheatPath, FA_WRITE | FA_CREATE_ALWAYS) != FR_OK)
+    {
+        LOG_ERROR("Failed to create cheatData.bin\n");
+        return false;
+    }
+
+    u32 totalBytes = 0;
+    u32 subCount = 0;
+    const CheatEntry* subEntries = cheats->GetSubEntries(subCount);
+    
+    if (subEntries != nullptr)
+    {
+        for (u32 i = 0; i < subCount; i++)
+        {
+            totalBytes += WriteActiveCheats(&file, &subEntries[i]);
+        }
+    }
+
+    if (totalBytes > 0)
+    {
+        // EOF inject
+        u32 terminator[1] = { 0xCF000000 };
+        UINT bytesWritten;
+        f_write(&file, terminator, 4, &bytesWritten);
+        f_close(&file);
+        
+        LOG_DEBUG("Successfully generated cheatData.bin with CF000000 Terminator.\n");
+    }
+    else
+    {
+        f_close(&file);
+        f_unlink(cheatPath);
+        LOG_DEBUG("No active cheats found. cheatData.bin removed.\n");
+    }
+
+    return true;
+}
+
 void NdsBootstrapProcess::Launch()
 {
     auto loadParams = pload_getLoadParams();
 
-    // ★ 해결책: 경로를 담을 256바이트 배열들도 힙(Heap)에 할당합니다.
     char* targetRom = new char[256];
     char* targetSave = new char[256];
     
@@ -197,7 +273,7 @@ void NdsBootstrapProcess::Launch()
     bool isValidDsi = HasValidDsiBinary(targetRom);
     bool iniResult = PrepareIni(targetRom, targetSave, isValidDsi);
     
-    // INI 작성이 끝났으므로 힙 메모리를 해제합니다.
+    // Free allocated memory to prevent leaks
     delete[] targetRom;
     delete[] targetSave;
 
@@ -215,4 +291,15 @@ void NdsBootstrapProcess::Launch()
     pload_setCheatData(nullptr);
 
     gProcessManager.Goto<PicoLoaderProcess>();
+}
+
+int NdsBootstrapProcess::GetLanguageCode(const char* langStr)
+{
+    if (langStr == nullptr) return -1;
+    
+    if (strcmp(langStr, "korean") == 0) return 7;
+    if (strcmp(langStr, "english") == 0) return 1;
+    if (strcmp(langStr, "japanese") == 0) return 0;
+
+    return -1; // default
 }
