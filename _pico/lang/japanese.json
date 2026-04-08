@@ -6,5 +6,7 @@
   "displaySettings.theme": "テーマ",
   "displaySettings.language": "言語",
   "cheatSettings.title" : "チート",
-  "cheatSettings.noCheatsMsg" : "チートが見つかりません"
+  "cheatSettings.noCheatsMsg" : "チートが見つかりません",
+  "launchSettings.title" : "Launch Settings",
+  "launchSettings.loader" : "Loader"
 }

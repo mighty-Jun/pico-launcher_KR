@@ -17,7 +17,7 @@
 #define LOADER_LABEL_X      20
 #define LOADER_LABEL_Y      60
 
-#define LOADER_FIELD_X      100
+#define LOADER_FIELD_X      80
 
 LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
     RomBrowserViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
@@ -28,20 +28,17 @@ LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
     , _languagePackService(languagePackService)
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _loaderLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
-    , _loaderFieldLabel(100, 16, 20, fontRepository->GetFont(FontType::Regular10))
+    , _loaderFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
     , _materialColorScheme(materialColorScheme)
 {
-    // const auto& langPack = _languagePackService->GetLanguagePack();
-    // _titleLabel.SetText(langPack.launchSettings_title.GetString());
-    // _loaderLabel.SetText(langPack.launchSettings_loader.GetString());
-    
-    _titleLabel.SetText("Launch Settings");
-    _loaderLabel.SetText("Loader");
+    const auto& langPack = _languagePackService->GetLanguagePack();
+    _titleLabel.SetText(langPack.launchSettings_title.GetString());
+    _loaderLabel.SetText(langPack.launchSettings_loader.GetString());
 
     _pendingLoaderType = _appSettingsService->GetAppSettings().loaderType;
 
     _loaderFieldLabel.SetHorizontalAlignment(Alignment::Center);
-    _loaderFieldLabel.SetText(_pendingLoaderType == LoaderType::Pico_Loader ? "PicoLoader" : "nds-bootstrap");
+    _loaderFieldLabel.SetText(_pendingLoaderType == LoaderType::Pico_Loader ? "Pico Loader" : "NDS-Bootstrap");
 
     AddChildTail(&_titleLabel);
     AddChildTail(&_loaderLabel);
@@ -95,8 +92,8 @@ void LaunchSettingsBottomSheetView::UpdateLabels()
     _loaderLabel.SetPosition(LOADER_LABEL_X, _position.y + LOADER_LABEL_Y);
     _loaderFieldLabel.SetPosition(LOADER_FIELD_X, _position.y + LOADER_LABEL_Y);
 
-    _loaderLeftArrow.SetPosition(LOADER_FIELD_X - 20, _position.y + LOADER_LABEL_Y - 8);
-    _loaderRightArrow.SetPosition(LOADER_FIELD_X + 106, _position.y + LOADER_LABEL_Y - 8);
+    _loaderLeftArrow.SetPosition(60, _position.y + LOADER_LABEL_Y - 8);
+    _loaderRightArrow.SetPosition(186, _position.y + LOADER_LABEL_Y - 8);
 }
 
 void LaunchSettingsBottomSheetView::Update()
@@ -177,11 +174,11 @@ void LaunchSettingsBottomSheetView::ToggleLoaderType()
     if (_pendingLoaderType == LoaderType::Pico_Loader)
     {
         _pendingLoaderType = LoaderType::NDS_Bootstrap;
-        _loaderFieldLabel.SetText("nds-bootstrap");
+        _loaderFieldLabel.SetText("NDS-Bootstrap");
     }
     else
     {
         _pendingLoaderType = LoaderType::Pico_Loader;
-        _loaderFieldLabel.SetText("PicoLoader");
+        _loaderFieldLabel.SetText("Pico Loader");
     }
 }

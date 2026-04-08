@@ -6,5 +6,7 @@
   "displaySettings.theme" : "테마",
   "displaySettings.language" : "언어",
   "cheatSettings.title" : "치트",
-  "cheatSettings.noCheatsMsg" : "치트가 없습니다."
+  "cheatSettings.noCheatsMsg" : "치트가 없습니다.",
+  "launchSettings.title" : "실행 설정",
+  "launchSettings.loader" : "로더"
 }

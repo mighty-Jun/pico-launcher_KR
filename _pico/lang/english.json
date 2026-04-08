@@ -6,5 +6,7 @@
   "displaySettings.theme" : "Theme",
   "displaySettings.language" : "Language",
   "cheatSettings.title" : "Cheats",
-  "cheatSettings.noCheatsMsg" : "No cheats found."
+  "cheatSettings.noCheatsMsg" : "No cheats found.",
+  "launchSettings.title" : "Launch Settings",
+  "launchSettings.loader" : "Loader"
 }
