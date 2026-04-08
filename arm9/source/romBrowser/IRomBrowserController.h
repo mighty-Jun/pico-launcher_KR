@@ -52,6 +52,9 @@ public:
     virtual void MarkStateDirty() = 0;
 
     virtual void RequestThemeReload() = 0;
+
+    virtual void ShowLaunchSettings() = 0;
+    virtual void HideLaunchSettings() = 0;
 };
 
 inline IRomBrowserController::~IRomBrowserController() { }

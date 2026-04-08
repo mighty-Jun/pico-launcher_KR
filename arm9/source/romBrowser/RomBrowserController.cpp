@@ -193,10 +193,9 @@ void RomBrowserController::HandleLaunchTrigger()
     {
         UpdateLastUsedFilepath();
 
-        // TODO: 나중에 설정 창(AppSettings)에 토글을 만들면 이 변수와 연결
-        bool useNdsBootstrap = true; 
+        LoaderType loaderType = _appSettingsService->GetAppSettings().loaderType;
 
-        if (useNdsBootstrap)
+        if (loaderType == LoaderType::NDS_Bootstrap)
         {
             LOG_DEBUG("Routing to NdsBootstrapProcess...\n");
             auto loadParams = pload_getLoadParams();
@@ -280,4 +279,19 @@ void RomBrowserController::SaveSettingsAsync()
         _appSettingsService->Save();
         return TaskResult<void>::Completed();
     });
+}
+
+void RomBrowserController::ShowLaunchSettings()
+{
+    _stateMachine.Fire(RomBrowserStateTrigger::ShowLaunchSettings);
+}
+
+void RomBrowserController::HideLaunchSettings()
+{
+    if (_saveSettingsPending)
+    {
+        _saveSettingsPending = false;
+        SaveSettingsAsync();
+    }
+    _stateMachine.Fire(RomBrowserStateTrigger::HideLaunchSettings);
 }

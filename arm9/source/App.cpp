@@ -22,6 +22,7 @@
 #include "romBrowser/views/NdsGameDetailsBottomSheetView.h"
 #include "romBrowser/views/cheats/CheatsBottomSheetView.h"
 #include "romBrowser/views/DisplaySettingsBottomSheetView.h"
+#include "romBrowser/views/LaunchSettingsBottomSheetView.h"
 #include "bgm/AudioStreamPlayer.h"
 #include "bgm/BgmService.h"
 #include "themes/ThemeInfoFactory.h"
@@ -306,6 +307,16 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
             _changeDisplayMode = true;
             break;
         }
+        case RomBrowserStateTrigger::ShowLaunchSettings:
+        {
+            HandleShowLaunchSettingsTrigger();
+            break;
+        }
+        case RomBrowserStateTrigger::HideLaunchSettings:
+        {
+            HandleHideLaunchSettingsTrigger();
+            break;
+        }
     }
 }
 
@@ -346,6 +357,32 @@ void App::HandleHideDisplaySettingsTrigger()
         _pendingAppRestart = true;
     }
 
+    if (!_dialogPresenter.GetOldFocus())
+        _romBrowserBottomScreenView->Focus(_focusManager);
+}
+
+void App::HandleShowLaunchSettingsTrigger()
+{
+    // LaunchSettingsBottomSheetView 생성
+    auto launchSettingsDialog = std::make_unique<LaunchSettingsBottomSheetView>(
+        _romBrowserController.GetRomBrowserViewModel().GetPointer(), 
+        &_theme->GetMaterialColorScheme(), 
+        _theme->GetFontRepository(), 
+        &_appSettingsService, 
+        &_languagePackService);
+        
+    // (선택 사항) 만약 뷰 내부에서 특수 아이콘(_iconButtonViewVram 등)을 
+    // 사용하게 된다면 아래처럼 SetGraphics를 호출해야 할 수도 있습니다.
+    // launchSettingsDialog->SetGraphics(_iconButtonViewVram); 
+
+    // 화면 최상단 다이얼로그 매니저를 통해 렌더링 시작
+    _dialogPresenter.ShowDialog(std::move(launchSettingsDialog));
+}
+
+void App::HandleHideLaunchSettingsTrigger()
+{
+    _dialogPresenter.CloseDialog();
+    
     if (!_dialogPresenter.GetOldFocus())
         _romBrowserBottomScreenView->Focus(_focusManager);
 }
@@ -405,6 +442,7 @@ bool App::IsRomBrowserVisible() const
     return curState == RomBrowserState::Browser
         || curState == RomBrowserState::GameInfo
         || curState == RomBrowserState::DisplaySettings
+        || curState == RomBrowserState::ShowLaunchSettings
         || curState == RomBrowserState::Launching;
 }
 

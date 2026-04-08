@@ -66,3 +66,18 @@ void RomBrowserViewModel::ShowGameInfo()
         _romBrowserController->ShowGameInfo(item);
     }
 }
+
+void RomBrowserViewModel::ShowLaunchSettings()
+{
+    _romBrowserController->ShowLaunchSettings();
+}
+
+void RomBrowserViewModel::HideLaunchSettings()
+{
+    _romBrowserController->HideLaunchSettings();
+}
+
+void RomBrowserViewModel::SaveSettingsNow()
+{
+    _romBrowserController->SaveSettingsNow();
+}

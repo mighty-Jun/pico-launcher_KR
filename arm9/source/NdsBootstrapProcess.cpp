@@ -188,15 +188,12 @@ u32 NdsBootstrapProcess::WriteActiveCheats(FIL* file, const CheatEntry* entry)
     return totalWritten;
 }
 
-// 외부에서 호출될 치트 준비 함수
 bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
 {
     const char* cheatPath = "fat:/_nds/nds-bootstrap/cheatData.bin";
 
-    // 1. 이전 게임의 치트 찌꺼기가 남아있지 않도록 일단 삭제(unlink)부터 합니다.
     f_unlink(cheatPath);
 
-    // 치트 데이터 자체가 넘어오지 않았다면 여기서 바로 종료 (빈 파일 생성 안 함)
     if (cheats == nullptr)
     {
         return true;

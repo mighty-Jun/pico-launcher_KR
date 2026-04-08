@@ -129,4 +129,7 @@ private:
 
     void StoreVramState(VramState& vramState) const;
     void RestoreVramState(const VramState& vramState);
+
+    void HandleShowLaunchSettingsTrigger();
+    void HandleHideLaunchSettingsTrigger();
 };
