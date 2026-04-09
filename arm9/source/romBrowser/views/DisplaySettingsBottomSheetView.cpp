@@ -25,8 +25,6 @@
 #include "fat/Directory.h"
 #include "left_icon.h"
 #include "right_icon.h"
-#include <nds/system.h>
-#include "sharedMemory.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -48,9 +46,6 @@
 
 #define THEME_FIELD_X       80
 #define LANGUAGE_FIELD_X    80
-
-#define BATTERY_LABEL_X     20  // ★ 배터리 라벨 X 좌표
-#define BATTERY_LABEL_Y     140 // ★ 배터리 라벨 Y 좌표 (빈 공간)
 
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
@@ -81,8 +76,6 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _themeFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
     , _languageLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
     , _languageFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
-    // ★ 배터리 라벨 초기화 (너비 200으로 넉넉하게 잡음)
-    , _batteryLabel(200, 16, 40, fontRepository->GetFont(FontType::Regular10)) 
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
@@ -116,7 +109,6 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     AddChildTail(&_themeFieldLabel);
     AddChildTail(&_languageLabel);
     AddChildTail(&_languageFieldLabel);
-    AddChildTail(&_batteryLabel);
 
     _themeLeftArrow = CreateArrowIcon();
     _themeRightArrow = CreateArrowIcon();
@@ -249,8 +241,6 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     
     _langLeftArrow.SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
     _langRightArrow.SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
-
-    _batteryLabel.SetPosition(BATTERY_LABEL_X, _position.y + BATTERY_LABEL_Y);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -302,32 +292,6 @@ void DisplaySettingsBottomSheetView::Update()
     //     filterOption.SetPosition(x, _position.y + 102);
     //     x += 32;
     // }
-    // ★ IPC 통신 대기(Deadlock)의 주범이었던 getBatteryLevel()을 지우고,
-    // ARM7이 공유 메모리에 올려둔 값을 1프레임의 지연도 없이 즉시 가져옵니다!
-    u32 value = SHARED_BATTERY_LEVEL; 
-    
-    unsigned int battery_level = value & BATTERY_LEVEL_MASK;
-    bool charger_connected = value & BATTERY_CHARGER_CONNECTED;
-
-    char batBuffer[64];
-    // ★ isDSiMode()를 통해 하드웨어를 판별하여 출력을 나눕니다.
-    if (isDSiMode())
-    {
-        // 1. DSi 모드: 15단계를 100% 비율로 변환하여 세밀하게 출력
-        int percentage = (battery_level * 100) / 15;
-        snprintf(batBuffer, sizeof(batBuffer), "Battery: %d%% %s", 
-                 percentage, 
-                 charger_connected ? "[Charging]" : "");
-    }
-    else
-    {
-        // 2. 구형 DS / DS Lite 모드: 3(Low)을 기준으로 직관적인 상태 텍스트 출력
-        const char* statusText = (battery_level > 3) ? "High" : "Low";
-        snprintf(batBuffer, sizeof(batBuffer), "Battery: %s %s", 
-                 statusText, 
-                 charger_connected ? "[Charging]" : "");
-    }
-    _batteryLabel.SetText(batBuffer);
 }
 
 void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
@@ -446,7 +410,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             // }
             else if (direction == FocusMoveDirection::Up)
             {
-                // 최상단이므로 맨 아래 언어 라벨로 순환 이동
                 return &_languageFieldLabel;
             }
             else //if (direction == FocusMoveDirection::Down)
@@ -531,7 +494,7 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
     //     }
     //     idx++;
     // }
-    // 3. Theme Value Label 탐색
+
     if (currentFocus == &_themeFieldLabel)
     {
         EnsureThemesLoaded();
@@ -554,12 +517,11 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
         }
         
         if (direction == FocusMoveDirection::Up)
-            return &_sortOptions[0]; // 위로 가면 Sort
+            return &_sortOptions[0];
         if (direction == FocusMoveDirection::Down)
-            return &_languageFieldLabel; // 아래로 가면 Language
+            return &_languageFieldLabel;
     }
     
-    // 4. Language Value Label 탐색
     if (currentFocus == &_languageFieldLabel)
     {
         EnsureLanguagesLoaded();
