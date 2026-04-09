@@ -42,4 +42,7 @@ private:
 
     u32 _batteryVramOffset = 0;
     bool _batteryPaletteUploaded = false;
+
+    int _batteryFrame = 0; // 현재 보여줄 프레임 인덱스 (0~6)
+    int _batteryCheckTimer = 0;
 };

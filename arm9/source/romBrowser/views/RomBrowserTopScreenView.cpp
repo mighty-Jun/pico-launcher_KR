@@ -115,6 +115,34 @@ void RomBrowserTopScreenView::Update()
             }
         }
     }
+
+    _batteryCheckTimer++;
+    if (_batteryCheckTimer >= 60)
+    {
+        _batteryCheckTimer = 0;
+        
+        _batteryFrame++;
+        if (_batteryFrame > 6) {
+            _batteryFrame = 0;
+        }
+
+        // 💡 나중에 실제 하드웨어 로직을 붙이실 때는 아래와 같은 구조로 작성하시면 됩니다.
+        /*
+        bool isCharging = sysPower_isCharging(); // (예시 함수)
+        if (isCharging) {
+            _batteryFrame = 6;
+        } else if (sys_isDsi()) {
+            // DSi 배터리 (1~4칸 -> 프레임 2~5)
+            int dsiLevel = sysPower_getBatteryLevel(); // 1~4 반환이라 가정
+            _batteryFrame = 1 + dsiLevel; 
+        } else {
+            // DS 배터리 (0: Low, 1: Good -> 프레임 0~1)
+            int dsLevel = sysPower_getBatteryLevel(); // 0 or 1 반환이라 가정
+            _batteryFrame = (dsLevel == 0) ? 0 : 1;
+        }
+        */
+    }
+    
     ViewContainer::Update();
 }
 
@@ -165,16 +193,20 @@ void RomBrowserTopScreenView::Draw(GraphicsContext& graphicsContext)
 {
     ViewContainer::Draw(graphicsContext);
 
+    // 1. 딱 필요한 16색(32바이트)만 복사 후 팔레트 할당 (스택 터짐 방지!)
     u16 paddedPal[16] = {0};
-    
     memcpy(paddedPal, batteryPal, 16 * sizeof(u16));
-
     u32 paletteSlot = graphicsContext.GetPaletteManager().AllocRow(DirectPalette(paddedPal));
 
+    // 2. OAM 1개 할당
     gfx_oam_entry_t* batteryOam = graphicsContext.GetOamManager().AllocOams(1);
 
-    OamBuilder::OamWithSize<32, 16>(238, 1, _batteryVramOffset >> 7)
+    // 3. 현재 프레임에 맞는 VRAM 오프셋 계산 (프레임당 256바이트)
+    u32 currentFrameVramOffset = _batteryVramOffset + (_batteryFrame * 256);
+
+    // 4. 화면 우상단(238, 1)에 우선순위 맞춰서 렌더링!
+    OamBuilder::OamWithSize<32, 16>(238, 1, currentFrameVramOffset >> 7)
         .WithPalette16(paletteSlot)
-        .WithPriority(graphicsContext.GetPriority())
+        .WithPriority(graphicsContext.GetPriority()) 
         .Build(batteryOam[0]);
 }
