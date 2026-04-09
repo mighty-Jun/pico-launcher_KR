@@ -13,6 +13,7 @@
 #include "gui/OamManager.h"
 #include "gui/OamBuilder.h"
 #include "gui/VramContext.h"
+#include "gui/palette/DirectPalette.h"
 
 RomBrowserTopScreenView::RomBrowserTopScreenView(
     const SharedPtr<RomBrowserViewModel>& viewModel,
@@ -121,14 +122,6 @@ void RomBrowserTopScreenView::VBlank()
 {
     ViewContainer::VBlank();
 
-    if (!_batteryPaletteUploaded)
-    {
-        // 서브 화면 OBJ 팔레트의 15번 슬롯(가장 마지막 슬롯)에 16색(32바이트) 팔레트를 복사합니다.
-        u16* subObjPalette = (u16*)0x068A0000;
-        dma_ntrCopy32(3, batteryPal, subObjPalette + (15 * 16), batteryPalLen);
-        _batteryPaletteUploaded = true;
-    }
-
     if (!_coverGraphicsUploaded && _selectedFileCover.IsValid())
     {
         if (_showCover && _selectedFileCover->IsActualCover())
@@ -170,18 +163,18 @@ void RomBrowserTopScreenView::VBlank()
 
 void RomBrowserTopScreenView::Draw(GraphicsContext& graphicsContext)
 {
-    // 자식 뷰(FileInfo 등) 먼저 그리기
     ViewContainer::Draw(graphicsContext);
 
-    // OAM 매니저를 통해 스프라이트 1개 할당
+    u16 paddedPal[16] = {0};
+    
+    memcpy(paddedPal, batteryPal, 16 * sizeof(u16));
+
+    u32 paletteSlot = graphicsContext.GetPaletteManager().AllocRow(DirectPalette(paddedPal));
+
     gfx_oam_entry_t* batteryOam = graphicsContext.GetOamManager().AllocOams(1);
 
-    // OamBuilder를 이용해 중앙에 렌더링
-    // 💡주의: <32, 16>은 battery.png의 해상도입니다. 실제 해상도(예: 64, 32 등)에 맞춰 숫자를 변경해 주세요.
-    OamBuilder::OamWithSize<32, 16>(
-            112, 88, // X: 112, Y: 88 (화면 정중앙 근처)
-            _batteryVramOffset >> 7)
-        .WithPalette16(15) // 15번 팔레트 슬롯 사용
-        .WithPriority(0)   // 최상단 표시 우선순위
+    OamBuilder::OamWithSize<32, 16>(238, 1, _batteryVramOffset >> 7)
+        .WithPalette16(paletteSlot)
+        .WithPriority(graphicsContext.GetPriority())
         .Build(batteryOam[0]);
 }
