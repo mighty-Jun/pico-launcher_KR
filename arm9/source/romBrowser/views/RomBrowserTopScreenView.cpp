@@ -14,6 +14,8 @@
 #include "gui/OamBuilder.h"
 #include "gui/VramContext.h"
 #include "gui/palette/DirectPalette.h"
+#include "sharedMemory.h"
+#include <nds/system.h>
 
 RomBrowserTopScreenView::RomBrowserTopScreenView(
     const SharedPtr<RomBrowserViewModel>& viewModel,
@@ -26,6 +28,7 @@ RomBrowserTopScreenView::RomBrowserTopScreenView(
     , _showCover(displayMode->ShowCoverOnTopScreen())
 {
     AddChildTail(_fileInfoView.get());
+    //UpdateBatteryLevel();
 }
 
 void RomBrowserTopScreenView::InitVram(const VramContext& vramContext)
@@ -120,27 +123,7 @@ void RomBrowserTopScreenView::Update()
     if (_batteryCheckTimer >= 60)
     {
         _batteryCheckTimer = 0;
-        
-        _batteryFrame++;
-        if (_batteryFrame > 6) {
-            _batteryFrame = 0;
-        }
-
-        // 💡 나중에 실제 하드웨어 로직을 붙이실 때는 아래와 같은 구조로 작성하시면 됩니다.
-        /*
-        bool isCharging = sysPower_isCharging(); // (예시 함수)
-        if (isCharging) {
-            _batteryFrame = 6;
-        } else if (sys_isDsi()) {
-            // DSi 배터리 (1~4칸 -> 프레임 2~5)
-            int dsiLevel = sysPower_getBatteryLevel(); // 1~4 반환이라 가정
-            _batteryFrame = 1 + dsiLevel; 
-        } else {
-            // DS 배터리 (0: Low, 1: Good -> 프레임 0~1)
-            int dsLevel = sysPower_getBatteryLevel(); // 0 or 1 반환이라 가정
-            _batteryFrame = (dsLevel == 0) ? 0 : 1;
-        }
-        */
+        UpdateBatteryLevel(); 
     }
     
     ViewContainer::Update();
@@ -193,6 +176,11 @@ void RomBrowserTopScreenView::Draw(GraphicsContext& graphicsContext)
 {
     ViewContainer::Draw(graphicsContext);
 
+    if (_batteryFrame == -1)
+    {
+        return;
+    }
+
     // 1. 딱 필요한 16색(32바이트)만 복사 후 팔레트 할당 (스택 터짐 방지!)
     u16 paddedPal[16] = {0};
     memcpy(paddedPal, batteryPal, 16 * sizeof(u16));
@@ -209,4 +197,26 @@ void RomBrowserTopScreenView::Draw(GraphicsContext& graphicsContext)
         .WithPalette16(paletteSlot)
         .WithPriority(graphicsContext.GetPriority()) 
         .Build(batteryOam[0]);
+}
+
+void RomBrowserTopScreenView::UpdateBatteryLevel()
+{
+    u32 value = SHARED_BATTERY_LEVEL; 
+    unsigned int battery_level = value & BATTERY_LEVEL_MASK;
+    bool charger_connected = value & BATTERY_CHARGER_CONNECTED;
+
+    if (charger_connected)
+    {
+        _batteryFrame = 6;
+    }
+    else if (isDSiMode())
+    {
+        int barIndex = battery_level / 4; 
+        if (barIndex > 3) barIndex = 3; 
+        _batteryFrame = 2 + barIndex;
+    }
+    else
+    {
+        _batteryFrame = (battery_level > 3) ? 1 : 0;
+    }
 }
