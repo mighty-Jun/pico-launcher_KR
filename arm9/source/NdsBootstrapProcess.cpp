@@ -244,8 +244,9 @@ void NdsBootstrapProcess::Launch()
 {
     auto loadParams = pload_getLoadParams();
 
-    char* targetRom = new char[256];
-    char* targetSave = new char[256];
+    // 🚨 new 대신 static을 사용하여 힙 충돌을 방지합니다.
+    static char targetRom[256];
+    static char targetSave[256];
     
     StringUtil::Copy(targetRom, loadParams->romPath, 256);
 
@@ -267,12 +268,37 @@ void NdsBootstrapProcess::Launch()
         }
     }
 
+    FIL saveFile;
+    FILINFO fno;
+    if (f_stat(targetSave, &fno) != FR_OK)
+    {
+        LOG_DEBUG("Save file not found. Generating new save file at %s\n", targetSave);
+        if (f_open(&saveFile, targetSave, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
+        {
+            const u32 bufferSize = 4096;
+            // 🚨 여기서도 new 대신 static 배열을 사용합니다.
+            static u8 buffer[4096];
+            memset(buffer, 0xFF, bufferSize);
+            
+            UINT bytesWritten;
+            for (int i = 0; i < 128; i++)
+            {
+                f_write(&saveFile, buffer, bufferSize, &bytesWritten);
+            }
+            
+            f_close(&saveFile);
+            LOG_DEBUG("Successfully generated dummy save file.\n");
+        }
+        else
+        {
+            LOG_ERROR("Failed to generate save file.\n");
+        }
+    }
+
     bool isValidDsi = HasValidDsiBinary(targetRom);
     bool iniResult = PrepareIni(targetRom, targetSave, isValidDsi);
     
-    // Free allocated memory to prevent leaks
-    delete[] targetRom;
-    delete[] targetSave;
+    // 🚨 delete[] 코드는 static을 사용하므로 모두 제거했습니다.
 
     if (!iniResult)
     {

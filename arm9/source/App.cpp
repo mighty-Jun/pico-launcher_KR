@@ -31,6 +31,7 @@
 #include "splashTop.h"
 #include "App.h"
 #include "PicoLoaderProcess.h"
+#include "NdsBootstrapProcess.h"
 
 #define SPLASH_FRAMES       44
 
@@ -159,6 +160,13 @@ void App::Run()
         &_vblankTextureLoader);
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
 
+    _loadingView = std::make_unique<LoadingView>(
+        &_loadingViewModel,
+        _theme->GetFontRepository(),
+        &_theme->GetMaterialColorScheme());
+
+    _loadingView->InitVram(_mainVramContext);
+
     StoreVramState(_vramStateAfterMakeBottomScreenView);
 
     const auto& materialColorScheme = _theme->GetMaterialColorScheme();
@@ -270,6 +278,7 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
         case RomBrowserStateTrigger::None:
         case RomBrowserStateTrigger::Launch:
         {
+            _launchDelayFrames = 2;
             break;
         }
         case RomBrowserStateTrigger::ShowGameInfo:
@@ -494,12 +503,28 @@ void App::Update()
         return;
     }
 
-    _romBrowserBottomScreenView->Update();
-    if (isRomBrowserVisible)
+    // ▼ 여기서부터 중복 제거 및 깔끔하게 정리된 분기 로직 ▼
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
+    if (showLoadingView)
     {
-        _romBrowserTopScreenView->Update();
-        _romBrowserController.GetRomBrowserViewModel()->SetIconFrameCounter(
-            _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter() + 1);
+        if (_loadingView) _loadingView->Update();
+    }
+    else
+    {
+        _romBrowserBottomScreenView->Update();
+    }
+
+    if (IsRomBrowserVisible())
+    {
+        // 런칭 중이 아닐 때만 상단 브라우저 및 아이콘 업데이트
+        if (!showLoadingView)
+        {
+            _romBrowserTopScreenView->Update();
+            _romBrowserController.GetRomBrowserViewModel()->SetIconFrameCounter(
+                _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter() + 1);
+        }
     }
 }
 
@@ -535,15 +560,28 @@ void App::Draw()
     if (_bottomBackground)
         _bottomBackground->Draw(mainGraphicsContext);
 
+    // ▼ 여기서부터 중복 제거된 렌더링 분기 로직 ▼
+    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
     if (!_changeDisplayMode && IsRomBrowserVisible())
     {
-        _romBrowserTopScreenView->Draw(subGraphicsContext);
+        if (!showLoadingView)
+            _romBrowserTopScreenView->Draw(subGraphicsContext);
     }
 
     _dialogPresenter.ApplyClipArea(mainGraphicsContext);
     if (!_changeDisplayMode)
     {
-        _romBrowserBottomScreenView->Draw(mainGraphicsContext);
+        if (showLoadingView)
+        {
+            if (_loadingView) _loadingView->Draw(mainGraphicsContext);
+        }
+        else
+        {
+            _romBrowserBottomScreenView->Draw(mainGraphicsContext);
+        }
     }
     mainGraphicsContext.ResetClipArea();
 
@@ -576,13 +614,27 @@ void App::VBlank()
     if (_bottomBackground)
         _bottomBackground->VBlank();
 
+    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
     _dialogPresenter.VBlank();
 
+    // 🔥 누락되었던 상단 화면 VBlank 처리 추가
     if (IsRomBrowserVisible())
     {
-        _romBrowserTopScreenView->VBlank();
+        if (!showLoadingView)
+            _romBrowserTopScreenView->VBlank();
     }
-    _romBrowserBottomScreenView->VBlank();
+
+    if (showLoadingView)
+    {
+        if (_loadingView) _loadingView->VBlank();
+    }
+    else
+    {
+        _romBrowserBottomScreenView->VBlank();
+    }
 
     _vblankTextureLoader.VBlank();
 }

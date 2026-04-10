@@ -31,6 +31,8 @@
 #include "themes/ITheme.h"
 #include "core/SharedPtr.h"
 #include "animation/Animator.h"
+#include "romBrowser/viewModels/LoadingViewModel.h"
+#include "romBrowser/views/LoadingView.h"
 
 class alignas(32) App : public IProcess
 {
@@ -132,4 +134,8 @@ private:
 
     void HandleShowLaunchSettingsTrigger();
     void HandleHideLaunchSettingsTrigger();
+
+    LoadingViewModel _loadingViewModel { &_romBrowserController };
+    std::unique_ptr<LoadingView> _loadingView;
+    int _launchDelayFrames = 0; // 로딩창 렌더링 대기용 프레임 카운터
 };
