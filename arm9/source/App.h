@@ -137,5 +137,5 @@ private:
 
     LoadingViewModel _loadingViewModel { &_romBrowserController };
     std::unique_ptr<LoadingView> _loadingView;
-    int _launchDelayFrames = 0; // 로딩창 렌더링 대기용 프레임 카운터
+    int _launchDelayFrames = 0;
 };

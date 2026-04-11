@@ -244,7 +244,6 @@ void NdsBootstrapProcess::Launch()
 {
     auto loadParams = pload_getLoadParams();
 
-    // 🚨 new 대신 static을 사용하여 힙 충돌을 방지합니다.
     static char targetRom[256];
     static char targetSave[256];
     
@@ -276,7 +275,6 @@ void NdsBootstrapProcess::Launch()
         if (f_open(&saveFile, targetSave, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
         {
             const u32 bufferSize = 4096;
-            // 🚨 여기서도 new 대신 static 배열을 사용합니다.
             static u8 buffer[4096];
             memset(buffer, 0xFF, bufferSize);
             
@@ -297,8 +295,6 @@ void NdsBootstrapProcess::Launch()
 
     bool isValidDsi = HasValidDsiBinary(targetRom);
     bool iniResult = PrepareIni(targetRom, targetSave, isValidDsi);
-    
-    // 🚨 delete[] 코드는 static을 사용하므로 모두 제거했습니다.
 
     if (!iniResult)
     {
