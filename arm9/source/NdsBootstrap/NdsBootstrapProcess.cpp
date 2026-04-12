@@ -130,8 +130,8 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
         "CONSOLE_MODEL = %s\n"
         "LANGUAGE = -1\n"
         "REGION = -1\n"
-        "LOGGING = 1\n"
-        "DEBUG = 1\n",
+        "LOGGING = 0\n"
+        "DEBUG = 0\n",
         romPath,
         (savePath != nullptr) ? savePath : "",
         enableDsiMode ? "1" : "0",
