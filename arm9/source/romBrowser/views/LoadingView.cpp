@@ -89,3 +89,8 @@ void LoadingView::VBlank()
 
     _loadingLabel.VBlank();
 }
+
+void LoadingView::ShowError()
+{
+    _loadingLabel.SetText("DSiWare 실행 불가");
+}

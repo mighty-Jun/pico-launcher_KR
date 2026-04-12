@@ -240,7 +240,7 @@ bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
     return true;
 }
 
-void NdsBootstrapProcess::Launch(const NdsInternalFileInfo* internalInfo)
+void NdsBootstrapProcess::Launch()
 {
     auto loadParams = pload_getLoadParams();
 

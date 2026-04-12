@@ -21,6 +21,7 @@ public:
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     void VBlank() override;
+    void ShowError();
 
     Rectangle GetBounds() const override
     {

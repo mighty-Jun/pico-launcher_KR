@@ -211,9 +211,8 @@ void RomBrowserController::HandleLaunchTrigger()
 
                 std::unique_ptr<InternalFileInfo> internalInfo(_triggerFileInfo.CreateInternalFileInfo());
 
-                const NdsInternalFileInfo* ndsInfo = static_cast<const NdsInternalFileInfo*>(internalInfo.get());
 
-                NdsBootstrapProcess::Launch(ndsInfo);
+                NdsBootstrapProcess::Launch();
             }
             else
             {

@@ -9,7 +9,7 @@ class NdsInternalFileInfo;
 class NdsBootstrapProcess
 {
 public:
-    static void Launch(const NdsInternalFileInfo* internalInfo = nullptr);
+    static void Launch();
 
     static bool PrepareCheats(const GameCheats* cheats);
 
