@@ -4,10 +4,12 @@
 #include "fat/ff.h"
 #include "services/settings/IAppSettingsService.h"
 
+class NdsInternalFileInfo;
+
 class NdsBootstrapProcess
 {
 public:
-    static void Launch();
+    static void Launch(const NdsInternalFileInfo* internalInfo = nullptr);
 
     static bool PrepareCheats(const GameCheats* cheats);
 

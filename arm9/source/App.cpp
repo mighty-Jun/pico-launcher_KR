@@ -31,7 +31,7 @@
 #include "splashTop.h"
 #include "App.h"
 #include "PicoLoaderProcess.h"
-#include "NdsBootstrapProcess.h"
+#include "NdsBootstrap/NdsBootstrapProcess.h"
 
 #define SPLASH_FRAMES       44
 

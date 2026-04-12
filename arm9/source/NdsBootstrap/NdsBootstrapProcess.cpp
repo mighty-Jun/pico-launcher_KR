@@ -9,6 +9,8 @@
 #include <string.h>
 #include "picoLoaderBootstrap.h"
 #include "sharedMemory.h"
+#include "CardSaveArranger.h"
+//#include "NdsInternalFileInfo.h"
 
 #define FIFO_PICO_MSG_IS_3DS 0x1234
 
@@ -102,7 +104,8 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
 {
     f_mkdir("fat:/_nds");
 
-    FIL iniFile;
+    // 🔥 unaligned 경고와 스택 오버플로우를 동시에 잡는 4바이트 정렬 static 선언
+    alignas(4) static FIL iniFile; 
     FRESULT result = f_open(&iniFile, "fat:/_nds/nds-bootstrap.ini", FA_CREATE_ALWAYS | FA_WRITE);
     if (result != FR_OK)
     {
@@ -110,12 +113,15 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
         return false;
     }
 
-    char* buffer = new char[512];
+    // 🔥 힙 고갈(Data Abort)의 주범이었던 new char[512]를 static 정렬 배열로 교체!
+    alignas(4) static char buffer[512];
 
     bool enableDsiMode = Environment::IsDsiMode() && isDsiRom;
     const char* consoleModel = "0";
     if (Environment::IsDsiMode())
     {
+        // 현재 구동하시는 기기가 뉴큰다수(New 3DS XL)이므로, 
+        // SHARED_IS_3DS_FLAG가 1로 정상 인식되어 consoleModel이 '2'로 세팅될 것입니다.
         consoleModel = (SHARED_IS_3DS_FLAG == 1) ? "2" : "0"; 
     }
 
@@ -138,8 +144,6 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
     UINT bytesWritten;
     result = f_write(&iniFile, buffer, len, &bytesWritten);
     f_close(&iniFile);
-    
-    delete[] buffer;
 
     if (result != FR_OK || bytesWritten != (UINT)len)
     {
@@ -240,7 +244,7 @@ bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
     return true;
 }
 
-void NdsBootstrapProcess::Launch()
+void NdsBootstrapProcess::Launch(const NdsInternalFileInfo* internalInfo)
 {
     auto loadParams = pload_getLoadParams();
 
@@ -267,30 +271,12 @@ void NdsBootstrapProcess::Launch()
         }
     }
 
-    FIL saveFile;
-    FILINFO fno;
-    if (f_stat(targetSave, &fno) != FR_OK)
+    CardSaveArranger saveArranger;
+    LOG_DEBUG("Calling CardSaveArranger to setup save file...\n");
+    if (!saveArranger.SetupCardSave(targetRom, targetSave))
     {
-        LOG_DEBUG("Save file not found. Generating new save file at %s\n", targetSave);
-        if (f_open(&saveFile, targetSave, FA_CREATE_ALWAYS | FA_WRITE) == FR_OK)
-        {
-            const u32 bufferSize = 4096;
-            static u8 buffer[4096];
-            memset(buffer, 0xFF, bufferSize);
-            
-            UINT bytesWritten;
-            for (int i = 0; i < 128; i++)
-            {
-                f_write(&saveFile, buffer, bufferSize, &bytesWritten);
-            }
-            
-            f_close(&saveFile);
-            LOG_DEBUG("Successfully generated dummy save file.\n");
-        }
-        else
-        {
-            LOG_ERROR("Failed to generate save file.\n");
-        }
+        LOG_ERROR("Failed to process save file through CardSaveArranger.\n");
+        // 필요 시 return; 
     }
 
     bool isValidDsi = HasValidDsiBinary(targetRom);
