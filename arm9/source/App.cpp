@@ -211,7 +211,7 @@ void App::Run()
 
     MainLoop();
 
-    _bgmService.StopBgm();
+    if(!_isBgmStoppedForLaunch) _bgmService.StopBgm();
     rtos_disableIrqMask(RTOS_IRQ_VCOUNT);
     rtos_setIrqFunc(RTOS_IRQ_VCOUNT, nullptr);
 }
@@ -512,6 +512,11 @@ void App::Update()
     if (showLoadingView && _loadingView)
     {
         _loadingView->Update();
+        LOG_DEBUG("Loading view frame counter: %d\n", _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter());
+        if(!_isBgmStoppedForLaunch){
+            _bgmService.StopBgm();
+            _isBgmStoppedForLaunch = true;
+        }
     }
 }
 

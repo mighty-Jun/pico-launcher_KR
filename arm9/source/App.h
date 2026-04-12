@@ -138,4 +138,5 @@ private:
     LoadingViewModel _loadingViewModel { &_romBrowserController };
     std::unique_ptr<LoadingView> _loadingView;
     int _launchDelayFrames = 0;
+    bool _isBgmStoppedForLaunch = false;
 };
