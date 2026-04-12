@@ -10,6 +10,7 @@
 #include "picoLoaderBootstrap.h"
 #include "sharedMemory.h"
 #include "CardSaveArranger.h"
+#include "ndsHeader.h"
 //#include "NdsInternalFileInfo.h"
 
 #define FIFO_PICO_MSG_IS_3DS 0x1234
@@ -249,6 +250,23 @@ void NdsBootstrapProcess::Launch()
     
     StringUtil::Copy(targetRom, loadParams->romPath, 256);
 
+    static nds_header_twl_t twlHeader;
+    static FIL romFile;
+    UINT bytesRead = 0;
+    bool isDsiWareSave = false;
+
+    if (f_open(&romFile, targetRom, FA_READ | FA_OPEN_EXISTING) == FR_OK)
+    {
+        f_read(&romFile, &twlHeader, sizeof(nds_header_twl_t), &bytesRead);
+        f_close(&romFile);
+
+        if (bytesRead >= sizeof(nds_header_ntr_t) && 
+           (twlHeader.twlPrivateSavSize != 0 || twlHeader.twlPublicSavSize != 0))
+        {
+            isDsiWareSave = true;
+        }
+    }
+
     if (loadParams->savePath[0] != '\0')
     {
         StringUtil::Copy(targetSave, loadParams->savePath, 256);
@@ -267,16 +285,18 @@ void NdsBootstrapProcess::Launch()
         }
     }
 
-    CardSaveArranger saveArranger;
-    LOG_DEBUG("Calling CardSaveArranger to setup save file...\n");
-    if (!saveArranger.SetupCardSave(targetRom, targetSave))
-    {
-        LOG_ERROR("Failed to process save file through CardSaveArranger.\n");
-        // 필요 시 return; 
-    }
-
+    if(!isDsiWareSave){
+        CardSaveArranger saveArranger;
+        LOG_DEBUG("Calling CardSaveArranger to setup save file...\n");
+        if (!saveArranger.SetupCardSave(targetRom, targetSave))
+        {
+            LOG_ERROR("Failed to process save file through CardSaveArranger.\n");
+            // 필요 시 return; 
+        }
+    }   
     bool isValidDsi = HasValidDsiBinary(targetRom);
-    bool iniResult = PrepareIni(targetRom, targetSave, isValidDsi);
+    const char* iniSavePath = isDsiWareSave ? nullptr : targetSave;
+    bool iniResult = PrepareIni(targetRom, iniSavePath, isValidDsi);
 
     if (!iniResult)
     {
