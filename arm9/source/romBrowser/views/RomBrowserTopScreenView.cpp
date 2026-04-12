@@ -17,6 +17,8 @@
 #include "sharedMemory.h"
 #include <nds/system.h>
 
+static int s_lastKnownBatteryFrame = -1;
+
 RomBrowserTopScreenView::RomBrowserTopScreenView(
     const SharedPtr<RomBrowserViewModel>& viewModel,
     const RomBrowserDisplayMode* displayMode,
@@ -28,6 +30,8 @@ RomBrowserTopScreenView::RomBrowserTopScreenView(
     , _showCover(displayMode->ShowCoverOnTopScreen())
 {
     AddChildTail(_fileInfoView.get());
+
+    _batteryFrame = s_lastKnownBatteryFrame;
     //UpdateBatteryLevel();
 }
 
@@ -219,4 +223,6 @@ void RomBrowserTopScreenView::UpdateBatteryLevel()
     {
         _batteryFrame = (battery_level > 3) ? 1 : 0;
     }
+
+    s_lastKnownBatteryFrame = _batteryFrame;
 }
