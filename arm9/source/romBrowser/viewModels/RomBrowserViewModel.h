@@ -28,6 +28,10 @@ public:
     void NavigateUp();
     void ShowGameInfo();
 
+    void ShowLaunchSettings();
+    void HideLaunchSettings();
+    void SaveSettingsNow();
+
 private:
     IRomBrowserController* _romBrowserController;
     std::unique_ptr<FileInfoManager> _fileInfoManager;

@@ -73,6 +73,9 @@ public:
 
     virtual const FileInfo& GetTriggerFileInfo() const override { return _triggerFileInfo; }
 
+    void ShowLaunchSettings() override;
+    void HideLaunchSettings() override;
+
 private:
     IAppSettingsService* _appSettingsService;
     TaskQueueBase* _ioTaskQueue;

@@ -3,6 +3,7 @@
 #include "core/String.h"
 #include "RomBrowserDisplaySettings.h"
 #include "FileAssociation.h"
+#include "LoaderType.h"
 
 class AppSettings
 {
@@ -14,4 +15,6 @@ public:
 
     std::unique_ptr<FileAssociation[]> fileAssociations;
     u32 numberOfFileAssociations = 0;
+
+    LoaderType loaderType = LoaderType::Pico_Loader;
 };

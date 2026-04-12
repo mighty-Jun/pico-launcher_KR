@@ -22,6 +22,7 @@
 #include "romBrowser/views/NdsGameDetailsBottomSheetView.h"
 #include "romBrowser/views/cheats/CheatsBottomSheetView.h"
 #include "romBrowser/views/DisplaySettingsBottomSheetView.h"
+#include "romBrowser/views/LaunchSettingsBottomSheetView.h"
 #include "bgm/AudioStreamPlayer.h"
 #include "bgm/BgmService.h"
 #include "themes/ThemeInfoFactory.h"
@@ -30,6 +31,7 @@
 #include "splashTop.h"
 #include "App.h"
 #include "PicoLoaderProcess.h"
+#include "NdsBootstrap/NdsBootstrapProcess.h"
 
 #define SPLASH_FRAMES       44
 
@@ -158,6 +160,13 @@ void App::Run()
         &_vblankTextureLoader);
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
 
+    _loadingView = std::make_unique<LoadingView>(
+        &_loadingViewModel,
+        _theme->GetFontRepository(),
+        &_theme->GetMaterialColorScheme());
+
+    _loadingView->InitVram(_mainVramContext);
+
     StoreVramState(_vramStateAfterMakeBottomScreenView);
 
     const auto& materialColorScheme = _theme->GetMaterialColorScheme();
@@ -202,7 +211,7 @@ void App::Run()
 
     MainLoop();
 
-    _bgmService.StopBgm();
+    if(!_isBgmStoppedForLaunch) _bgmService.StopBgm();
     rtos_disableIrqMask(RTOS_IRQ_VCOUNT);
     rtos_setIrqFunc(RTOS_IRQ_VCOUNT, nullptr);
 }
@@ -269,6 +278,7 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
         case RomBrowserStateTrigger::None:
         case RomBrowserStateTrigger::Launch:
         {
+            _launchDelayFrames = 2;
             break;
         }
         case RomBrowserStateTrigger::ShowGameInfo:
@@ -304,6 +314,16 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
         case RomBrowserStateTrigger::ChangeDisplayMode:
         {
             _changeDisplayMode = true;
+            break;
+        }
+        case RomBrowserStateTrigger::ShowLaunchSettings:
+        {
+            HandleShowLaunchSettingsTrigger();
+            break;
+        }
+        case RomBrowserStateTrigger::HideLaunchSettings:
+        {
+            HandleHideLaunchSettingsTrigger();
             break;
         }
     }
@@ -346,6 +366,26 @@ void App::HandleHideDisplaySettingsTrigger()
         _pendingAppRestart = true;
     }
 
+    if (!_dialogPresenter.GetOldFocus())
+        _romBrowserBottomScreenView->Focus(_focusManager);
+}
+
+void App::HandleShowLaunchSettingsTrigger()
+{
+    auto launchSettingsDialog = std::make_unique<LaunchSettingsBottomSheetView>(
+        _romBrowserController.GetRomBrowserViewModel().GetPointer(), 
+        &_theme->GetMaterialColorScheme(), 
+        _theme->GetFontRepository(), 
+        &_appSettingsService, 
+        &_languagePackService);
+        
+    _dialogPresenter.ShowDialog(std::move(launchSettingsDialog));
+}
+
+void App::HandleHideLaunchSettingsTrigger()
+{
+    _dialogPresenter.CloseDialog();
+    
     if (!_dialogPresenter.GetOldFocus())
         _romBrowserBottomScreenView->Focus(_focusManager);
 }
@@ -405,6 +445,7 @@ bool App::IsRomBrowserVisible() const
     return curState == RomBrowserState::Browser
         || curState == RomBrowserState::GameInfo
         || curState == RomBrowserState::DisplaySettings
+        || curState == RomBrowserState::ShowLaunchSettings
         || curState == RomBrowserState::Launching;
 }
 
@@ -456,12 +497,26 @@ void App::Update()
         return;
     }
 
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
     _romBrowserBottomScreenView->Update();
-    if (isRomBrowserVisible)
+
+    if (IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->Update();
         _romBrowserController.GetRomBrowserViewModel()->SetIconFrameCounter(
             _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter() + 1);
+    }
+
+    if (showLoadingView && _loadingView)
+    {
+        _loadingView->Update();
+        LOG_DEBUG("Loading view frame counter: %d\n", _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter());
+        if(!_isBgmStoppedForLaunch){
+            _bgmService.StopBgm();
+            _isBgmStoppedForLaunch = true;
+        }
     }
 }
 
@@ -497,6 +552,10 @@ void App::Draw()
     if (_bottomBackground)
         _bottomBackground->Draw(mainGraphicsContext);
 
+    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
     if (!_changeDisplayMode && IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->Draw(subGraphicsContext);
@@ -506,6 +565,11 @@ void App::Draw()
     if (!_changeDisplayMode)
     {
         _romBrowserBottomScreenView->Draw(mainGraphicsContext);
+
+        if (showLoadingView && _loadingView)
+        {
+            _loadingView->Draw(mainGraphicsContext);
+        }
     }
     mainGraphicsContext.ResetClipArea();
 
@@ -538,13 +602,23 @@ void App::VBlank()
     if (_bottomBackground)
         _bottomBackground->VBlank();
 
+    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
+    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
+    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
+
     _dialogPresenter.VBlank();
 
     if (IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->VBlank();
     }
+    
     _romBrowserBottomScreenView->VBlank();
+
+    if (showLoadingView && _loadingView)
+    {
+        _loadingView->VBlank();
+    }
 
     _vblankTextureLoader.VBlank();
 }

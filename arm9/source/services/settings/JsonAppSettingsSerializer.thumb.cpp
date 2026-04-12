@@ -16,6 +16,7 @@
 #define KEY_LAST_USED_FILE_PATH      "lastUsedFilePath"
 #define KEY_FILE_ASSOCIATIONS        "fileAssociations"
 #define KEY_FILE_ASSOCIATIONS_APPLICATION_PATH  "appPath"
+#define KEY_LOADER_TYPE "loaderTypes"
 
 static const char* serializeRomBrowserLayout(RomBrowserLayout romBrowserLayout)
 {
@@ -73,6 +74,19 @@ static const char* serializeRomBrowserSortMode(RomBrowserSortMode romBrowserSort
     }
 }
 
+static const char* serializeLoaderType(LoaderType loaderType)
+{
+    switch (loaderType)
+    {
+        case LoaderType::Pico_Loader:
+            return "Pico_Loader";
+        case LoaderType::NDS_Bootstrap:
+            return "NDS_Bootstrap";
+        default:
+            return "Pico_Loader"; // 기본값
+    }
+}
+
 static bool tryParseRomBrowserSortMode(
     const char* romBrowserDisplayModeString, RomBrowserSortMode& romBrowserSortMode)
 {
@@ -110,6 +124,22 @@ static bool tryParseFileAssociations(const JsonObjectConst& json, AppSettings* a
     return true;
 }
 
+static bool tryParseLoaderType(
+    const char* loaderTypeString, LoaderType& loaderType)
+{
+    if (!loaderTypeString)
+        return false;
+
+    if (!strcasecmp(loaderTypeString, "Pico_Loader"))
+        loaderType = LoaderType::Pico_Loader;
+    else if (!strcasecmp(loaderTypeString, "NDS_Bootstrap"))
+        loaderType = LoaderType::NDS_Bootstrap;
+    else
+        return false;
+
+    return true;
+}
+
 static void serializeFileAssociations(DynamicJsonDocument& json, const AppSettings* appSettings)
 {
     auto jsonObject = json[KEY_FILE_ASSOCIATIONS].to<JsonObject>();
@@ -130,6 +160,7 @@ static std::unique_ptr<u8[]> writeJson(const AppSettings* appSettings, u32& leng
     json[KEY_THEME] = appSettings->theme.GetString();
     json[KEY_LAST_USED_FILE_PATH] = appSettings->lastUsedFilePath.GetString();
     serializeFileAssociations(json, appSettings);
+    json[KEY_LOADER_TYPE] = serializeLoaderType(appSettings->loaderType);
 
     u32 outputSize = measureJsonPretty(json);
     std::unique_ptr<u8[]> fileData(new(cache_align) u8[outputSize]);
@@ -182,6 +213,12 @@ static void readJson(AppSettings* appSettings, const JsonDocument& json)
     }
 
     tryParseFileAssociations(json[KEY_FILE_ASSOCIATIONS], appSettings);
+
+    LoaderType loaderType;
+    if (tryParseLoaderType(json[KEY_LOADER_TYPE].as<const char*>(), loaderType))
+    {
+        appSettings->loaderType = loaderType;
+    }
 }
 
 bool JsonAppSettingsSerializer::Deserialize(AppSettings* appSettings, const char* filePath) const
