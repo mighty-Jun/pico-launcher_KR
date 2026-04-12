@@ -104,7 +104,6 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
 {
     f_mkdir("fat:/_nds");
 
-    // 🔥 unaligned 경고와 스택 오버플로우를 동시에 잡는 4바이트 정렬 static 선언
     alignas(4) static FIL iniFile; 
     FRESULT result = f_open(&iniFile, "fat:/_nds/nds-bootstrap.ini", FA_CREATE_ALWAYS | FA_WRITE);
     if (result != FR_OK)
@@ -113,15 +112,12 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
         return false;
     }
 
-    // 🔥 힙 고갈(Data Abort)의 주범이었던 new char[512]를 static 정렬 배열로 교체!
     alignas(4) static char buffer[512];
 
     bool enableDsiMode = Environment::IsDsiMode() && isDsiRom;
     const char* consoleModel = "0";
     if (Environment::IsDsiMode())
     {
-        // 현재 구동하시는 기기가 뉴큰다수(New 3DS XL)이므로, 
-        // SHARED_IS_3DS_FLAG가 1로 정상 인식되어 consoleModel이 '2'로 세팅될 것입니다.
         consoleModel = (SHARED_IS_3DS_FLAG == 1) ? "2" : "0"; 
     }
 

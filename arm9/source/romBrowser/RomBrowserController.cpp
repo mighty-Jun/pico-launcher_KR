@@ -209,14 +209,10 @@ void RomBrowserController::HandleLaunchTrigger()
                 auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
                 NdsBootstrapProcess::PrepareCheats(cheats.get());
 
-                // 🔥 1. FileInfo에서 InternalFileInfo를 새로 생성하고, 누수 방지를 위해 unique_ptr로 감쌉니다.
                 std::unique_ptr<InternalFileInfo> internalInfo(_triggerFileInfo.CreateInternalFileInfo());
 
-                // 🔥 2. Nds-Bootstrap으로 실행되는 파일이므로 NdsInternalFileInfo로 캐스팅합니다.
-                // (홈브루 환경에서는 RTTI 오버헤드 때문에 보통 static_cast를 많이 사용합니다.)
                 const NdsInternalFileInfo* ndsInfo = static_cast<const NdsInternalFileInfo*>(internalInfo.get());
 
-                // 🔥 3. 추출한 NDS 전용 파일 정보를 Launch 함수로 전달합니다.
                 NdsBootstrapProcess::Launch(ndsInfo);
             }
             else
