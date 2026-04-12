@@ -7,5 +7,7 @@ enum class RomBrowserState
     GameInfo,
     LoadingFolder,
     Launching,
-    DisplaySettings
+    DisplaySettings,
+    ShowLaunchSettings,
+    HideLaunchSettings
 };

@@ -30,6 +30,7 @@
 #include "ExitMode.h"
 #include "Arm7State.h"
 #include "mmc/tmio.h"
+#include <nds/arm7/i2c.h>
 
 static NocashOutputStream sNocashOutputStream;
 static PlainLogger sPlainLogger = PlainLogger(LogLevel::All, std::unique_ptr<IOutputStream>(&sNocashOutputStream));
@@ -120,6 +121,22 @@ static void initializeArm7()
 
     clearSoundRegisters();
 
+    SHARED_IS_3DS_FLAG = 0; // 기본값은 0 (DSi 또는 구형 DS)
+    if (isDSiMode()) 
+    {
+        u8 byteBak = i2cReadRegister(I2C_PM, 0x71); 
+        i2cWriteRegister(I2C_PM, 0x71, 0xD2);
+        u8 byteNew = i2cReadRegister(I2C_PM, 0x71);
+        
+        // 0xD2 쓰기가 막혔다면 3DS(TWL_FIRM) 환경이므로 1을 기록합니다.
+        if (byteNew != 0xD2) 
+        {
+            SHARED_IS_3DS_FLAG = 1;
+        }
+        
+        i2cWriteRegister(I2C_PM, 0x71, byteBak);
+    }
+
     pmic_setAmplifierEnable(true);
     sys_setSoundPower(true);
 
@@ -176,6 +193,12 @@ static void updateArm7IdleState()
     if (sState == Arm7State::ExitRequested)
     {
         snd_setMasterVolume(0); // mute sound
+    }
+    static int batteryTimer = 0;
+    if (++batteryTimer >= 60)
+    {
+        SHARED_BATTERY_LEVEL = getBatteryLevel();
+        batteryTimer = 0;
     }
 }
 

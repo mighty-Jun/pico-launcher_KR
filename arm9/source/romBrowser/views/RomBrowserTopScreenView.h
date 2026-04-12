@@ -5,6 +5,7 @@
 #include "gui/views/LabelView.h"
 #include "../FileType/FileIcon.h"
 #include "../DisplayMode/RomBrowserDisplayMode.h"
+#include "battery.h"
 
 class RomBrowserViewModel;
 class IRomBrowserViewFactory;
@@ -21,6 +22,8 @@ public:
     void Update() override;
     void VBlank() override;
 
+    void Draw(GraphicsContext& graphicsContext) override;
+
     Rectangle GetBounds() const override
     {
         return Rectangle(0, 0, 256, 192);
@@ -36,4 +39,12 @@ private:
     bool _iconGraphicsUploaded = false;
     bool _coverGraphicsUploaded = false;
     bool _showCover;
+
+    u32 _batteryVramOffset = 0;
+    bool _batteryPaletteUploaded = false;
+
+    int _batteryFrame = -1; // 현재 보여줄 프레임 인덱스 (0~6)
+    int _batteryCheckTimer = 10;
+
+    void UpdateBatteryLevel();
 };

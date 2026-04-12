@@ -97,5 +97,13 @@ bool RomBrowserView::HandleInput(const InputProvider& inputProvider, FocusManage
             return true;
         }
     }
+    else if (inputProvider.Triggered(InputKey::X))
+    {
+        if (focusManager.IsFocusInside(_fileGridView.get()))
+        {
+            _viewModel->ShowLaunchSettings();
+            return true;
+        }
+    }
     return View::HandleInput(inputProvider, focusManager);
 }

@@ -31,6 +31,8 @@
 #include "themes/ITheme.h"
 #include "core/SharedPtr.h"
 #include "animation/Animator.h"
+#include "romBrowser/viewModels/LoadingViewModel.h"
+#include "romBrowser/views/LoadingView.h"
 
 class alignas(32) App : public IProcess
 {
@@ -129,4 +131,12 @@ private:
 
     void StoreVramState(VramState& vramState) const;
     void RestoreVramState(const VramState& vramState);
+
+    void HandleShowLaunchSettingsTrigger();
+    void HandleHideLaunchSettingsTrigger();
+
+    LoadingViewModel _loadingViewModel { &_romBrowserController };
+    std::unique_ptr<LoadingView> _loadingView;
+    int _launchDelayFrames = 0;
+    bool _isBgmStoppedForLaunch = false;
 };

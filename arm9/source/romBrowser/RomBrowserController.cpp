@@ -10,6 +10,8 @@
 #include "cheats/EmptyCheatRepository.h"
 #include "cheats/PicoLoaderCheatDataFactory.h"
 #include "RomBrowserController.h"
+#include "NdsBootstrap/NdsBootstrapProcess.h"
+#include "FileType/Nds/NdsInternalFileInfo.h"
 
 RomBrowserController::RomBrowserController(
     IAppSettingsService* appSettingsService, TaskQueueBase* ioTaskQueue,
@@ -191,8 +193,38 @@ void RomBrowserController::HandleLaunchTrigger()
     _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
     {
         UpdateLastUsedFilepath();
-        SetPicoLoaderParams();
-        LoadCheats();
+
+        LoaderType loaderType = _appSettingsService->GetAppSettings().loaderType;
+
+        if (loaderType == LoaderType::NDS_Bootstrap)
+        {
+            LOG_DEBUG("Routing to NdsBootstrapProcess...\n");
+            auto loadParams = pload_getLoadParams();
+            loadParams->savePath[0] = 0;
+            loadParams->arguments[0] = 0;
+            loadParams->argumentsLength = 0;
+            
+            if (_triggerFileInfo.GetFileType()->TrySetLaunchParameters(loadParams, _navigatePath))
+            {
+                auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
+                NdsBootstrapProcess::PrepareCheats(cheats.get());
+
+                std::unique_ptr<InternalFileInfo> internalInfo(_triggerFileInfo.CreateInternalFileInfo());
+
+
+                NdsBootstrapProcess::Launch();
+            }
+            else
+            {
+                LOG_FATAL("Failed to set launch parameters.\n");
+            }
+        }
+        else
+        {
+            SetPicoLoaderParams();
+            LoadCheats();
+        }
+
         return TaskResult<void>::Completed();
     });
 }
@@ -252,4 +284,19 @@ void RomBrowserController::SaveSettingsAsync()
         _appSettingsService->Save();
         return TaskResult<void>::Completed();
     });
+}
+
+void RomBrowserController::ShowLaunchSettings()
+{
+    _stateMachine.Fire(RomBrowserStateTrigger::ShowLaunchSettings);
+}
+
+void RomBrowserController::HideLaunchSettings()
+{
+    if (_saveSettingsPending)
+    {
+        _saveSettingsPending = false;
+        SaveSettingsAsync();
+    }
+    _stateMachine.Fire(RomBrowserStateTrigger::HideLaunchSettings);
 }

@@ -410,7 +410,6 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
             // }
             else if (direction == FocusMoveDirection::Up)
             {
-                // 최상단이므로 맨 아래 언어 라벨로 순환 이동
                 return &_languageFieldLabel;
             }
             else //if (direction == FocusMoveDirection::Down)
@@ -495,7 +494,7 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
     //     }
     //     idx++;
     // }
-    // 3. Theme Value Label 탐색
+
     if (currentFocus == &_themeFieldLabel)
     {
         EnsureThemesLoaded();
@@ -518,12 +517,11 @@ View* DisplaySettingsBottomSheetView::MoveFocus(View* currentFocus,
         }
         
         if (direction == FocusMoveDirection::Up)
-            return &_sortOptions[0]; // 위로 가면 Sort
+            return &_sortOptions[0];
         if (direction == FocusMoveDirection::Down)
-            return &_languageFieldLabel; // 아래로 가면 Language
+            return &_languageFieldLabel;
     }
     
-    // 4. Language Value Label 탐색
     if (currentFocus == &_languageFieldLabel)
     {
         EnsureLanguagesLoaded();

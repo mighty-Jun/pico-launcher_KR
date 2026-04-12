@@ -13,4 +13,6 @@ public:
     String<char, 32> displaySettings_langugage = "langugage";
     String<char, 32> cheatSettings_title = "Cheat";
     String<char, 64> cheatSettings_noCheatsMsg = "No cheats found.";
+    String<char, 32> launchSettings_title = "Launch Settings";
+    String<char, 32> launchSettings_loader = "Loader";
 };

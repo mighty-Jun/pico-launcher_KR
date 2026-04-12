@@ -10,6 +10,12 @@
 #include "themes/material/MaterialColorScheme.h"
 #include "../Theme/IRomBrowserViewFactory.h"
 #include "RomBrowserTopScreenView.h"
+#include "gui/OamManager.h"
+#include "gui/OamBuilder.h"
+#include "gui/VramContext.h"
+#include "gui/palette/DirectPalette.h"
+#include "sharedMemory.h"
+#include <nds/system.h>
 
 RomBrowserTopScreenView::RomBrowserTopScreenView(
     const SharedPtr<RomBrowserViewModel>& viewModel,
@@ -22,11 +28,19 @@ RomBrowserTopScreenView::RomBrowserTopScreenView(
     , _showCover(displayMode->ShowCoverOnTopScreen())
 {
     AddChildTail(_fileInfoView.get());
+    //UpdateBatteryLevel();
 }
 
 void RomBrowserTopScreenView::InitVram(const VramContext& vramContext)
 {
     ViewContainer::InitVram(vramContext);
+    auto objVramManager = vramContext.GetObjVramManager();
+    if (objVramManager)
+    {
+        _batteryVramOffset = objVramManager->Alloc(batteryTilesLen);
+        dma_ntrCopy32(3, batteryTiles, objVramManager->GetVramAddress(_batteryVramOffset), batteryTilesLen);
+    }
+
     int tileIndex = 0;
     vu16* mapPtr = (vu16*)((u8*)GFX_BG_SUB + 0x3800);
     for (int y = 0; y < 12; y++)
@@ -104,6 +118,14 @@ void RomBrowserTopScreenView::Update()
             }
         }
     }
+
+    _batteryCheckTimer++;
+    if (_batteryCheckTimer >= 60)
+    {
+        _batteryCheckTimer = 0;
+        UpdateBatteryLevel(); 
+    }
+    
     ViewContainer::Update();
 }
 
@@ -147,5 +169,54 @@ void RomBrowserTopScreenView::VBlank()
     {
         _fileInfoView->UploadIconGraphics();
         _iconGraphicsUploaded = true;
+    }
+}
+
+void RomBrowserTopScreenView::Draw(GraphicsContext& graphicsContext)
+{
+    ViewContainer::Draw(graphicsContext);
+
+    if (_batteryFrame == -1)
+    {
+        return;
+    }
+
+    // 1. 딱 필요한 16색(32바이트)만 복사 후 팔레트 할당 (스택 터짐 방지!)
+    u16 paddedPal[16] = {0};
+    memcpy(paddedPal, batteryPal, 16 * sizeof(u16));
+    u32 paletteSlot = graphicsContext.GetPaletteManager().AllocRow(DirectPalette(paddedPal));
+
+    // 2. OAM 1개 할당
+    gfx_oam_entry_t* batteryOam = graphicsContext.GetOamManager().AllocOams(1);
+
+    // 3. 현재 프레임에 맞는 VRAM 오프셋 계산 (프레임당 256바이트)
+    u32 currentFrameVramOffset = _batteryVramOffset + (_batteryFrame * 256);
+
+    // 4. 화면 우상단(238, 1)에 우선순위 맞춰서 렌더링!
+    OamBuilder::OamWithSize<32, 16>(238, 1, currentFrameVramOffset >> 7)
+        .WithPalette16(paletteSlot)
+        .WithPriority(graphicsContext.GetPriority()) 
+        .Build(batteryOam[0]);
+}
+
+void RomBrowserTopScreenView::UpdateBatteryLevel()
+{
+    u32 value = SHARED_BATTERY_LEVEL; 
+    unsigned int battery_level = value & BATTERY_LEVEL_MASK;
+    bool charger_connected = value & BATTERY_CHARGER_CONNECTED;
+
+    if (charger_connected)
+    {
+        _batteryFrame = 6;
+    }
+    else if (isDSiMode())
+    {
+        int barIndex = battery_level / 4; 
+        if (barIndex > 3) barIndex = 3; 
+        _batteryFrame = 2 + barIndex;
+    }
+    else
+    {
+        _batteryFrame = (battery_level > 3) ? 1 : 0;
     }
 }
