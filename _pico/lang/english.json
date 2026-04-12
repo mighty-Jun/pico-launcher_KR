@@ -7,6 +7,6 @@
   "displaySettings.language" : "Language",
   "cheatSettings.title" : "Cheats",
   "cheatSettings.noCheatsMsg" : "No cheats found.",
-  "launchSettings.title" : "Launch Settings",
+  "launchSettings.title" : "Game Launch Options",
   "launchSettings.loader" : "Loader"
 }
