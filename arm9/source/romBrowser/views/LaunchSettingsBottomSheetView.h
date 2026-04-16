@@ -21,11 +21,12 @@ public:
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
-    View* MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source) override;
+    SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus,
+        FocusMoveDirection direction, View* source) override;
 
     void Focus(FocusManager& focusManager) override
     {
-        focusManager.Focus(&_loaderFieldLabel);
+        focusManager.Focus(_loaderFieldLabel);
     }
 
 private:
@@ -35,7 +36,7 @@ private:
 
     Label2DView _titleLabel;
     Label2DView _loaderLabel;
-    Label2DView _loaderFieldLabel;
+    SharedPtr<Label2DView> _loaderFieldLabel;
 
     const MaterialColorScheme* _materialColorScheme;
 

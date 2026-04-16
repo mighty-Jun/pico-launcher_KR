@@ -16,8 +16,8 @@ public:
     virtual bool ShowCoverOnTopScreen() const { return true; }
     virtual std::unique_ptr<AppBarView> CreateAppBarView(const IRomBrowserViewFactory* romBrowserViewFactory,
         int startButtonCount, int endButtonCount) const = 0;
-    virtual std::unique_ptr<RecyclerViewBase> CreateRecyclerView(const IRomBrowserViewFactory* romBrowserViewFactory) const = 0;
-    virtual FileRecyclerAdapter* CreateRecyclerAdapter(
+    virtual SharedPtr<RecyclerViewBase> CreateRecyclerView(const IRomBrowserViewFactory* romBrowserViewFactory) const = 0;
+    virtual SharedPtr<FileRecyclerAdapter> CreateRecyclerAdapter(
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory, VBlankTextureLoader* vblankTextureLoader) const = 0;
 };

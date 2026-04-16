@@ -7,9 +7,16 @@ class MaterialColorScheme;
 
 class CarouselRecyclerView : public CoverFlowRecyclerViewBase
 {
+    struct Private { explicit Private() = default; };
+
 public:
-    explicit CarouselRecyclerView(const MaterialColorScheme* materialColorScheme)
+    CarouselRecyclerView(Private, const MaterialColorScheme* materialColorScheme)
         : _materialColorScheme(materialColorScheme) { }
+
+    static SharedPtr<CarouselRecyclerView> CreateShared(const MaterialColorScheme* materialColorScheme)
+    {
+        return SharedPtr<CarouselRecyclerView>::MakeShared(Private(), materialColorScheme);
+    }
 
     static void UploadGraphics(const VramContext& vramContext);
 

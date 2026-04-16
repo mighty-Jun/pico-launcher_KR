@@ -17,19 +17,19 @@ public:
             AppBarView::Orientation::Vertical, startButtonCount, endButtonCount);
     }
 
-    std::unique_ptr<RecyclerViewBase> CreateRecyclerView(const IRomBrowserViewFactory* romBrowserViewFactory) const override
+    SharedPtr<RecyclerViewBase> CreateRecyclerView(const IRomBrowserViewFactory* romBrowserViewFactory) const override
     {
-        auto recyclerView = std::make_unique<RecyclerView>(42, 0, 256 - 42, 192, RecyclerView::Mode::VerticalList);
+        auto recyclerView = RecyclerView::CreateShared(42, 0, 256 - 42, 192, RecyclerView::Mode::VerticalList);
         recyclerView->SetPadding(0, 3);
         recyclerView->SetItemSpacing(0, 3);
         return recyclerView;
     }
 
-    FileRecyclerAdapter* CreateRecyclerAdapter(
+    SharedPtr<FileRecyclerAdapter> CreateRecyclerAdapter(
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory, VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return new BannerListFileRecyclerAdapter(
+        return SharedPtr<BannerListFileRecyclerAdapter>::MakeShared(
             &viewModel->GetFileInfoManager(), viewModel->GetIoTaskQueue(), themeFileIconFactory,
             romBrowserViewFactory, vblankTextureLoader);
     }

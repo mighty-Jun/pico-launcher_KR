@@ -1,13 +1,16 @@
 #pragma once
 #include <memory>
+#include "core/EnableSharedFromThis.h"
 #include "View.h"
 #include "RecyclerAdapter.h"
 #include "gui/FocusManager.h"
 #include "animation/Animator.h"
 #include "RecyclerViewBase.h"
 
-class RecyclerView : public RecyclerViewBase
+class RecyclerView : public RecyclerViewBase, public EnableSharedFromThis<RecyclerView>
 {
+    struct Private { explicit Private() = default; };
+
 public:
     enum class Mode
     {
@@ -21,10 +24,16 @@ public:
         VerticalGrid
     };
 
-    RecyclerView(int x, int y, int width, int height, Mode mode);
+    RecyclerView(Private, int x, int y, int width, int height, Mode mode);
+
+    static SharedPtr<RecyclerView> CreateShared(int x, int y, int width, int height, Mode mode)
+    {
+        return SharedPtr<RecyclerView>::MakeShared(Private(), x, y, width, height, mode);
+    }
+
     ~RecyclerView();
 
-    void SetAdapter(const RecyclerAdapter* adapter, int initialSelectedIndex = 0) override;
+    void SetAdapter(SharedPtr<const RecyclerAdapter> adapter, int initialSelectedIndex = 0) override;
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
@@ -35,16 +44,20 @@ public:
         return Rectangle(_position, _width, _height);
     }
 
-    View* MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source) override;
+    SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
 
     void Focus(FocusManager& focusManager) override
     {
         if (_selectedItem)
+        {
             focusManager.Focus(_selectedItem->view);
+        }
         else
-            focusManager.Focus(this);
+        {
+            focusManager.Focus(SharedFromThis());
+        }
     }
 
     int GetSelectedItem() const override
@@ -69,7 +82,7 @@ public:
 private:
     struct ViewPoolEntry
     {
-        View* view;
+        SharedPtr<View> view;
         int itemIdx;
     };
 
@@ -107,6 +120,6 @@ private:
     void EnsureVisible(int itemIdx, bool animate);
     Point GetItemPosition(int itemIdx);
 
-    View* MoveFocusHorizontal(View* currentFocus, FocusMoveDirection direction, View* source);
-    View* MoveFocusVertical(View* currentFocus, FocusMoveDirection direction, View* source);
+    SharedPtr<View> MoveFocusHorizontal(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source);
+    SharedPtr<View> MoveFocusVertical(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source);
 };

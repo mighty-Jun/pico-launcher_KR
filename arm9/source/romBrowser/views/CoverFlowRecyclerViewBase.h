@@ -1,13 +1,16 @@
 #pragma once
 #include <array>
+#include "core/EnableSharedFromThis.h"
 #include "gui/views/RecyclerViewBase.h"
 
-class CoverFlowRecyclerViewBase : public RecyclerViewBase
+class CoverFlowRecyclerViewBase : public RecyclerViewBase, public EnableSharedFromThis<CoverFlowRecyclerViewBase>
 {
 public:
+    ~CoverFlowRecyclerViewBase() override;
+
     void InitVram(const VramContext& vramContext) override;
-    void SetAdapter(const RecyclerAdapter* adapter, int initialSelectedIndex = 0) override;
-    View* MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source) override;
+    void SetAdapter(SharedPtr<const RecyclerAdapter> adapter, int initialSelectedIndex = 0) override;
+    SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
     Rectangle GetBounds() const override
     {
@@ -16,7 +19,14 @@ public:
 
     void Focus(FocusManager& focusManager) override
     {
-        focusManager.Focus(_selectedItem ? _selectedItem->view : this);
+        if (_selectedItem == nullptr)
+        {
+            focusManager.Focus(SharedFromThis());
+        }
+        else
+        {
+            focusManager.Focus(_selectedItem->view);
+        }
     }
 
     int GetSelectedItem() const override
@@ -27,7 +37,7 @@ public:
 protected:
     struct ViewPoolEntry
     {
-        View* view;
+        SharedPtr<View> view;
         int itemIdx = -1;
     };
 

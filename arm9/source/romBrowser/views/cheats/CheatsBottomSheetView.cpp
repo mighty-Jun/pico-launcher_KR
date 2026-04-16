@@ -38,7 +38,7 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
     , _titleLabel(64, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _secondaryLabel(177, 16, 64, fontRepository->GetFont(FontType::Regular10))
     , _descriptionLabel(224, 16, 256, fontRepository->GetFont(FontType::Medium7_5))
-    , _cheatListRecycler(std::make_unique<RecyclerView>(
+    , _cheatListRecycler(RecyclerView::CreateShared(
         LIST_X, LIST_Y, LIST_WIDTH, LIST_HEIGHT, RecyclerView::Mode::VerticalList))
     , _materialColorScheme(materialColorScheme)
     , _fontRepository(fontRepository)
@@ -55,7 +55,7 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
     AddChildTail(&_titleLabel);
     AddChildTail(&_secondaryLabel);
     AddChildTail(&_descriptionLabel);
-    AddChildTail(_cheatListRecycler.get());
+    AddChildTail(_cheatListRecycler.GetPointer());
 }
 
 void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
@@ -100,9 +100,9 @@ void CheatsBottomSheetView::Update()
     _cheatListRecycler->SetPosition(LIST_X, _position.y + LIST_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
     {
-        if (_cheatsAdapter == nullptr && _objVramManager != nullptr)
+        if (!_cheatsAdapter && _objVramManager != nullptr)
         {
-            _cheatsAdapter = new CheatsAdapter(
+            _cheatsAdapter = SharedPtr<CheatsAdapter>::MakeShared(
                 _viewModel->GetCurrentCheatCategory(), _materialColorScheme, _fontRepository, _vramOffsets);
             _cheatListRecycler->SetAdapter(_cheatsAdapter);
 
@@ -203,7 +203,7 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
 {
     if (inputProvider.Triggered(InputKey::A))
     {
-        if (focusManager.IsFocusInside(_cheatListRecycler.get()))
+        if (focusManager.IsFocusInside(_cheatListRecycler.GetPointer()))
         {
             auto oldCategory = _viewModel->GetCurrentCheatCategory();
             _viewModel->ActivateSelectedItem();
@@ -244,11 +244,9 @@ void CheatsBottomSheetView::UpdateCheatList()
     // Need to unfocus first, otherwise the focus manager still contains a pointer to a view that is going to be destroyed
     _focusManager->Unfocus();
 
-    auto oldAdapter = _cheatsAdapter;
-    _cheatsAdapter = new CheatsAdapter(
+    _cheatsAdapter = SharedPtr<CheatsAdapter>::MakeShared(
         _viewModel->GetCurrentCheatCategory(), _materialColorScheme, _fontRepository, _vramOffsets);
     _cheatListRecycler->SetAdapter(_cheatsAdapter, _viewModel->GetSelectedItem());
-    delete oldAdapter;
 
     // Ugly hack
     ((DescendingStackVramManager*)_objVramManager)->SetState(_savedVramState);

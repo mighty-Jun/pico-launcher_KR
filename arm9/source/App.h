@@ -29,7 +29,6 @@
 #include "romBrowser/RomBrowserController.h"
 #include "DialogPresenter.h"
 #include "themes/ITheme.h"
-#include "core/SharedPtr.h"
 #include "animation/Animator.h"
 #include "romBrowser/viewModels/LoadingViewModel.h"
 #include "romBrowser/views/LoadingView.h"

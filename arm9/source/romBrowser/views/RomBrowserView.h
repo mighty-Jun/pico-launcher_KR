@@ -13,13 +13,11 @@ class RomBrowserView : public View
 {
 public:
     RomBrowserView(
-        const SharedPtr<RomBrowserViewModel>& viewModel,
+        SharedPtr<RomBrowserViewModel> viewModel,
         const RomBrowserDisplayMode& displayMode,
         const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory,
         VBlankTextureLoader* vblankTextureLoader);
-
-    ~RomBrowserView();
 
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
@@ -40,14 +38,14 @@ public:
         return true;
     }
 
-    View* MoveFocus(
-        View* currentFocus, FocusMoveDirection direction, View* source) override;
+    SharedPtr<View> MoveFocus(
+        const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
 
 private:
     SharedPtr<RomBrowserViewModel> _viewModel;
-    std::unique_ptr<RecyclerViewBase> _fileGridView;
-    FileRecyclerAdapter* _fileRecyclerAdapter;
+    SharedPtr<RecyclerViewBase> _fileGridView;
+    SharedPtr<FileRecyclerAdapter> _fileRecyclerAdapter;
     bool _isVertical;
 };

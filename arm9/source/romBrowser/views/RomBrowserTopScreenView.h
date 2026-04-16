@@ -13,7 +13,7 @@ class IRomBrowserViewFactory;
 class RomBrowserTopScreenView : public ViewContainer
 {
 public:
-    RomBrowserTopScreenView(const SharedPtr<RomBrowserViewModel>& viewModel,
+    RomBrowserTopScreenView(SharedPtr<RomBrowserViewModel> viewModel,
         const RomBrowserDisplayMode* displayMode,
         const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory);
@@ -39,6 +39,7 @@ private:
     bool _iconGraphicsUploaded = false;
     bool _coverGraphicsUploaded = false;
     bool _showCover;
+    Point _coverPosition;
 
     u32 _batteryVramOffset = 0;
     bool _batteryPaletteUploaded = false;

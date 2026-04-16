@@ -19,9 +19,8 @@ public:
         , _coverRepository(coverRepository) { }
 
     void GetViewSize(int& width, int& height) const override;
-    View* CreateView() const override;
-    void DestroyView(View* view) const override;
-    void ReleaseView(View* view, int index) const override;
+    SharedPtr<View> CreateView() const override;
+    void ReleaseView(SharedPtr<View> view, int index) const override;
 
     void InitVram(const VramContext& vramContext) override;
 
@@ -30,6 +29,6 @@ private:
     VBlankTextureLoader* _vblankTextureLoader;
     const ICoverRepository* _coverRepository;
 
-    TaskResult<void> BindView(View* view, int index,
+    TaskResult<void> BindView(SharedPtr<View> view, int index,
         const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const override;
 };

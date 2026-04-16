@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "core/SharedPtr.h"
 #include "romBrowser/views/BottomSheetView.h"
 #include "gui/views/Label2DView.h"
 #include "gui/views/RecyclerView.h"
@@ -20,15 +21,6 @@ public:
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
         FocusManager* focusManager, ILanguagePackService* languagePackService);
 
-    ~CheatsBottomSheetView() override
-    {
-        _cheatListRecycler.reset();
-        if (_cheatsAdapter != nullptr)
-        {
-            delete _cheatsAdapter;
-        }
-    }
-
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
@@ -44,8 +36,8 @@ private:
     Label2DView _titleLabel;
     Label2DView _secondaryLabel;
     Label2DView _descriptionLabel;
-    std::unique_ptr<RecyclerView> _cheatListRecycler;
-    CheatsAdapter* _cheatsAdapter = nullptr;
+    SharedPtr<RecyclerView> _cheatListRecycler;
+    SharedPtr<CheatsAdapter> _cheatsAdapter;
     const MaterialColorScheme* _materialColorScheme;
     const IFontRepository* _fontRepository;
     IVramManager* _objVramManager = nullptr;

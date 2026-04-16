@@ -114,9 +114,9 @@ void RomBrowserAppBarView::VBlank()
     _appBarView->VBlank();
 }
 
-View* RomBrowserAppBarView::MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RomBrowserAppBarView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
-    if (currentFocus == nullptr)
+    if (!currentFocus)
     {
         return nullptr;
     }

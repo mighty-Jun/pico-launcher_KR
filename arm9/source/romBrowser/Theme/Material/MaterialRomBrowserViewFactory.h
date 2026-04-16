@@ -18,9 +18,9 @@ public:
         const IFontRepository* fontRepository)
         : _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
-    IconGridItemView* CreateIconGridItemView() const override
+    SharedPtr<IconGridItemView> CreateIconGridItemView() const override
     {
-        return new MaterialIconGridItemView(_materialColorScheme);
+        return SharedPtr<MaterialIconGridItemView>::MakeShared(_materialColorScheme);
     }
 
     IconGridItemView::VramToken UploadIconGridItemViewGraphics(
@@ -29,9 +29,9 @@ public:
         return MaterialIconGridItemView::UploadGraphics(vramContext);
     }
 
-    BannerListItemView* CreateBannerListItemView(VBlankTextureLoader* vblankTextureLoader) const override
+    SharedPtr<BannerListItemView> CreateBannerListItemView(VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return new MaterialBannerListItemView(_materialColorScheme, _fontRepository);
+        return SharedPtr<MaterialBannerListItemView>::MakeShared(_materialColorScheme, _fontRepository);
     }
 
     BannerListItemView::VramToken UploadBannerListItemViewGraphics(
@@ -51,18 +51,23 @@ public:
         return std::make_unique<MaterialFileInfoCardView>(_materialColorScheme, _fontRepository);
     }
 
-    std::unique_ptr<RecyclerViewBase> CreateCoverFlowRecyclerView() const override
+    SharedPtr<RecyclerViewBase> CreateCoverFlowRecyclerView() const override
     {
-        return std::make_unique<CarouselRecyclerView>(_materialColorScheme);
+        return CarouselRecyclerView::CreateShared(_materialColorScheme);
     }
 
-    FileRecyclerAdapter* CreateCoverFlowRecyclerAdapter(
+    SharedPtr<FileRecyclerAdapter> CreateCoverFlowRecyclerAdapter(
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return new MaterialCoverFlowFileRecyclerAdapter(
+        return SharedPtr<MaterialCoverFlowFileRecyclerAdapter>::MakeShared(
             &viewModel->GetFileInfoManager(), viewModel->GetIoTaskQueue(),
             themeFileIconFactory, this, vblankTextureLoader, &viewModel->GetCoverRepository());
+    }
+
+    Point GetTopCoverPosition() const override
+    {
+        return Point(75, 18);
     }
 
 private:

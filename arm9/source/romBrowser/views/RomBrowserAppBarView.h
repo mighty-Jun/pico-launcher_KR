@@ -23,7 +23,7 @@ public:
         return Rectangle(0, 0, 256, 192);
     }
 
-    View* MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source) override;
+    SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
     void Focus(FocusManager& focusManager)
     {

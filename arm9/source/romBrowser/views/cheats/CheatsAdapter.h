@@ -25,25 +25,20 @@ public:
         height = 24;
     }
 
-    View* CreateView() const override
+    SharedPtr<View> CreateView() const override
     {
-        return new CheatListItemView(_vramOffsets, _materialColorScheme, _fontRepository);
+        return SharedPtr<CheatListItemView>::MakeShared(_vramOffsets, _materialColorScheme, _fontRepository);
     }
 
-    void DestroyView(View* view) const override
+    void BindView(SharedPtr<View> view, int index) const override
     {
-        delete (CheatListItemView*)view;
-    }
-
-    void BindView(View* view, int index) const override
-    {
-        auto listItemView = static_cast<CheatListItemView*>(view);
+        auto listItemView = static_cast<CheatListItemView*>(view.GetPointer());
         u32 numberOfSubEntries = 0;
         auto subEntries = _cheatCategory->GetSubEntries(numberOfSubEntries);
         listItemView->SetEntry(&subEntries[index]);
     }
 
-    void ReleaseView(View* view, int index) const override
+    void ReleaseView(SharedPtr<View> view, int index) const override
     {
         // Nothing to do
     }

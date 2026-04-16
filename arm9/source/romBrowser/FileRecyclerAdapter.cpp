@@ -8,7 +8,7 @@ u32 FileRecyclerAdapter::GetItemCount() const
     return _fileInfoManager->GetItemCount();
 }
 
-void FileRecyclerAdapter::BindView(View* view, int index) const
+void FileRecyclerAdapter::BindView(SharedPtr<View> view, int index) const
 {
     LOG_DEBUG("Binding %d\n", index);
     _taskQueue->Enqueue([=, this] (const vu8& cancelRequested)

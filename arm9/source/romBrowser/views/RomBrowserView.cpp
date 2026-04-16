@@ -5,23 +5,17 @@
 #include "RomBrowserView.h"
 
 RomBrowserView::RomBrowserView(
-    const SharedPtr<RomBrowserViewModel>& viewModel,
+    SharedPtr<RomBrowserViewModel> viewModel,
     const RomBrowserDisplayMode& displayMode,
     const IThemeFileIconFactory* themeFileIconFactory,
     const IRomBrowserViewFactory* romBrowserViewFactory,
     VBlankTextureLoader* vblankTextureLoader)
-    : _viewModel(viewModel), _isVertical(displayMode.IsVertical())
+    : _viewModel(std::move(viewModel)), _isVertical(displayMode.IsVertical())
 {
     _fileGridView = displayMode.CreateRecyclerView(romBrowserViewFactory);
     _fileGridView->SetParent(this);
     _fileRecyclerAdapter = displayMode.CreateRecyclerAdapter(
         _viewModel.GetPointer(), themeFileIconFactory, romBrowserViewFactory, vblankTextureLoader);
-}
-
-RomBrowserView::~RomBrowserView()
-{
-    _fileGridView.reset();
-    delete _fileRecyclerAdapter;
 }
 
 void RomBrowserView::InitVram(const VramContext& vramContext)
@@ -48,9 +42,9 @@ void RomBrowserView::VBlank()
     _fileGridView->VBlank();
 }
 
-View* RomBrowserView::MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RomBrowserView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
-    if (currentFocus == nullptr)
+    if (!currentFocus)
     {
         return nullptr;
     }
@@ -72,7 +66,7 @@ View* RomBrowserView::MoveFocus(View* currentFocus, FocusMoveDirection direction
         }
         return nullptr;
     }
-    else if (source == _fileGridView.get())
+    else if (source == _fileGridView.GetPointer())
     {
         return View::MoveFocus(currentFocus, direction, source);
     }
@@ -83,7 +77,7 @@ bool RomBrowserView::HandleInput(const InputProvider& inputProvider, FocusManage
 {
     if (inputProvider.Triggered(InputKey::A))
     {
-        if (focusManager.IsFocusInside(_fileGridView.get()))
+        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
         {
             _viewModel->ItemActivated();
             return true;
@@ -91,7 +85,7 @@ bool RomBrowserView::HandleInput(const InputProvider& inputProvider, FocusManage
     }
     else if (inputProvider.Triggered(InputKey::Y))
     {
-        if (focusManager.IsFocusInside(_fileGridView.get()))
+        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
         {
             _viewModel->ShowGameInfo();
             return true;
@@ -99,7 +93,7 @@ bool RomBrowserView::HandleInput(const InputProvider& inputProvider, FocusManage
     }
     else if (inputProvider.Triggered(InputKey::X))
     {
-        if (focusManager.IsFocusInside(_fileGridView.get()))
+        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
         {
             _viewModel->ShowLaunchSettings();
             return true;
