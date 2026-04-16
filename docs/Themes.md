@@ -62,6 +62,7 @@
 - **topBannerTextLine1** - 상단 화면에 표시되는 배너 텍스트의 두 번째 줄 속성입니다.
 - **topBannerTextLine2** - 상단 화면에 표시되는 배너 텍스트의 세 번째 줄 속성입니다.
 - **topFileNameText** - 상단 화면에 표시되는 파일 이름 텍스트의 속성입니다.
+- **topCover** - 상단 화면에 표시되는 커버 이미지의 속성.
 - **gridIcon** - 그리드 디스플레이 모드 시 하단 화면에 표시되는 아이콘의 속성입니다.
 - **bannerListIcon** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 아이콘의 속성입니다.
 - **bannerListTextLine0** - 배너 리스트 디스플레이 모드 시 하단 화면에 표시되는 배너 텍스트의 첫 번째 줄 속성입니다.
@@ -105,6 +106,9 @@
         "width": 220,
         "textColor": { "r": 30, "g": 30, "b": 30 },
         "blendColor": { "r": 200, "g": 200, "b": 200 }
+    },
+    "topCover": {
+        "position": { "x": 75, "y": 18 }
     },
     "gridIcon": {
         "blendColor": { "r": 200, "g": 200, "b": 200 }

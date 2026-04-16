@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include "core/SharedPtr.h"
 #include "animation/Animator.h"
 #include "gui/views/DialogView.h"
 
@@ -49,7 +50,7 @@ public:
 
     /// @brief Gets the focus that was stored when a dialog was opened.
     /// @return The view that was focused when the current dialog was opened.
-    constexpr View* GetOldFocus() const
+    constexpr SharedPtr<View> GetOldFocus() const
     {
         return _oldFocus;
     }
@@ -70,7 +71,7 @@ private:
     std::unique_ptr<DialogView> _currentDialog;
     std::unique_ptr<DialogView> _nextDialog;
     bool _initVram = false;
-    View* _oldFocus = nullptr;
+    SharedPtr<View> _oldFocus = nullptr;
     Animator<int> _scrimAnimator;
     Animator<int> _yAnimator;
     State _curState = State::Idle;

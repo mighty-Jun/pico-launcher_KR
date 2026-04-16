@@ -19,7 +19,7 @@ void MaterialCoverView::InitVram(const VramContext& vramContext)
 
 void MaterialCoverView::Draw(GraphicsContext& graphicsContext)
 {
-    if (_cover.IsValid() && _textureLoadRequest.GetState() == VBlankTextureLoadRequestState::LoadComplete)
+    if (_cover.Lock() && _textureLoadRequest.GetState() == VBlankTextureLoadRequestState::LoadComplete)
     {
         Gx::TexImageParam(_texVramOffset >> 3, false, true, false, true, GX_TEXSIZE_128,
             GX_TEXSIZE_128, GX_TEXFMT_PLTT256, false, GX_TEXGEN_NONE);
@@ -46,11 +46,11 @@ void MaterialCoverView::Draw(GraphicsContext& graphicsContext)
 
 void MaterialCoverView::UploadCoverGraphics()
 {
-    if (_cover.IsValid())
+    if (auto cover = _cover.Lock())
     {
-        _cover->SetTexVramOffset(_texVramOffset, _plttVramOffset);
+        cover->SetTexVramOffset(_texVramOffset, _plttVramOffset);
         _vblankTextureLoader->CancelLoad(_textureLoadRequest);
-        _textureLoadRequest = _cover->CreateTextureLoadRequest();
+        _textureLoadRequest = cover->CreateTextureLoadRequest();
         _vblankTextureLoader->RequestLoad(_textureLoadRequest);
     }
 }

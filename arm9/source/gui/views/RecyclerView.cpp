@@ -4,7 +4,7 @@
 #include "gui/input/InputProvider.h"
 #include "RecyclerView.h"
 
-RecyclerView::RecyclerView(int x, int y, int width, int height, Mode mode)
+RecyclerView::RecyclerView(Private, int x, int y, int width, int height, Mode mode)
     : _width(width), _height(height), _mode(mode), _rows(0), _columns(0)
     , _viewPoolFreeCount(0), _viewPoolTotalCount(0)
     , _xOffset(0), _yOffset(0), _xPadding(0), _yPadding(0)
@@ -20,21 +20,21 @@ RecyclerView::~RecyclerView()
 {
     if (_adapter)
     {
-        for (u32 i = 0; i < _viewPoolTotalCount; i++)
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
         {
-            _adapter->DestroyView(_viewPool[i].view);
+            _adapter->ReleaseView(_viewPool[i].view, _viewPool[i].itemIdx);
         }
     }
 }
 
-void RecyclerView::SetAdapter(const RecyclerAdapter* adapter, int initialSelectedIndex)
+void RecyclerView::SetAdapter(SharedPtr<const RecyclerAdapter> adapter, int initialSelectedIndex)
 {
     if (_adapter)
     {
         _selectedItem = nullptr;
-        for (u32 i = 0; i < _viewPoolTotalCount; i++)
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
         {
-            _adapter->DestroyView(_viewPool[i].view);
+            _adapter->ReleaseView(_viewPool[i].view, _viewPool[i].itemIdx);
         }
         _viewPool.reset();
         _viewPoolFreeCount = 0;
@@ -44,7 +44,7 @@ void RecyclerView::SetAdapter(const RecyclerAdapter* adapter, int initialSelecte
         _curRangeStart = 0;
         _curRangeLength = 0;
     }
-    _adapter = adapter;
+    _adapter = std::move(adapter);
     _adapter->GetViewSize(_itemWidth, _itemHeight);
     _itemCount = _adapter->GetItemCount();
     if (_mode == Mode::HorizontalList || _mode == Mode::HorizontalGrid)
@@ -178,7 +178,7 @@ void RecyclerView::VBlank()
     }
 }
 
-View* RecyclerView::MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RecyclerView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
     if (_itemCount == 0)
     {
@@ -195,9 +195,9 @@ View* RecyclerView::MoveFocus(View* currentFocus, FocusMoveDirection direction, 
     }
 }
 
-View* RecyclerView::MoveFocusHorizontal(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RecyclerView::MoveFocusHorizontal(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
-    if (!_selectedItem || currentFocus != _selectedItem->view)
+    if (!_selectedItem || currentFocus.GetPointer() != _selectedItem->view.GetPointer())
     {
         // incoming focus
         if (direction != FocusMoveDirection::Down)
@@ -207,7 +207,7 @@ View* RecyclerView::MoveFocusHorizontal(View* currentFocus, FocusMoveDirection d
 
         int idx = (-_xOffset + currentFocus->GetPosition().x - _xPadding + ((_xSpacing + _itemWidth) >> 1)) / (_xSpacing + _itemWidth) * _rows;
         SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _rows * _rows));
-        return _selectedItem != nullptr ? _selectedItem->view : this;
+        return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
     }
 
     int row = _selectedItem->itemIdx % _rows;
@@ -248,12 +248,12 @@ View* RecyclerView::MoveFocusHorizontal(View* currentFocus, FocusMoveDirection d
         SetSelectedItem(std::clamp(idx, 0, (int)_itemCount - 1));
     }
 
-    return _selectedItem != nullptr ? _selectedItem->view : this;
+    return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
 }
 
-View* RecyclerView::MoveFocusVertical(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RecyclerView::MoveFocusVertical(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
-    if (!_selectedItem || currentFocus != _selectedItem->view)
+    if (!_selectedItem || currentFocus.GetPointer() != _selectedItem->view.GetPointer())
     {
         // incoming focus
         if (direction != FocusMoveDirection::Right)
@@ -263,7 +263,7 @@ View* RecyclerView::MoveFocusVertical(View* currentFocus, FocusMoveDirection dir
 
         int idx = (-_yOffset + currentFocus->GetPosition().y - _yPadding + ((_ySpacing + _itemHeight) >> 1)) / (_ySpacing + _itemHeight) * _columns;
         SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _columns * _columns));
-        return _selectedItem != nullptr ? _selectedItem->view : this;
+        return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
     }
 
     int column = _selectedItem->itemIdx % _columns;
@@ -304,7 +304,7 @@ View* RecyclerView::MoveFocusVertical(View* currentFocus, FocusMoveDirection dir
         SetSelectedItem(std::clamp(idx, 0, (int)_itemCount - 1));
     }
 
-    return _selectedItem != nullptr ? _selectedItem->view : this;
+    return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
 }
 
 bool RecyclerView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)

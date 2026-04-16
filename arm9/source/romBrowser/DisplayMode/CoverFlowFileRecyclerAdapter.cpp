@@ -13,21 +13,15 @@ void CoverFlowFileRecyclerAdapter::GetViewSize(int& width, int& height) const
     height = 44;
 }
 
-View* CoverFlowFileRecyclerAdapter::CreateView() const
+SharedPtr<View> CoverFlowFileRecyclerAdapter::CreateView() const
 {
-    return new CoverView(_vblankTextureLoader);
+    return SharedPtr<CoverView>::MakeShared(_vblankTextureLoader);
 }
 
-void CoverFlowFileRecyclerAdapter::DestroyView(View* view) const
-{
-    auto coverView = static_cast<CoverView*>(view);
-    delete coverView;
-}
-
-TaskResult<void> CoverFlowFileRecyclerAdapter::BindView(View* view, int index,
+TaskResult<void> CoverFlowFileRecyclerAdapter::BindView(SharedPtr<View> view, int index,
     const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const
 {
-    auto coverView = static_cast<CoverView*>(view);
+    auto coverView = static_cast<CoverView*>(view.GetPointer());
     auto cover = _fileInfoManager->GetFileCover(index);
     if (cancelRequested)
     {
@@ -45,10 +39,10 @@ TaskResult<void> CoverFlowFileRecyclerAdapter::BindView(View* view, int index,
     return TaskResult<void>::Completed();
 }
 
-void CoverFlowFileRecyclerAdapter::ReleaseView(View* view, int index) const
+void CoverFlowFileRecyclerAdapter::ReleaseView(SharedPtr<View> view, int index) const
 {
     LOG_DEBUG("Releasing %d\n", index);
-    auto coverView = static_cast<CoverView*>(view);
+    auto coverView = static_cast<CoverView*>(view.GetPointer());
     coverView->ClearCover();
     _fileInfoManager->ReleaseFileInfo(index);
 }

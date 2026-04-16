@@ -1,6 +1,5 @@
 #pragma once
-#include <memory>
-#include "core/SharedPtr.h"
+#include "core/AtomicSharedPtr.h"
 #include "gui/views/View.h"
 #include "romBrowser/FileType/FileCover.h"
 #include "gui/VBlankTextureLoader.h"
@@ -27,19 +26,13 @@ public:
 
     void SetCover(SharedPtr<FileCover> cover)
     {
-        if (_cover.IsValid())
-        {
-            _vblankTextureLoader->CancelLoad(_textureLoadRequest);
-        }
+        _vblankTextureLoader->CancelLoad(_textureLoadRequest);
         _cover = std::move(cover);
     }
 
     void ClearCover()
     {
-        if (_cover.IsValid())
-        {
-            _vblankTextureLoader->CancelLoad(_textureLoadRequest);
-        }
+        _vblankTextureLoader->CancelLoad(_textureLoadRequest);
         _cover.Reset();
     }
 
@@ -47,7 +40,7 @@ public:
 
 private:
     VBlankTextureLoader* _vblankTextureLoader;
-    SharedPtr<FileCover> _cover;
+    AtomicSharedPtr<FileCover> _cover;
     VBlankTextureLoadRequest _textureLoadRequest;
     u32 _texVramOffset = 0;
     u32 _plttVramOffset = 0;

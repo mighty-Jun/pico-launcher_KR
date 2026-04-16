@@ -54,9 +54,9 @@ void RomBrowserBottomScreenView::VBlank()
         _romBrowserView->VBlank();
 }
 
-View* RomBrowserBottomScreenView::MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source)
+SharedPtr<View> RomBrowserBottomScreenView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
 {
-    if (currentFocus == nullptr)
+    if (!currentFocus)
     {
         return nullptr;
     }

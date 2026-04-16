@@ -2,6 +2,7 @@
 #include "core/LinkedListLink.h"
 #include "core/math/Point.h"
 #include "core/math/Rectangle.h"
+#include "core/SharedPtr.h"
 #include "../FocusManager.h"
 #include "../FocusMoveDirection.h"
 
@@ -37,7 +38,7 @@ public:
     /// @param direction The direction to move the focus in.
     /// @param source The view that requested this view to move focus.
     /// @return The newly focused view, or null if the focus didn't change.
-    virtual View* MoveFocus(View* currentFocus, FocusMoveDirection direction, View* source)
+    virtual SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
     {
         if (_parent && _parent != source)
             return _parent->MoveFocus(currentFocus, direction, this);

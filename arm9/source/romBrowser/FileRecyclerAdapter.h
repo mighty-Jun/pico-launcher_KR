@@ -12,7 +12,7 @@ class FileRecyclerAdapter : public RecyclerAdapter
 {
 public:
     u32 GetItemCount() const override;
-    void BindView(View* view, int index) const override;
+    void BindView(SharedPtr<View> view, int index) const override;
 
     void SetIconFrameCounter(u32 iconFrameCounter)
     {
@@ -32,6 +32,6 @@ protected:
         : _fileInfoManager(fileInfoManager), _taskQueue(taskQueue)
         , _iconFrameCounter(0), _themeFileIconFactory(themeFileIconFactory) { }
 
-    virtual TaskResult<void> BindView(View* view, int index,
+    virtual TaskResult<void> BindView(SharedPtr<View> view, int index,
         const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const = 0;
 };

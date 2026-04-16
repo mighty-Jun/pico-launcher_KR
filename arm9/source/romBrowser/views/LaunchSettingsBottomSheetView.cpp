@@ -28,7 +28,7 @@ LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
     , _languagePackService(languagePackService)
     , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
     , _loaderLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
-    , _loaderFieldLabel(120, 16, 20, fontRepository->GetFont(FontType::Regular10))
+    , _loaderFieldLabel(SharedPtr<Label2DView>::MakeShared(120, 16, 20, fontRepository->GetFont(FontType::Regular10)))
     , _materialColorScheme(materialColorScheme)
 {
     const auto& langPack = _languagePackService->GetLanguagePack();
@@ -37,12 +37,12 @@ LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
 
     _pendingLoaderType = _appSettingsService->GetAppSettings().loaderType;
 
-    _loaderFieldLabel.SetHorizontalAlignment(Alignment::Center);
-    _loaderFieldLabel.SetText(_pendingLoaderType == LoaderType::Pico_Loader ? "Pico Loader" : "NDS-Bootstrap");
+    _loaderFieldLabel->SetHorizontalAlignment(Alignment::Center);
+    _loaderFieldLabel->SetText(_pendingLoaderType == LoaderType::Pico_Loader ? "Pico Loader" : "NDS-Bootstrap");
 
     AddChildTail(&_titleLabel);
     AddChildTail(&_loaderLabel);
-    AddChildTail(&_loaderFieldLabel);
+    AddChildTail(_loaderFieldLabel.GetPointer());
 
     _loaderLeftArrow = CreateArrowIcon();
     _loaderRightArrow = CreateArrowIcon();
@@ -90,7 +90,7 @@ void LaunchSettingsBottomSheetView::UpdateLabels()
 {
     _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
     _loaderLabel.SetPosition(LOADER_LABEL_X, _position.y + LOADER_LABEL_Y);
-    _loaderFieldLabel.SetPosition(LOADER_FIELD_X, _position.y + LOADER_LABEL_Y);
+    _loaderFieldLabel->SetPosition(LOADER_FIELD_X, _position.y + LOADER_LABEL_Y);
 
     _loaderLeftArrow.SetPosition(60, _position.y + LOADER_LABEL_Y - 8);
     _loaderRightArrow.SetPosition(186, _position.y + LOADER_LABEL_Y - 8);
@@ -113,11 +113,11 @@ void LaunchSettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _loaderLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         _loaderLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
 
-        bool loaderFocused = _loaderFieldLabel.IsFocused();
-        _loaderFieldLabel.SetBackgroundColor(loaderFocused
+        bool loaderFocused = _loaderFieldLabel->IsFocused();
+        _loaderFieldLabel->SetBackgroundColor(loaderFocused
             ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
             : _materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _loaderFieldLabel.SetForegroundColor(loaderFocused
+        _loaderFieldLabel->SetForegroundColor(loaderFocused
             ? _materialColorScheme->GetColor(md::sys::color::primary)
             : _materialColorScheme->onSurfaceVariant);
 
@@ -130,7 +130,7 @@ void LaunchSettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool LaunchSettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    bool loaderFocused = _loaderFieldLabel.IsFocused();
+    bool loaderFocused = _loaderFieldLabel->IsFocused();
     
     bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
     bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
@@ -155,16 +155,16 @@ bool LaunchSettingsBottomSheetView::HandleInput(
     return false;
 }
 
-View* LaunchSettingsBottomSheetView::MoveFocus(View* currentFocus,
+SharedPtr<View> LaunchSettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
     FocusMoveDirection direction, View* source)
 {
-    if (currentFocus == &_loaderFieldLabel)
+    if (currentFocus == _loaderFieldLabel)
     {
         if (direction == FocusMoveDirection::Left || direction == FocusMoveDirection::Right)
         {
             ToggleLoaderType();
         }
-        return &_loaderFieldLabel;
+        return _loaderFieldLabel;
     }
     return nullptr;
 }
@@ -174,11 +174,11 @@ void LaunchSettingsBottomSheetView::ToggleLoaderType()
     if (_pendingLoaderType == LoaderType::Pico_Loader)
     {
         _pendingLoaderType = LoaderType::NDS_Bootstrap;
-        _loaderFieldLabel.SetText("NDS-Bootstrap");
+        _loaderFieldLabel->SetText("NDS-Bootstrap");
     }
     else
     {
         _pendingLoaderType = LoaderType::Pico_Loader;
-        _loaderFieldLabel.SetText("Pico Loader");
+        _loaderFieldLabel->SetText("Pico Loader");
     }
 }

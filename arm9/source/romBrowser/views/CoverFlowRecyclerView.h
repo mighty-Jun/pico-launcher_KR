@@ -5,7 +5,16 @@
 
 class CoverFlowRecyclerView : public CoverFlowRecyclerViewBase
 {
+    struct Private { explicit Private() = default; };
+
 public:
+    explicit CoverFlowRecyclerView(Private) { }
+
+    static SharedPtr<CoverFlowRecyclerView> CreateShared()
+    {
+        return SharedPtr<CoverFlowRecyclerView>::MakeShared(Private());
+    }
+
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
 

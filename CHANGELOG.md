@@ -1,4 +1,9 @@
-# 변경 이력 (Changelog)
+# Changelog
+
+## [Unreleased]
+
+### Added
+- Ability to set the position of the top screen cover image in custom themes
 
 ## [v1.2.0] - 2026년 3월 29일
 
