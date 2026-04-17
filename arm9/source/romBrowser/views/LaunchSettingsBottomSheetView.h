@@ -12,15 +12,15 @@ class MaterialColorScheme;
 
 class LaunchSettingsBottomSheetView : public BottomSheetView
 {
+    SHARED_ONLY(LaunchSettingsBottomSheetView)
 public:
-    LaunchSettingsBottomSheetView(RomBrowserViewModel* viewModel,
-        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
-
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus,
         FocusMoveDirection direction, View* source) override;
 
@@ -34,21 +34,28 @@ private:
     IAppSettingsService* _appSettingsService;
     ILanguagePackService* _languagePackService;
 
-    Label2DView _titleLabel;
-    Label2DView _loaderLabel;
+    SharedPtr<Label2DView> _titleLabel;
+    SharedPtr<Label2DView> _loaderLabel;
     SharedPtr<Label2DView> _loaderFieldLabel;
 
     const MaterialColorScheme* _materialColorScheme;
+    bool _oobPenDown = false;
 
     LoaderType _pendingLoaderType;
 
     u32 _leftArrowIconVramOffset = 0;
     u32 _rightArrowIconVramOffset = 0;
 
-    IconButton2DView _loaderLeftArrow;
-    IconButton2DView _loaderRightArrow;
+    SharedPtr<IconButton2DView> _loaderLeftArrow;
+    SharedPtr<IconButton2DView> _loaderRightArrow;
 
-    IconButton2DView CreateArrowIcon();
+    SharedPtr<IconButton2DView> CreateArrowIcon();
+
+    
+    LaunchSettingsBottomSheetView(RomBrowserViewModel* viewModel,
+        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
+        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
+
     void UpdateLabels();
     void ToggleLoaderType();
     u32 LoadIcon(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;

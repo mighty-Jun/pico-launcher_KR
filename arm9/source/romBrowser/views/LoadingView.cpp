@@ -14,21 +14,21 @@ LoadingView::LoadingView(LoadingViewModel* viewModel,
                          const IFontRepository* fontRepository, 
                          const MaterialColorScheme* colorScheme)
     : _viewModel(viewModel)
-    , _loadingLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
+    , _loadingLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
 {
-    _loadingLabel.SetText(u"로딩 중..");
-    _loadingLabel.SetHorizontalAlignment(Alignment::Start);
-    _loadingLabel.SetPosition(104, 96 - 8); 
+    _loadingLabel->SetText(u"로딩 중..");
+    _loadingLabel->SetHorizontalAlignment(Alignment::Start);
+    _loadingLabel->SetPosition(104, 96 - 8); 
     
-    _loadingLabel.SetBackgroundColor(colorScheme->GetColor(md::sys::color::primary));
-    _loadingLabel.SetForegroundColor(colorScheme->onSurface);
+    _loadingLabel->SetBackgroundColor(colorScheme->GetColor(md::sys::color::primary));
+    _loadingLabel->SetForegroundColor(colorScheme->onSurface);
 
-    _loadingLabel.SetParent(this);
+    _loadingLabel->SetParent(this);
 }
 
 void LoadingView::InitVram(const VramContext& vramContext)
 {
-    _loadingLabel.InitVram(vramContext);
+    _loadingLabel->InitVram(vramContext);
 
     const auto objVramManager = vramContext.GetObjVramManager();
     if (objVramManager)
@@ -43,7 +43,7 @@ void LoadingView::InitVram(const VramContext& vramContext)
 
 void LoadingView::Update()
 {
-    _loadingLabel.Update();
+    _loadingLabel->Update();
 }
 
 void LoadingView::Draw(GraphicsContext& graphicsContext)
@@ -67,7 +67,7 @@ void LoadingView::Draw(GraphicsContext& graphicsContext)
         .WithPriority(prio)
         .Build(oams[1]);
 
-    _loadingLabel.Draw(graphicsContext);
+    _loadingLabel->Draw(graphicsContext);
 }
 
 void LoadingView::VBlank()
@@ -87,10 +87,10 @@ void LoadingView::VBlank()
         _paletteUploaded = true;
     }
 
-    _loadingLabel.VBlank();
+    _loadingLabel->VBlank();
 }
 
 void LoadingView::ShowError()
 {
-    _loadingLabel.SetText("DSiWare 실행 불가");
+    _loadingLabel->SetText("DSiWare 실행 불가");
 }

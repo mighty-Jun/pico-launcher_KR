@@ -30,7 +30,7 @@ RomBrowserTopScreenView::RomBrowserTopScreenView(
     , _showCover(displayMode->ShowCoverOnTopScreen())
     , _coverPosition(romBrowserViewFactory->GetTopCoverPosition())
 {
-    AddChildTail(_fileInfoView.get());
+    AddChildTail(_fileInfoView.GetPointer());
 
     _batteryFrame = s_lastKnownBatteryFrame;
     //UpdateBatteryLevel();

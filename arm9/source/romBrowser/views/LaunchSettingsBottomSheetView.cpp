@@ -26,41 +26,39 @@ LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
     : _viewModel(viewModel)
     , _appSettingsService(appSettingsService)
     , _languagePackService(languagePackService)
-    , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
-    , _loaderLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _titleLabel(SharedPtr<Label2DView>::MakeShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
+    , _loaderLabel(SharedPtr<Label2DView>::MakeShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
     , _loaderFieldLabel(SharedPtr<Label2DView>::MakeShared(120, 16, 20, fontRepository->GetFont(FontType::Regular10)))
     , _materialColorScheme(materialColorScheme)
 {
     const auto& langPack = _languagePackService->GetLanguagePack();
-    _titleLabel.SetText(langPack.launchSettings_title.GetString());
-    _loaderLabel.SetText(langPack.launchSettings_loader.GetString());
+    _titleLabel->SetText(langPack.launchSettings_title.GetString());
+    _loaderLabel->SetText(langPack.launchSettings_loader.GetString());
 
     _pendingLoaderType = _appSettingsService->GetAppSettings().loaderType;
 
     _loaderFieldLabel->SetHorizontalAlignment(Alignment::Center);
     _loaderFieldLabel->SetText(_pendingLoaderType == LoaderType::Pico_Loader ? "Pico Loader" : "NDS-Bootstrap");
 
-    AddChildTail(&_titleLabel);
-    AddChildTail(&_loaderLabel);
+    AddChildTail(_titleLabel.GetPointer());
+    AddChildTail(_loaderLabel.GetPointer());
     AddChildTail(_loaderFieldLabel.GetPointer());
 
     _loaderLeftArrow = CreateArrowIcon();
     _loaderRightArrow = CreateArrowIcon();
 
-    AddChildTail(&_loaderLeftArrow);
-    AddChildTail(&_loaderRightArrow);
+    AddChildTail(_loaderLeftArrow.GetPointer());
+    AddChildTail(_loaderRightArrow.GetPointer());
 }
 
-IconButton2DView LaunchSettingsBottomSheetView::CreateArrowIcon()
+SharedPtr<IconButton2DView> LaunchSettingsBottomSheetView::CreateArrowIcon()
 {
-    IconButton2DView arrowIcon
-    {
+    return SharedPtr<IconButton2DView>::MakeShared(
         IconButtonView::Type::Standard,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::onPrimary,
         _materialColorScheme
-    };
-    return arrowIcon;
+    );
 }
 
 void LaunchSettingsBottomSheetView::InitVram(const VramContext& vramContext)
@@ -73,8 +71,8 @@ void LaunchSettingsBottomSheetView::InitVram(const VramContext& vramContext)
         _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
         _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
 
-        _loaderLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
-        _loaderRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
+        _loaderLeftArrow->SetIconVramOffset(_leftArrowIconVramOffset);
+        _loaderRightArrow->SetIconVramOffset(_rightArrowIconVramOffset);
     }
 }
 
@@ -88,12 +86,12 @@ u32 LaunchSettingsBottomSheetView::LoadIcon(IVramManager& vramManager,
 
 void LaunchSettingsBottomSheetView::UpdateLabels()
 {
-    _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
-    _loaderLabel.SetPosition(LOADER_LABEL_X, _position.y + LOADER_LABEL_Y);
+    _titleLabel->SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
+    _loaderLabel->SetPosition(LOADER_LABEL_X, _position.y + LOADER_LABEL_Y);
     _loaderFieldLabel->SetPosition(LOADER_FIELD_X, _position.y + LOADER_LABEL_Y);
 
-    _loaderLeftArrow.SetPosition(60, _position.y + LOADER_LABEL_Y - 8);
-    _loaderRightArrow.SetPosition(186, _position.y + LOADER_LABEL_Y - 8);
+    _loaderLeftArrow->SetPosition(60, _position.y + LOADER_LABEL_Y - 8);
+    _loaderRightArrow->SetPosition(186, _position.y + LOADER_LABEL_Y - 8);
 }
 
 void LaunchSettingsBottomSheetView::Update()
@@ -107,11 +105,11 @@ void LaunchSettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
     graphicsContext.SetClipArea(GetBounds());
     u32 oldPrio = graphicsContext.SetPriority(1);
     {
-        _titleLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _titleLabel.SetForegroundColor(_materialColorScheme->onSurface);
+        _titleLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _titleLabel->SetForegroundColor(_materialColorScheme->onSurface);
         
-        _loaderLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _loaderLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _loaderLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _loaderLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
 
         bool loaderFocused = _loaderFieldLabel->IsFocused();
         _loaderFieldLabel->SetBackgroundColor(loaderFocused
@@ -135,8 +133,8 @@ bool LaunchSettingsBottomSheetView::HandleInput(
     bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
     bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
 
-    _loaderLeftArrow.SetState((loaderFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
-    _loaderRightArrow.SetState((loaderFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _loaderLeftArrow->SetState((loaderFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _loaderRightArrow->SetState((loaderFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
 
     if (loaderFocused && inputProvider.Triggered(InputKey::A))
     {
@@ -155,10 +153,43 @@ bool LaunchSettingsBottomSheetView::HandleInput(
     return false;
 }
 
+
+void LaunchSettingsBottomSheetView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenDown(touchPoint, focusManager);
+
+    if (!GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = true;
+    }
+}
+
+void LaunchSettingsBottomSheetView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenMove(touchPoint, focusManager);
+
+    if (GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = false;
+    }
+}
+
+void LaunchSettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
+
+    //if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
+    //{
+    //    _viewModel->Close();
+    //}
+
+    _oobPenDown = false;
+}
+
 SharedPtr<View> LaunchSettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
     FocusMoveDirection direction, View* source)
 {
-    if (currentFocus == _loaderFieldLabel)
+    if (currentFocus.GetPointer() == _loaderLabel.GetPointer())
     {
         if (direction == FocusMoveDirection::Left || direction == FocusMoveDirection::Right)
         {

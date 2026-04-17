@@ -15,7 +15,7 @@ public:
 
     /// @brief Requests to show the given dialog.
     /// @param dialog The dialog to show.
-    void ShowDialog(std::unique_ptr<DialogView> dialog);
+    void ShowDialog(SharedPtr<DialogView> dialog);
 
     /// @brief Closes the current dialog.
     void CloseDialog();
@@ -57,6 +57,16 @@ public:
     /// @brief Returns true if no dialog is being shown or animated.
     bool IsIdle() const { return _curState == State::Idle && !_nextDialog; }
 
+    bool IsBottomSheetVisible() const
+    {
+        return _curState != State::Idle;
+    }
+
+    DialogView* GetDialogView() const
+    {
+        return _currentDialog.GetPointer();
+    }
+
 private:
     enum class State
     {
@@ -68,8 +78,8 @@ private:
     FocusManager* _focusManager;
     StackVramManager* _vramManager;
     u32 _baseVramState;
-    std::unique_ptr<DialogView> _currentDialog;
-    std::unique_ptr<DialogView> _nextDialog;
+    SharedPtr<DialogView> _currentDialog;
+    SharedPtr<DialogView> _nextDialog;
     bool _initVram = false;
     SharedPtr<View> _oldFocus = nullptr;
     Animator<int> _scrimAnimator;

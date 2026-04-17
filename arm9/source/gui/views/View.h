@@ -3,6 +3,7 @@
 #include "core/math/Point.h"
 #include "core/math/Rectangle.h"
 #include "core/SharedPtr.h"
+#include "core/EnableSharedFromThis.h"
 #include "../FocusManager.h"
 #include "../FocusMoveDirection.h"
 
@@ -11,7 +12,7 @@ class VramContext;
 class InputProvider;
 
 /// @brief Base class for views.
-class View
+class View : public EnableSharedFromThis<View>
 {
 public:
     /// @brief Link used for views that contain other views.
@@ -57,6 +58,10 @@ public:
 
         return false;
     }
+
+    virtual void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) { }
+    virtual void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) { }
+    virtual void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) { }
 
     /// @brief Gets the bounds of the view.
     /// @return The bounds of the view.

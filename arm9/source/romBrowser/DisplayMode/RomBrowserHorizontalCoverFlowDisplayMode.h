@@ -9,7 +9,7 @@ public:
     bool IsVertical() const override { return false; }
     bool ShowCoverOnTopScreen() const override { return false; }
 
-    std::unique_ptr<AppBarView> CreateAppBarView(const IRomBrowserViewFactory* romBrowserViewFactory,
+    SharedPtr<AppBarView> CreateAppBarView(const IRomBrowserViewFactory* romBrowserViewFactory,
         int startButtonCount, int endButtonCount) const override
     {
         return romBrowserViewFactory->CreateAppBarView(0, 0,

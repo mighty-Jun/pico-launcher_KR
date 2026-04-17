@@ -31,13 +31,13 @@
 #define LIST_WIDTH                  224
 #define LIST_HEIGHT                 108
 
-CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> viewModel,
+CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewModel,
     const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
     FocusManager* focusManager, ILanguagePackService* languagePackService)
     : _viewModel(std::move(viewModel))
-    , _titleLabel(64, 16, 25, fontRepository->GetFont(FontType::Medium11))
-    , _secondaryLabel(177, 16, 64, fontRepository->GetFont(FontType::Regular10))
-    , _descriptionLabel(224, 16, 256, fontRepository->GetFont(FontType::Medium7_5))
+    , _titleLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Medium11)))
+    , _secondaryLabel(Label2DView::CreateShared(177, 16, 64, fontRepository->GetFont(FontType::Regular10)))
+    , _descriptionLabel(Label2DView::CreateShared(224, 16, 256, fontRepository->GetFont(FontType::Medium7_5)))
     , _cheatListRecycler(RecyclerView::CreateShared(
         LIST_X, LIST_Y, LIST_WIDTH, LIST_HEIGHT, RecyclerView::Mode::VerticalList))
     , _materialColorScheme(materialColorScheme)
@@ -47,14 +47,14 @@ CheatsBottomSheetView::CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> vi
 {
     const auto& langPack = languagePackService->GetLanguagePack();
 
-    _titleLabel.SetText(langPack.cheatSettings_title.GetString());
-    _secondaryLabel.SetText(langPack.cheatSettings_noCheatsMsg.GetString());
-    _secondaryLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
-    _descriptionLabel.SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
-    _descriptionLabel.SetText("");
-    AddChildTail(&_titleLabel);
-    AddChildTail(&_secondaryLabel);
-    AddChildTail(&_descriptionLabel);
+    _titleLabel->SetText(langPack.cheatSettings_title.GetString());
+    _secondaryLabel->SetText(langPack.cheatSettings_noCheatsMsg.GetString());
+    _secondaryLabel->SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
+    _descriptionLabel->SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
+    _descriptionLabel->SetText("");
+    AddChildTail(_titleLabel.GetPointer());
+    AddChildTail(_secondaryLabel.GetPointer());
+    AddChildTail(_descriptionLabel.GetPointer());
     AddChildTail(_cheatListRecycler.GetPointer());
 }
 
@@ -87,23 +87,24 @@ void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
 
 void CheatsBottomSheetView::Update()
 {
-    _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
+    _titleLabel->SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
     {
-        _secondaryLabel.SetPosition(CATEGORY_NAME_LABEL_X, _position.y + CATEGORY_NAME_LABEL_Y);
+        _secondaryLabel->SetPosition(CATEGORY_NAME_LABEL_X, _position.y + CATEGORY_NAME_LABEL_Y);
     }
     else
     {
-        _secondaryLabel.SetPosition(NO_CHEATS_FOUND_LABEL_X, _position.y + NO_CHEATS_FOUND_LABEL_Y);
+        _secondaryLabel->SetPosition(NO_CHEATS_FOUND_LABEL_X, _position.y + NO_CHEATS_FOUND_LABEL_Y);
     }
-    _descriptionLabel.SetPosition(DESCRIPTION_LABEL_X, _position.y + DESCRIPTION_LABEL_Y);
+    _descriptionLabel->SetPosition(DESCRIPTION_LABEL_X, _position.y + DESCRIPTION_LABEL_Y);
     _cheatListRecycler->SetPosition(LIST_X, _position.y + LIST_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
     {
         if (!_cheatsAdapter && _objVramManager != nullptr)
         {
+            _currentCheatCategory = _viewModel->GetCurrentCheatCategory();
             _cheatsAdapter = SharedPtr<CheatsAdapter>::MakeShared(
-                _viewModel->GetCurrentCheatCategory(), _materialColorScheme, _fontRepository, _vramOffsets);
+                _currentCheatCategory, _viewModel, _materialColorScheme, _fontRepository, _vramOffsets);
             _cheatListRecycler->SetAdapter(_cheatsAdapter);
 
             // Ugly hack
@@ -111,6 +112,12 @@ void CheatsBottomSheetView::Update()
 
             _cheatListRecycler->InitVram(VramContext(nullptr, _objVramManager, nullptr, nullptr));
             _cheatListRecycler->Focus(*_focusManager);
+        }
+        else if (_currentCheatCategory != _viewModel->GetCurrentCheatCategory()
+            && _viewModel->GetCurrentCheatCategory() != nullptr)
+        {
+            _secondaryLabel->SetText(_viewModel->GetCurrentCheatCategory()->GetName());
+            UpdateCheatList();
         }
     }
     BottomSheetView::Update();
@@ -179,21 +186,21 @@ void CheatsBottomSheetView::Draw(GraphicsContext& graphicsContext)
                 .Build(maskOam[7]);
         }
 
-        _titleLabel.SetBackgroundColor(backColor);
-        _titleLabel.SetForegroundColor(_materialColorScheme->onSurface);
-        _titleLabel.Draw(graphicsContext);
+        _titleLabel->SetBackgroundColor(backColor);
+        _titleLabel->SetForegroundColor(_materialColorScheme->onSurface);
+        _titleLabel->Draw(graphicsContext);
 
         if (_viewModel->GetState() == CheatsViewModel::State::NoCheats ||
             _viewModel->ShouldShowCategoryName())
         {
-            _secondaryLabel.SetBackgroundColor(backColor);
-            _secondaryLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-            _secondaryLabel.Draw(graphicsContext);
+            _secondaryLabel->SetBackgroundColor(backColor);
+            _secondaryLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+            _secondaryLabel->Draw(graphicsContext);
         }
 
-        _descriptionLabel.SetBackgroundColor(backColor);
-        _descriptionLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        _descriptionLabel.Draw(graphicsContext);
+        _descriptionLabel->SetBackgroundColor(backColor);
+        _descriptionLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _descriptionLabel->Draw(graphicsContext);
     }
     graphicsContext.SetPriority(oldPrio);
     graphicsContext.ResetClipArea();
@@ -201,22 +208,7 @@ void CheatsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 
 bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    if (inputProvider.Triggered(InputKey::A))
-    {
-        if (focusManager.IsFocusInside(_cheatListRecycler.GetPointer()))
-        {
-            auto oldCategory = _viewModel->GetCurrentCheatCategory();
-            _viewModel->ActivateSelectedItem();
-            if (oldCategory != _viewModel->GetCurrentCheatCategory())
-            {
-                _secondaryLabel.SetText(_viewModel->GetCurrentCheatCategory()->GetName());
-                UpdateCheatList();
-            }
-
-            return true;
-        }
-    }
-    else if (inputProvider.Triggered(InputKey::B))
+    if (inputProvider.Triggered(InputKey::B))
     {
         auto oldCategory = _viewModel->GetCurrentCheatCategory();
         if (_viewModel->NavigateUp() &&
@@ -239,13 +231,43 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
     return false;
 }
 
+void CheatsBottomSheetView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenDown(touchPoint, focusManager);
+
+    if (!GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = true;
+    }
+}
+
+void CheatsBottomSheetView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenMove(touchPoint, focusManager);
+
+    if (GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = false;
+    }
+}
+
+void CheatsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
+
+    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
+    {
+        _viewModel->Close();
+    }
+
+    _oobPenDown = false;
+}
+
 void CheatsBottomSheetView::UpdateCheatList()
 {
-    // Need to unfocus first, otherwise the focus manager still contains a pointer to a view that is going to be destroyed
-    _focusManager->Unfocus();
-
+    _currentCheatCategory = _viewModel->GetCurrentCheatCategory();
     _cheatsAdapter = SharedPtr<CheatsAdapter>::MakeShared(
-        _viewModel->GetCurrentCheatCategory(), _materialColorScheme, _fontRepository, _vramOffsets);
+        _currentCheatCategory, _viewModel, _materialColorScheme, _fontRepository, _vramOffsets);
     _cheatListRecycler->SetAdapter(_cheatsAdapter, _viewModel->GetSelectedItem());
 
     // Ugly hack
@@ -261,13 +283,13 @@ void CheatsBottomSheetView::UpdateDescriptionText()
     int selectedItem = _viewModel->GetSelectedItem();
     if (selectedItem < 0)
     {
-        _descriptionLabel.SetText("");
+        _descriptionLabel->SetText("");
     }
     else
     {
         auto cheatCategory = _viewModel->GetCurrentCheatCategory();
         u32 numberOfSubEntries = 0;
         auto subEntries = cheatCategory->GetSubEntries(numberOfSubEntries);
-        _descriptionLabel.SetText(subEntries[selectedItem].GetDescription());
+        _descriptionLabel->SetText(subEntries[selectedItem].GetDescription());
     }
 }

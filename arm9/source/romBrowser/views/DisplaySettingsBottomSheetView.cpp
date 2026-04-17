@@ -69,12 +69,12 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     : _viewModel(viewModel)
     , _appSettingsService(appSettingsService)
     , _languagePackService(languagePackService)
-    , _titleLabel(128, 16, 25, fontRepository->GetFont(FontType::Medium11))
-    , _layoutLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
-    , _sortingLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
-    , _themeLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _titleLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
+    , _layoutLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
+    , _sortingLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
+    , _themeLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
     , _themeFieldLabel(SharedPtr<Label2DView>::MakeShared(120, 16, 20, fontRepository->GetFont(FontType::Regular10)))
-    , _languageLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
+    , _languageLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
     , _languageFieldLabel(SharedPtr<Label2DView>::MakeShared(120, 16, 20, fontRepository->GetFont(FontType::Regular10)))
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
@@ -82,11 +82,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     const auto& langPack = _languagePackService->GetLanguagePack();
     //langPack = languagePackService->GetLanguagePack();
     //load langPack string instead of hard coding
-    _titleLabel.SetText(langPack.displaySettings_title.GetString());
-    _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
-    _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
-    _themeLabel.SetText(langPack.displaySettings_theme.GetString());
-    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());
+    _titleLabel->SetText(langPack.displaySettings_title.GetString());
+    _layoutLabel->SetText(langPack.displaySettings_layout.GetString());
+    _sortingLabel->SetText(langPack.displaySettings_sorting.GetString());
+    _themeLabel->SetText(langPack.displaySettings_theme.GetString());
+    _languageLabel->SetText(langPack.displaySettings_langugage.GetString());
     
     const char* currTheme = _appSettingsService->GetAppSettings().theme.GetString();
     _pendingThemeName = (currTheme && currTheme[0] != 0) ? currTheme : "material";
@@ -102,12 +102,12 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _themeFieldLabel->SetText(_pendingThemeName.GetString());
     _languageFieldLabel->SetText(_pendingLanguageName.GetString());
 
-    AddChildTail(&_titleLabel);
-    AddChildTail(&_layoutLabel);
-    AddChildTail(&_sortingLabel);
-    AddChildTail(&_themeLabel);
+    AddChildTail(_titleLabel.GetPointer());
+    AddChildTail(_layoutLabel.GetPointer());
+    AddChildTail(_sortingLabel.GetPointer());
+    AddChildTail(_themeLabel.GetPointer());
     AddChildTail(_themeFieldLabel.GetPointer());
-    AddChildTail(&_languageLabel);
+    AddChildTail(_languageLabel.GetPointer());
     AddChildTail(_languageFieldLabel.GetPointer());
 
     _themeLeftArrow = CreateArrowIcon();
@@ -115,10 +115,10 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _langLeftArrow = CreateArrowIcon();
     _langRightArrow = CreateArrowIcon();
 
-    AddChildTail(&_themeLeftArrow);
-    AddChildTail(&_themeRightArrow);
-    AddChildTail(&_langLeftArrow);
-    AddChildTail(&_langRightArrow);
+    AddChildTail(_themeLeftArrow.GetPointer());
+    AddChildTail(_themeRightArrow.GetPointer());
+    AddChildTail(_langLeftArrow.GetPointer());
+    AddChildTail(_langRightArrow.GetPointer());
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -228,29 +228,29 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
         _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
 
-        _themeLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
-        _themeRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
-        _langLeftArrow.SetIconVramOffset(_leftArrowIconVramOffset);
-        _langRightArrow.SetIconVramOffset(_rightArrowIconVramOffset);
+        _themeLeftArrow->SetIconVramOffset(_leftArrowIconVramOffset);
+        _themeRightArrow->SetIconVramOffset(_rightArrowIconVramOffset);
+        _langLeftArrow->SetIconVramOffset(_leftArrowIconVramOffset);
+        _langRightArrow->SetIconVramOffset(_rightArrowIconVramOffset);
     }
 }
 
 void DisplaySettingsBottomSheetView::UpdateLabels()
 {
-    _titleLabel.SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
-    _layoutLabel.SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
-    _sortingLabel.SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
+    _titleLabel->SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
+    _layoutLabel->SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
+    _sortingLabel->SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
     // _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
-    _themeLabel.SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
+    _themeLabel->SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
     _themeFieldLabel->SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
-    _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
+    _languageLabel->SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
     _languageFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
 
-    _themeLeftArrow.SetPosition(60, _position.y + THEME_LABEL_Y - 8);
-    _themeRightArrow.SetPosition(186, _position.y + THEME_LABEL_Y - 8);
+    _themeLeftArrow->SetPosition(60, _position.y + THEME_LABEL_Y - 8);
+    _themeRightArrow->SetPosition(186, _position.y + THEME_LABEL_Y - 8);
     
-    _langLeftArrow.SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
-    _langRightArrow.SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
+    _langLeftArrow->SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
+    _langRightArrow->SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -309,16 +309,16 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
     graphicsContext.SetClipArea(GetBounds());
     u32 oldPrio = graphicsContext.SetPriority(1);
     {
-        _titleLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _titleLabel.SetForegroundColor(_materialColorScheme->onSurface);
-        _layoutLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _layoutLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        _sortingLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _sortingLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _titleLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _titleLabel->SetForegroundColor(_materialColorScheme->onSurface);
+        _layoutLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _layoutLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _sortingLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _sortingLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         // _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        _themeLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _themeLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _themeLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _themeLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         
         bool themeFocused = _themeFieldLabel->IsFocused();
         _themeFieldLabel->SetBackgroundColor(themeFocused
@@ -330,8 +330,8 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 
 
             
-        _languageLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _languageLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
+        _languageLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
+        _languageLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
 
         bool langFocused = _languageFieldLabel->IsFocused();
         _languageFieldLabel->SetBackgroundColor(langFocused
@@ -355,11 +355,11 @@ bool DisplaySettingsBottomSheetView::HandleInput(
     bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
     bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
 
-    _themeLeftArrow.SetState((themeFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
-    _themeRightArrow.SetState((themeFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _themeLeftArrow->SetState((themeFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _themeRightArrow->SetState((themeFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
 
-    _langLeftArrow.SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
-    _langRightArrow.SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _langLeftArrow->SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
+    _langRightArrow->SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
 
     if (_themeFieldLabel->IsFocused()) EnsureThemesLoaded();
     if (_languageFieldLabel->IsFocused()) EnsureLanguagesLoaded();
@@ -390,6 +390,38 @@ bool DisplaySettingsBottomSheetView::HandleInput(
         return true;
     }
     return false;
+}
+
+void DisplaySettingsBottomSheetView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenDown(touchPoint, focusManager);
+
+    if (!GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = true;
+    }
+}
+
+void DisplaySettingsBottomSheetView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenMove(touchPoint, focusManager);
+
+    if (GetBounds().Contains(touchPoint))
+    {
+        _oobPenDown = false;
+    }
+}
+
+void DisplaySettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
+
+    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
+    {
+        _viewModel->Close();
+    }
+
+    _oobPenDown = false;
 }
 
 SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
@@ -752,7 +784,7 @@ void DisplaySettingsBottomSheetView::ChangeTheme(int newIdx)
 
 void DisplaySettingsBottomSheetView::UpdateThemeUI()
 {
-    _themeLabel.SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
+    _themeLabel->SetPosition(THEME_LABEL_X, _position.y + THEME_LABEL_Y);
     _themeFieldLabel->SetPosition(THEME_FIELD_X, _position.y + THEME_LABEL_Y);
     _themeFieldLabel->SetText(_themesLoaded
         ? _themeNames[_selectedThemeIdx].GetString()
@@ -761,7 +793,7 @@ void DisplaySettingsBottomSheetView::UpdateThemeUI()
 
 void DisplaySettingsBottomSheetView::UpdateLanguageUI()
 {
-    _languageLabel.SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
+    _languageLabel->SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
     _themeFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
     if (_languagesLoaded && _languageCount > 0)
         _languageFieldLabel->SetText(_languageEntries[_selectedLanguageIdx].displayName);
@@ -780,15 +812,12 @@ void DisplaySettingsBottomSheetView::ReleaseLazyLists()
     _selectedLanguageIdx = 0;
 }
 
-IconButton2DView DisplaySettingsBottomSheetView::CreateArrowIcon()
+SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateArrowIcon()
 {
-    IconButton2DView arrowIcon
-    {
+    return SharedPtr<IconButton2DView>::MakeShared(
         IconButtonView::Type::Standard,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::onPrimary,
         _materialColorScheme
-
-    };
-    return arrowIcon;
+    );
 }

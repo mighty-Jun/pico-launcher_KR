@@ -25,8 +25,8 @@ public:
 
     CheatsViewModel(const FileInfo& romFileInfo, IRomBrowserController* romBrowserController);
 
-    /// @brief Activates the selected cheat or category.
-    void ActivateSelectedItem();
+    /// @brief Activates the cheat or category at the specified \p index.
+    void ActivateItem(int index);
 
     /// @brief Navigates up in the cheat hierachy, or closes the cheats panel when at the root.
     /// @return \c true when navigation happened in the cheats tree, or \c false when the cheats panel was closed.

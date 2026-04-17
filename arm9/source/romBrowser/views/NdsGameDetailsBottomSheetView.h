@@ -8,12 +8,9 @@ class IFontRepository;
 
 class NdsGameDetailsBottomSheetView : public BottomSheetView
 {
-public:
-    NdsGameDetailsBottomSheetView(
-        IRomBrowserController* romBrowserController,
-        const MaterialColorScheme* materialColorScheme,
-        const IFontRepository* fontRepository);
+    SHARED_ONLY(NdsGameDetailsBottomSheetView)
 
+public:
     void SetGraphics(const ChipView::VramToken& chipVramToken)
     {
         _cheatsChip->SetGraphics(chipVramToken);
@@ -40,4 +37,9 @@ private:
     u32 _smallHeartIconFilledVramOffset;
     SharedPtr<ChipView> _cheatsChip;
     SharedPtr<ChipView> _favoriteChip;
+
+    NdsGameDetailsBottomSheetView(
+        IRomBrowserController* romBrowserController,
+        const MaterialColorScheme* materialColorScheme,
+        const IFontRepository* fontRepository);
 };

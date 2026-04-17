@@ -8,12 +8,12 @@ class ICoverRepository;
 class CoverFlowFileRecyclerAdapter : public FileRecyclerAdapter
 {
 public:
-    CoverFlowFileRecyclerAdapter(FileInfoManager* fileInfoManager,
+    CoverFlowFileRecyclerAdapter(IRomBrowserController* romBrowserController, FileInfoManager* fileInfoManager,
         TaskQueueBase* taskQueue, const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory,
         VBlankTextureLoader* vblankTextureLoader,
         const ICoverRepository* coverRepository)
-        : FileRecyclerAdapter(fileInfoManager, taskQueue, themeFileIconFactory)
+        : FileRecyclerAdapter(romBrowserController, fileInfoManager, taskQueue, themeFileIconFactory)
         , _romBrowserViewFactory(romBrowserViewFactory)
         , _vblankTextureLoader(vblankTextureLoader)
         , _coverRepository(coverRepository) { }
@@ -31,4 +31,5 @@ private:
 
     TaskResult<void> BindView(SharedPtr<View> view, int index,
         const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const override;
+    void SetQueueTask(const SharedPtr<View>& view, QueueTask<void> queueTask) const override;
 };

@@ -16,10 +16,12 @@ DialogPresenter::DialogPresenter(FocusManager* focusManager, StackVramManager* v
     _baseVramState = _vramManager->GetState();
 }
 
-void DialogPresenter::ShowDialog(std::unique_ptr<DialogView> dialog)
+void DialogPresenter::ShowDialog(SharedPtr<DialogView> dialog)
 {
     if (!_nextDialog)
+    {
         _nextDialog = std::move(dialog);
+    }
 }
 
 void DialogPresenter::CloseDialog()
@@ -93,7 +95,7 @@ void DialogPresenter::Update()
             else
             {
                 _newState = State::Idle;
-                _currentDialog.reset();
+                _currentDialog.Reset();
             }
             break;
         }

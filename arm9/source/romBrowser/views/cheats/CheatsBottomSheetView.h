@@ -16,15 +16,16 @@ class ILanguagePackService;
 /// @brief Bottom sheet for browsing and enabling/disabling cheats.
 class CheatsBottomSheetView : public BottomSheetView
 {
-public:
-    CheatsBottomSheetView(std::unique_ptr<CheatsViewModel> viewModel,
-        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        FocusManager* focusManager, ILanguagePackService* languagePackService);
+    SHARED_ONLY(CheatsBottomSheetView)
 
+public:
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
 
     void Focus(FocusManager& focusManager) override
     {
@@ -32,10 +33,10 @@ public:
     }
 
 private:
-    std::unique_ptr<CheatsViewModel> _viewModel;
-    Label2DView _titleLabel;
-    Label2DView _secondaryLabel;
-    Label2DView _descriptionLabel;
+    SharedPtr<CheatsViewModel> _viewModel;
+    SharedPtr<Label2DView> _titleLabel;
+    SharedPtr<Label2DView> _secondaryLabel;
+    SharedPtr<Label2DView> _descriptionLabel;
     SharedPtr<RecyclerView> _cheatListRecycler;
     SharedPtr<CheatsAdapter> _cheatsAdapter;
     const MaterialColorScheme* _materialColorScheme;
@@ -44,6 +45,12 @@ private:
     FocusManager* _focusManager;
     CheatListItemView::VramOffsets _vramOffsets;
     u32 _savedVramState = 0;
+    const CheatEntry* _currentCheatCategory = nullptr;
+    bool _oobPenDown = false;
+
+    CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewModel,
+        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
+        FocusManager* focusManager, ILanguagePackService* languagePackService);
     ILanguagePackService* _languagePackService;
 
     void UpdateCheatList();

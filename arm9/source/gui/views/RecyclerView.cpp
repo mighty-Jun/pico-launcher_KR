@@ -4,7 +4,7 @@
 #include "gui/input/InputProvider.h"
 #include "RecyclerView.h"
 
-RecyclerView::RecyclerView(Private, int x, int y, int width, int height, Mode mode)
+RecyclerView::RecyclerView(int x, int y, int width, int height, Mode mode)
     : _width(width), _height(height), _mode(mode), _rows(0), _columns(0)
     , _viewPoolFreeCount(0), _viewPoolTotalCount(0)
     , _xOffset(0), _yOffset(0), _xPadding(0), _yPadding(0)
@@ -339,6 +339,117 @@ bool RecyclerView::HandleInput(const InputProvider& inputProvider, FocusManager&
     }
 
     return View::HandleInput(inputProvider, focusManager);
+}
+
+void RecyclerView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (GetBounds().Contains(touchPoint))
+    {
+        _penDown = true;
+        _penDownPosition = touchPoint;
+        _hasScrollStarted = false;
+        _penDownScrollOffset = _scrollOffsetAnimator.GetValue();
+
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+        {
+            _viewPool[i].view->HandlePenDown(touchPoint, focusManager);
+        }
+    }
+}
+
+void RecyclerView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (!_penDown)
+    {
+        return;
+    }
+
+    if (!_hasScrollStarted)
+    {
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+        {
+            _viewPool[i].view->HandlePenMove(touchPoint, focusManager);
+            if (focusManager.GetCurrentFocus().GetPointer() == _viewPool[i].view.GetPointer())
+            {
+                SetSelectedItem(_viewPool[i].itemIdx);
+            }
+        }
+
+        int dx = touchPoint.x - _penDownPosition.x;
+        int dy = touchPoint.y - _penDownPosition.y;
+        if (dx * dx + dy * dy > 7 * 7)
+        {
+            bool shouldScrollStart = (_mode == Mode::HorizontalGrid || _mode == Mode::HorizontalList)
+                ? (std::abs(touchPoint.x - _penDownPosition.x) > std::abs(touchPoint.y - _penDownPosition.y))
+                : (std::abs(touchPoint.x - _penDownPosition.x) < std::abs(touchPoint.y - _penDownPosition.y));
+
+            if (shouldScrollStart)
+            {
+                _hasScrollStarted = true;
+            }
+            else
+            {
+                _penDown = false; //wrong direction drag, so cancel it
+            }
+
+            for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+            {
+                _viewPool[i].view->HandlePenUp(Point(-1, -1), focusManager);
+            }
+        }
+    }
+    else
+    {
+        int newScrollOffset;
+        if (_mode == Mode::HorizontalGrid || _mode == Mode::HorizontalList)
+        {
+            newScrollOffset = _penDownScrollOffset + touchPoint.x - _penDownPosition.x;
+            if (-newScrollOffset < 0)
+            {
+                newScrollOffset = 0;
+                _penDownScrollOffset = 0;
+                _penDownPosition.x = touchPoint.x;
+            }
+            else if (newScrollOffset < GetMaxScrollOffset())
+            {
+                newScrollOffset = GetMaxScrollOffset();
+                _penDownScrollOffset = newScrollOffset;
+                _penDownPosition.x = touchPoint.x;
+            }
+        }
+        else
+        {
+            newScrollOffset = _penDownScrollOffset + touchPoint.y - _penDownPosition.y;
+            if (-newScrollOffset < 0)
+            {
+                newScrollOffset = 0;
+                _penDownScrollOffset = 0;
+                _penDownPosition.y = touchPoint.y;
+            }
+            else if (newScrollOffset < GetMaxScrollOffset())
+            {
+                newScrollOffset = GetMaxScrollOffset();
+                _penDownScrollOffset = newScrollOffset;
+                _penDownPosition.y = touchPoint.y;
+            }
+        }
+
+        SetScrollOffset(newScrollOffset, false);
+    }
+}
+
+void RecyclerView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+    {
+        _viewPool[i].view->HandlePenUp(lastTouchPoint, focusManager);
+        if (focusManager.GetCurrentFocus().GetPointer() == _viewPool[i].view.GetPointer())
+        {
+            SetSelectedItem(_viewPool[i].itemIdx);
+        }
+    }
+
+    _penDown = false;
 }
 
 Point RecyclerView::GetItemPosition(int itemIdx)

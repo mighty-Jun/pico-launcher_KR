@@ -30,7 +30,7 @@ public:
 
 private:
     LoadingViewModel* _viewModel;
-    Label2DView _loadingLabel;
+    SharedPtr<Label2DView> _loadingLabel;
 
     u32 _bg1VramOffset = 0;
     u32 _bg2VramOffset = 0;
