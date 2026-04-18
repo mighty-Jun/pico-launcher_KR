@@ -428,26 +428,6 @@ bool DisplaySettingsBottomSheetView::HandleInput(
     return false;
 }
 
-void DisplaySettingsBottomSheetView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
-{
-    BottomSheetView::HandlePenDown(touchPoint, focusManager);
-
-    if (!GetBounds().Contains(touchPoint))
-    {
-        _oobPenDown = true;
-    }
-}
-
-void DisplaySettingsBottomSheetView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
-{
-    BottomSheetView::HandlePenMove(touchPoint, focusManager);
-
-    if (GetBounds().Contains(touchPoint))
-    {
-        _oobPenDown = false;
-    }
-}
-
 void DisplaySettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
 {
     BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);

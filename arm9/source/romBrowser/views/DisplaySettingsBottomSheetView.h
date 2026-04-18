@@ -21,8 +21,6 @@ public:
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
-    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
-    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
     void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus,
         FocusMoveDirection direction, View* source) override;
