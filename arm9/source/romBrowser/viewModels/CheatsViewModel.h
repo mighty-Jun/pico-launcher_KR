@@ -54,9 +54,9 @@ public:
     /// @param selectedItem The index of the selected item to set.
     void SetSelectedItem(int selectedItem) { _selectedItem = selectedItem; }
 
-    /// @brief Returns whether the category name should be displayed.
-    /// @return \c true when the category name should be displayed, or \c false otherwise.
-    bool ShouldShowCategoryName() const
+    /// @brief Returns whether the current displayed category is a sub-category.
+    /// @return \c true when the current displayed category is a sub-category, or \c false otherwise.
+    bool IsInSubCategory() const
     {
         return _categoryStackLevel > 0;
     }

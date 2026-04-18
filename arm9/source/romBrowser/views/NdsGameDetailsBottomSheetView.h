@@ -31,6 +31,9 @@ public:
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
 
+protected:
+    void Close() override;
+
 private:
     IRomBrowserController* _romBrowserController;
     u32 _smallHeartIconVramOffset;

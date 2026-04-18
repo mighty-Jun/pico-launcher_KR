@@ -478,7 +478,7 @@ void App::Update()
 
     _dialogPresenter.Update();
     
-    if (_pendingAppRestart && _dialogPresenter.IsIdle())
+    if (_pendingAppRestart && _dialogPresenter.IsBottomSheetVisible())
     {
         _pendingAppRestart = false;
 
@@ -643,15 +643,14 @@ void App::RestoreVramState(const VramState& vramState)
 void App::HandleInput()
 {
     _focusManager.Update(_inputRepeater);
-    auto dialogView = _dialogPresenter.GetDialogView();
     Point touchPoint;
     if (_inputRepeater.Triggered(InputKey::Touch) &&
         _inputRepeater.GetCurrentTouchPoint(touchPoint))
     {
         // pen down
-        if (_dialogPresenter.IsBottomSheetVisible() && dialogView != nullptr)
+        if (_dialogPresenter.IsBottomSheetVisible())
         {
-            dialogView->HandlePenDown(touchPoint, _focusManager);
+            _dialogPresenter.HandlePenDown(touchPoint, _focusManager);
         }
         else
         {
@@ -662,9 +661,9 @@ void App::HandleInput()
     else if (_inputRepeater.Released(InputKey::Touch))
     {
         // pen up
-        if (_dialogPresenter.IsBottomSheetVisible() && dialogView != nullptr)
+        if (_dialogPresenter.IsBottomSheetVisible())
         {
-            dialogView->HandlePenUp(_lastTouchPoint, _focusManager);
+            _dialogPresenter.HandlePenUp(_lastTouchPoint, _focusManager);
         }
         else
         {
@@ -677,7 +676,7 @@ void App::HandleInput()
         // pen move
         if (_dialogPresenter.IsBottomSheetVisible())
         {
-            dialogView->HandlePenMove(touchPoint, _focusManager);
+            _dialogPresenter.HandlePenMove(touchPoint, _focusManager);
         }
         else
         {

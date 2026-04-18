@@ -113,7 +113,7 @@ private:
     bool _pendingAppRestart = false;
 
     Point _lastTouchPoint = Point(0, 0);
-
+    
     void InitVramMapping() const;
     void DisplaySplashScreen() const;
     void LoadTheme();

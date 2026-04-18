@@ -13,8 +13,8 @@ NdsGameDetailsBottomSheetView::NdsGameDetailsBottomSheetView(
     IRomBrowserController* romBrowserController, const MaterialColorScheme* materialColorScheme,
     const IFontRepository* fontRepository)
     : _romBrowserController(romBrowserController)
-    , _cheatsChip(SharedPtr<ChipView>::MakeShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
-    , _favoriteChip(SharedPtr<ChipView>::MakeShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
+    , _cheatsChip(ChipView::CreateShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
+    , _favoriteChip(ChipView::CreateShared(md::sys::color::surfaceContainerLow, materialColorScheme, fontRepository))
 {
     _cheatsChip->SetText(u"Cheats");
     _cheatsChip->SetSelected(false);
@@ -77,4 +77,9 @@ bool NdsGameDetailsBottomSheetView::HandleInput(const InputProvider& inputProvid
         return true;
     }
     return false;
+}
+
+void NdsGameDetailsBottomSheetView::Close()
+{
+    _romBrowserController->HideGameInfo();
 }

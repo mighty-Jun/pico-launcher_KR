@@ -7,6 +7,7 @@
 #include "gui/palette/GradientPalette.h"
 #include "gui/OamBuilder.h"
 #include "folderIcon.h"
+#include "upIcon.h"
 #include "checkboxChecked.h"
 #include "checkboxUnchecked.h"
 #include "cheatSelector.h"
@@ -26,6 +27,9 @@
 #define DESCRIPTION_LABEL_X         16
 #define DESCRIPTION_LABEL_Y         147
 
+#define UP_BUTTON_X                 212
+#define UP_BUTTON_Y                 (TITLE_LABEL_Y - 7)
+
 #define LIST_X                      16
 #define LIST_Y                      36
 #define LIST_WIDTH                  224
@@ -36,10 +40,15 @@ CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewMode
     FocusManager* focusManager, ILanguagePackService* languagePackService)
     : _viewModel(std::move(viewModel))
     , _titleLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Medium11)))
-    , _secondaryLabel(Label2DView::CreateShared(177, 16, 64, fontRepository->GetFont(FontType::Regular10)))
+    , _secondaryLabel(Label2DView::CreateShared(153, 16, 64, fontRepository->GetFont(FontType::Regular10)))
     , _descriptionLabel(Label2DView::CreateShared(224, 16, 256, fontRepository->GetFont(FontType::Medium7_5)))
     , _cheatListRecycler(RecyclerView::CreateShared(
         LIST_X, LIST_Y, LIST_WIDTH, LIST_HEIGHT, RecyclerView::Mode::VerticalList))
+    , _upButton(IconButton2DView::CreateShared(
+        IconButtonView::Type::Standard,
+        IconButtonView::State::NoToggle,
+        md::sys::color::inverseOnSurface,
+        materialColorScheme))
     , _materialColorScheme(materialColorScheme)
     , _fontRepository(fontRepository)
     , _focusManager(focusManager)
@@ -56,6 +65,10 @@ CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewMode
     AddChildTail(_secondaryLabel.GetPointer());
     AddChildTail(_descriptionLabel.GetPointer());
     AddChildTail(_cheatListRecycler.GetPointer());
+    _upButton->SetAction([] (IconButtonView*, void* arg)
+    {
+        ((CheatsBottomSheetView*)arg)->_viewModel->NavigateUp();
+    }, this);
 }
 
 void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
@@ -65,21 +78,17 @@ void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
     const auto objVramManager = vramContext.GetObjVramManager();
     if (objVramManager)
     {
-        _vramOffsets.folderIconVramOffset = objVramManager->Alloc(folderIconTilesLen);
-        dma_ntrCopy32(3, folderIconTiles,
-            objVramManager->GetVramAddress(_vramOffsets.folderIconVramOffset), folderIconTilesLen);
-
-        _vramOffsets.checkboxUncheckedIconVramOffset = objVramManager->Alloc(checkboxUncheckedTilesLen);
-        dma_ntrCopy32(3, checkboxUncheckedTiles,
-            objVramManager->GetVramAddress(_vramOffsets.checkboxUncheckedIconVramOffset), checkboxUncheckedTilesLen);
-
-        _vramOffsets.checkboxCheckedIconVramOffset = objVramManager->Alloc(checkboxCheckedTilesLen);
-        dma_ntrCopy32(3, checkboxCheckedTiles,
-            objVramManager->GetVramAddress(_vramOffsets.checkboxCheckedIconVramOffset), checkboxCheckedTilesLen);
-
-        _vramOffsets.cheatSelectorVramOffset = objVramManager->Alloc(cheatSelectorTilesLen);
-        dma_ntrCopy32(3, cheatSelectorTiles,
-            objVramManager->GetVramAddress(_vramOffsets.cheatSelectorVramOffset), cheatSelectorTilesLen);
+        _vramOffsets.folderIconVramOffset
+            = LoadSprite(*objVramManager, folderIconTiles, folderIconTilesLen);
+        _vramOffsets.checkboxUncheckedIconVramOffset
+            = LoadSprite(*objVramManager, checkboxUncheckedTiles, checkboxUncheckedTilesLen);
+        _vramOffsets.checkboxCheckedIconVramOffset
+            = LoadSprite(*objVramManager, checkboxCheckedTiles, checkboxCheckedTilesLen);
+        _vramOffsets.cheatSelectorVramOffset
+            = LoadSprite(*objVramManager, cheatSelectorTiles, cheatSelectorTilesLen);
+        auto iconButtonVramToken = IconButton2DView::UploadGraphics(*objVramManager);
+        _upButton->SetGraphics(iconButtonVramToken);
+        _upButton->SetIconVramOffset(LoadSprite(*objVramManager, upIconTiles, upIconTilesLen));
     }
 
     _objVramManager = vramContext.GetObjVramManager();
@@ -87,6 +96,15 @@ void CheatsBottomSheetView::InitVram(const VramContext& vramContext)
 
 void CheatsBottomSheetView::Update()
 {
+    if (_upButton->GetParent() == nullptr && _viewModel->IsInSubCategory())
+    {
+        AddChildTail(_upButton.GetPointer());
+    }
+    else if (_upButton->GetParent() != nullptr && !_viewModel->IsInSubCategory())
+    {
+        RemoveChild(_upButton.GetPointer());
+    }
+
     _titleLabel->SetPosition(TITLE_LABEL_X, _position.y + TITLE_LABEL_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
     {
@@ -98,6 +116,7 @@ void CheatsBottomSheetView::Update()
     }
     _descriptionLabel->SetPosition(DESCRIPTION_LABEL_X, _position.y + DESCRIPTION_LABEL_Y);
     _cheatListRecycler->SetPosition(LIST_X, _position.y + LIST_Y);
+    _upButton->SetPosition(UP_BUTTON_X, _position.y + UP_BUTTON_Y);
     if (_viewModel->GetState() == CheatsViewModel::State::DisplayCheats)
     {
         if (!_cheatsAdapter && _objVramManager != nullptr)
@@ -191,7 +210,7 @@ void CheatsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _titleLabel->Draw(graphicsContext);
 
         if (_viewModel->GetState() == CheatsViewModel::State::NoCheats ||
-            _viewModel->ShouldShowCategoryName())
+            _viewModel->IsInSubCategory())
         {
             _secondaryLabel->SetBackgroundColor(backColor);
             _secondaryLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
@@ -201,21 +220,40 @@ void CheatsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _descriptionLabel->SetBackgroundColor(backColor);
         _descriptionLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         _descriptionLabel->Draw(graphicsContext);
+
+        if (_viewModel->IsInSubCategory())
+        {
+            _upButton->Draw(graphicsContext);
+        }
     }
     graphicsContext.SetPriority(oldPrio);
     graphicsContext.ResetClipArea();
+}
+
+SharedPtr<View> CheatsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
+{
+    if (!currentFocus)
+    {
+        return nullptr;
+    }
+
+    if (source == _cheatListRecycler.GetPointer() && direction == FocusMoveDirection::Up && _viewModel->IsInSubCategory())
+    {
+        return _upButton;
+    }
+    else if (source == _upButton.GetPointer() && direction == FocusMoveDirection::Down)
+    {
+        return _cheatListRecycler->MoveFocus(currentFocus, direction, this);
+    }
+
+    return nullptr;
 }
 
 bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
 {
     if (inputProvider.Triggered(InputKey::B))
     {
-        auto oldCategory = _viewModel->GetCurrentCheatCategory();
-        if (_viewModel->NavigateUp() &&
-            oldCategory != _viewModel->GetCurrentCheatCategory())
-        {
-            UpdateCheatList();
-        }
+        _viewModel->NavigateUp();
         return true;
     }
     else if (inputProvider.Triggered(InputKey::Y))
@@ -231,36 +269,9 @@ bool CheatsBottomSheetView::HandleInput(const InputProvider& inputProvider, Focu
     return false;
 }
 
-void CheatsBottomSheetView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+void CheatsBottomSheetView::Close()
 {
-    BottomSheetView::HandlePenDown(touchPoint, focusManager);
-
-    if (!GetBounds().Contains(touchPoint))
-    {
-        _oobPenDown = true;
-    }
-}
-
-void CheatsBottomSheetView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
-{
-    BottomSheetView::HandlePenMove(touchPoint, focusManager);
-
-    if (GetBounds().Contains(touchPoint))
-    {
-        _oobPenDown = false;
-    }
-}
-
-void CheatsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
-{
-    BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
-
-    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
-    {
-        _viewModel->Close();
-    }
-
-    _oobPenDown = false;
+    _viewModel->Close();
 }
 
 void CheatsBottomSheetView::UpdateCheatList()
@@ -292,4 +303,11 @@ void CheatsBottomSheetView::UpdateDescriptionText()
         auto subEntries = cheatCategory->GetSubEntries(numberOfSubEntries);
         _descriptionLabel->SetText(subEntries[selectedItem].GetDescription());
     }
+}
+
+u32 CheatsBottomSheetView::LoadSprite(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const
+{
+    u32 vramOffset = vramManager.Alloc(tilesLength);
+    dma_ntrCopy32(3, tiles, vramManager.GetVramAddress(vramOffset), tilesLength);
+    return vramOffset;
 }

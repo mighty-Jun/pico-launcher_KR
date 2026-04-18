@@ -30,6 +30,9 @@ public:
         focusManager.Focus(_loaderFieldLabel);
     }
 
+protected:
+    void Close() override;
+
 private:
     LaunchSettingsViewModel* _viewModel;
     IAppSettingsService* _appSettingsService;

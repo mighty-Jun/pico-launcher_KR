@@ -83,6 +83,11 @@ void LaunchSettingsBottomSheetView::InitVram(const VramContext& vramContext)
     }
 }
 
+void LaunchSettingsBottomSheetView::Close()
+{
+    _viewModel->Close();
+}
+
 u32 LaunchSettingsBottomSheetView::LoadIcon(IVramManager& vramManager,
     const unsigned int* tiles, u32 tilesLength) const
 {

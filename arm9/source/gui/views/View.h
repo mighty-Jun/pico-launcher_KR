@@ -59,8 +59,19 @@ public:
         return false;
     }
 
+    /// @brief Handles a pen down event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
     virtual void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) { }
+
+    /// @brief Handles a pen move event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
     virtual void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) { }
+
+    /// @brief Handles a pen up event.
+    /// @param lastTouchPoint The last touch point.
+    /// @param focusManager The focus manager.
     virtual void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) { }
 
     /// @brief Gets the bounds of the view.

@@ -42,6 +42,21 @@ public:
     /// @brief Initializes vram that is needed for showing dialogs.
     void InitVram();
 
+    /// @brief Handles a pen down event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager);
+
+    /// @brief Handles a pen move event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager);
+
+    /// @brief Handles a pen up event.
+    /// @param lastTouchPoint The last touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager);
+
     /// @brief Clears the focus that was stored when a dialog was opened.
     void ClearOldFocus()
     {
@@ -54,17 +69,10 @@ public:
     {
         return _oldFocus;
     }
-    /// @brief Returns true if no dialog is being shown or animated.
-    bool IsIdle() const { return _curState == State::Idle && !_nextDialog; }
 
     bool IsBottomSheetVisible() const
     {
         return _curState != State::Idle;
-    }
-
-    DialogView* GetDialogView() const
-    {
-        return _currentDialog.GetPointer();
     }
 
 private:

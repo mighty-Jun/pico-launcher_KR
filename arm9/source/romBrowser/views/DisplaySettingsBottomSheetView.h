@@ -34,6 +34,9 @@ public:
         focusManager.Focus(_layoutOptions[0]);
     }
 
+protected:
+    void Close() override;
+
 private:
     DisplaySettingsViewModel* _viewModel;
     IAppSettingsService* _appSettingsService;

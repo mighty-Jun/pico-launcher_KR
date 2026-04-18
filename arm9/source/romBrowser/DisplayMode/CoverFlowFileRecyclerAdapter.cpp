@@ -15,7 +15,7 @@ void CoverFlowFileRecyclerAdapter::GetViewSize(int& width, int& height) const
 
 SharedPtr<View> CoverFlowFileRecyclerAdapter::CreateView() const
 {
-    return SharedPtr<CoverView>::MakeShared(
+    return CoverView::CreateShared(
         std::make_unique<RomBrowserItemViewModel>(_romBrowserController), _vblankTextureLoader);
 }
 

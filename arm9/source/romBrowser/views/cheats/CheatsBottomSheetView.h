@@ -7,6 +7,7 @@
 #include "romBrowser/viewModels/CheatsViewModel.h"
 #include "CheatsAdapter.h"
 #include "CheatListItemView.h"
+#include "romBrowser/views/IconButton2DView.h"
 
 class MaterialColorScheme;
 class IFontRepository;
@@ -22,15 +23,16 @@ public:
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
-    bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
-    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
-    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
-    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
+    SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
+    bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;\
 
     void Focus(FocusManager& focusManager) override
     {
         _cheatListRecycler->Focus(focusManager);
     }
+
+protected:
+    void Close() override;
 
 private:
     SharedPtr<CheatsViewModel> _viewModel;
@@ -39,6 +41,7 @@ private:
     SharedPtr<Label2DView> _descriptionLabel;
     SharedPtr<RecyclerView> _cheatListRecycler;
     SharedPtr<CheatsAdapter> _cheatsAdapter;
+    SharedPtr<IconButton2DView> _upButton;
     const MaterialColorScheme* _materialColorScheme;
     const IFontRepository* _fontRepository;
     IVramManager* _objVramManager = nullptr;
@@ -55,4 +58,5 @@ private:
 
     void UpdateCheatList();
     void UpdateDescriptionText();
+    u32 LoadSprite(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;
 };

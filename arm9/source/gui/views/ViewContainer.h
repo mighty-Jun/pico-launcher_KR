@@ -31,6 +31,14 @@ protected:
         view->SetParent(this);
     }
 
+    /// @brief Removes a child from the list.
+    /// @param view The child to remove.
+    void RemoveChild(View* view)
+    {
+        _children.Remove(view);
+        view->SetParent(nullptr);
+    }
+
 private:
     LinkedList<View, &View::listLink> _children;
 };

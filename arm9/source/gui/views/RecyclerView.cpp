@@ -256,14 +256,20 @@ SharedPtr<View> RecyclerView::MoveFocusVertical(const SharedPtr<View>& currentFo
     if (!_selectedItem || currentFocus.GetPointer() != _selectedItem->view.GetPointer())
     {
         // incoming focus
-        if (direction != FocusMoveDirection::Right)
+        if (direction == FocusMoveDirection::Right)
         {
-            return nullptr;
+            int idx = (-_yOffset + currentFocus->GetPosition().y - _yPadding + ((_ySpacing + _itemHeight) >> 1)) / (_ySpacing + _itemHeight) * _columns;
+            SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _columns * _columns));
+            return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
+        }
+        else if (direction == FocusMoveDirection::Down)
+        {
+            int idx = (-_xOffset + currentFocus->GetPosition().x - _xPadding + ((_xSpacing + _itemWidth) >> 1)) / (_xSpacing + _itemWidth);
+            SetSelectedItem(std::clamp(idx, 0, _columns - 1));
+            return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
         }
 
-        int idx = (-_yOffset + currentFocus->GetPosition().y - _yPadding + ((_ySpacing + _itemHeight) >> 1)) / (_ySpacing + _itemHeight) * _columns;
-        SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _columns * _columns));
-        return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
+        return nullptr;
     }
 
     int column = _selectedItem->itemIdx % _columns;

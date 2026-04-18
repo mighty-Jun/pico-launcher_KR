@@ -179,7 +179,7 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
 
 SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateLayoutOptionIconButton()
 {
-    auto layoutOption = SharedPtr<IconButton2DView>::MakeShared(
+    auto layoutOption = IconButton2DView::CreateShared(
         IconButtonView::Type::Tonal,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::surfaceContainerLow,
@@ -202,7 +202,7 @@ SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateLayoutOptionIc
 
 SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateSortOptionIconButton()
 {
-    auto sortOption = SharedPtr<IconButton2DView>::MakeShared(
+    auto sortOption = IconButton2DView::CreateShared(
         IconButtonView::Type::Tonal,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::surfaceContainerLow,
@@ -657,6 +657,11 @@ void DisplaySettingsBottomSheetView::SetGraphics(
     }
     // for (auto& filterOption : _filterOptions)
     //     filterOption.SetGraphics(iconButtonVramToken);
+}
+
+void DisplaySettingsBottomSheetView::Close()
+{
+    _viewModel->Close();
 }
 
 u32 DisplaySettingsBottomSheetView::LoadIcon(IVramManager& vramManager,

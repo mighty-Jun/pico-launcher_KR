@@ -155,3 +155,27 @@ void DialogPresenter::InitVram()
     REG_BLDCNT = 0x3944;
     REG_BLDALPHA = (16 << 8) | 0;
 }
+
+void DialogPresenter::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (_curState == State::BottomSheetVisible && _currentDialog)
+    {
+        _currentDialog->HandlePenDown(touchPoint, focusManager);
+    }
+}
+
+void DialogPresenter::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (_curState == State::BottomSheetVisible && _currentDialog)
+    {
+        _currentDialog->HandlePenMove(touchPoint, focusManager);
+    }
+}
+
+void DialogPresenter::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    if (_curState == State::BottomSheetVisible && _currentDialog)
+    {
+        _currentDialog->HandlePenUp(lastTouchPoint, focusManager);
+    }
+}

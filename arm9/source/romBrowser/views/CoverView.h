@@ -9,11 +9,9 @@
 
 class CoverView : public View
 {
-public:
-    CoverView(std::unique_ptr<RomBrowserItemViewModel> viewModel, VBlankTextureLoader* vblankTextureLoader)
-        : _viewModel(std::move(viewModel)), _vblankTextureLoader(vblankTextureLoader)
-        , _inputHandler(this, _viewModel.get()) { }
+    SHARED_ONLY(CoverView)
 
+public:
     ~CoverView() override
     {
         _vblankTextureLoader->CancelLoad(_textureLoadRequest);
@@ -61,4 +59,8 @@ private:
     u32 _texVramOffset = 0;
     u32 _plttVramOffset = 0;
     RomBrowserItemInputHandler _inputHandler;
+
+    CoverView(std::unique_ptr<RomBrowserItemViewModel> viewModel, VBlankTextureLoader* vblankTextureLoader)
+        : _viewModel(std::move(viewModel)), _vblankTextureLoader(vblankTextureLoader)
+        , _inputHandler(this, _viewModel.get()) { }
 };
