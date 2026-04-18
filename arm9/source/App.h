@@ -33,6 +33,7 @@
 #include "animation/Animator.h"
 #include "romBrowser/viewModels/LoadingViewModel.h"
 #include "romBrowser/views/LoadingView.h"
+#include "romBrowser/viewModels/LaunchSettingsViewModel.h"
 
 class alignas(32) App : public IProcess
 {
@@ -91,6 +92,7 @@ private:
     RomBrowserController _romBrowserController;
 
     DisplaySettingsViewModel _displaySettingsBottomSheetViewModel;
+    LaunchSettingsViewModel _launchSettingsBottomSheetViewModel;
 
     FocusManager _focusManager;
 

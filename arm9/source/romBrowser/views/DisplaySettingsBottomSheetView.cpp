@@ -115,6 +115,42 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _langLeftArrow = CreateArrowIcon();
     _langRightArrow = CreateArrowIcon();
 
+    _themeLeftArrow->SetAction([](IconButtonView* sender, void* arg) {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->EnsureThemesLoaded();
+        if (self->_themeCount > 0) {
+            int newIdx = (self->_selectedThemeIdx - 1 + self->_themeCount) % self->_themeCount;
+            self->ChangeTheme(newIdx);
+        }
+    }, this);
+
+    _themeRightArrow->SetAction([](IconButtonView* sender, void* arg) {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->EnsureThemesLoaded();
+        if (self->_themeCount > 0) {
+            int newIdx = (self->_selectedThemeIdx + 1) % self->_themeCount;
+            self->ChangeTheme(newIdx);
+        }
+    }, this);
+
+    _langLeftArrow->SetAction([](IconButtonView* sender, void* arg) {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->EnsureLanguagesLoaded();
+        if (self->_languageCount > 0) {
+            int newIdx = (self->_selectedLanguageIdx - 1 + self->_languageCount) % self->_languageCount;
+            self->ChangeLanguage(newIdx);
+        }
+    }, this);
+
+    _langRightArrow->SetAction([](IconButtonView* sender, void* arg) {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->EnsureLanguagesLoaded();
+        if (self->_languageCount > 0) {
+            int newIdx = (self->_selectedLanguageIdx + 1) % self->_languageCount;
+            self->ChangeLanguage(newIdx);
+        }
+    }, this);
+
     AddChildTail(_themeLeftArrow.GetPointer());
     AddChildTail(_themeRightArrow.GetPointer());
     AddChildTail(_langLeftArrow.GetPointer());
@@ -422,6 +458,15 @@ void DisplaySettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, Fo
     }
 
     _oobPenDown = false;
+
+    if (_themeLeftArrow->IsFocused() || _themeRightArrow->IsFocused())
+    {
+        focusManager.Focus(_themeFieldLabel);
+    }
+    else if (_langLeftArrow->IsFocused() || _langRightArrow->IsFocused())
+    {
+        focusManager.Focus(_languageFieldLabel);
+    }
 }
 
 SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,

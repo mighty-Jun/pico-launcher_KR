@@ -67,7 +67,8 @@ App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILang
     , _romBrowserController(&appSettingsService, &_ioTaskQueue, &_bgTaskQueue)
     , _displaySettingsBottomSheetViewModel(&_romBrowserController)
     , _romBrowserBottomScreenViewModel(&_romBrowserController)
-    , _dialogPresenter(&_focusManager, &_mainObjDialogVram) { }
+    , _dialogPresenter(&_focusManager, &_mainObjDialogVram)
+    , _launchSettingsBottomSheetViewModel(&_romBrowserController) { }
 
 void App::InitVramMapping() const
 {
@@ -373,7 +374,7 @@ void App::HandleHideDisplaySettingsTrigger()
 void App::HandleShowLaunchSettingsTrigger()
 {
     auto launchSettingsDialog = LaunchSettingsBottomSheetView::CreateShared(
-        _romBrowserController.GetRomBrowserViewModel().GetPointer(), 
+        &_launchSettingsBottomSheetViewModel, 
         &_theme->GetMaterialColorScheme(), 
         _theme->GetFontRepository(), 
         &_appSettingsService, 

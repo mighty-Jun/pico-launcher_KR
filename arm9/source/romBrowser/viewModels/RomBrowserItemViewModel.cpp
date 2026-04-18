@@ -31,3 +31,11 @@ void RomBrowserItemViewModel::ShowGameInfo()
         }
     }
 }
+
+void RomBrowserItemViewModel::ShowLaunchSettings()
+{
+    if (_index >= 0)
+    {
+        _romBrowserController->ShowLaunchSettings();
+    }
+}

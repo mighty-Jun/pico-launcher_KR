@@ -20,7 +20,7 @@
 #define LOADER_FIELD_X      80
 
 LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
-    RomBrowserViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
+    LaunchSettingsViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
     const IFontRepository* fontRepository, IAppSettingsService* appSettingsService,
     ILanguagePackService* languagePackService)
     : _viewModel(viewModel)
@@ -53,12 +53,19 @@ LaunchSettingsBottomSheetView::LaunchSettingsBottomSheetView(
 
 SharedPtr<IconButton2DView> LaunchSettingsBottomSheetView::CreateArrowIcon()
 {
-    return SharedPtr<IconButton2DView>::MakeShared(
+    auto arrowIcon = SharedPtr<IconButton2DView>::MakeShared(
         IconButtonView::Type::Standard,
         IconButtonView::State::ToggleUnselected,
         md::sys::color::onPrimary,
         _materialColorScheme
     );
+
+    arrowIcon -> SetAction([](IconButtonView* sender, void* arg) {
+        auto self = reinterpret_cast<LaunchSettingsBottomSheetView*>(arg);
+        self->ToggleLoaderType();
+    }, this);
+
+    return arrowIcon;
 }
 
 void LaunchSettingsBottomSheetView::InitVram(const VramContext& vramContext)
@@ -178,18 +185,23 @@ void LaunchSettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, Foc
 {
     BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
 
-    //if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
-    //{
-    //    _viewModel->Close();
-    //}
+    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
+    {
+        _viewModel -> Close();
+    }
 
     _oobPenDown = false;
+
+    if (_loaderLeftArrow->IsFocused() || _loaderRightArrow->IsFocused())
+    {
+        focusManager.Focus(_loaderFieldLabel);
+    }
 }
 
 SharedPtr<View> LaunchSettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
     FocusMoveDirection direction, View* source)
 {
-    if (currentFocus.GetPointer() == _loaderLabel.GetPointer())
+    if (currentFocus.GetPointer() == _loaderFieldLabel.GetPointer())
     {
         if (direction == FocusMoveDirection::Left || direction == FocusMoveDirection::Right)
         {

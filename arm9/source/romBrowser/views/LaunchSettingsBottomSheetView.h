@@ -4,6 +4,7 @@
 #include "IconButton2DView.h"
 #include "../viewModels/RomBrowserViewModel.h"
 #include "services/settings/AppSettings.h"
+#include "../viewModels/LaunchSettingsViewModel.h"
 
 class IFontRepository;
 class IAppSettingsService;
@@ -30,7 +31,7 @@ public:
     }
 
 private:
-    RomBrowserViewModel* _viewModel;
+    LaunchSettingsViewModel* _viewModel;
     IAppSettingsService* _appSettingsService;
     ILanguagePackService* _languagePackService;
 
@@ -52,7 +53,7 @@ private:
     SharedPtr<IconButton2DView> CreateArrowIcon();
 
     
-    LaunchSettingsBottomSheetView(RomBrowserViewModel* viewModel,
+    LaunchSettingsBottomSheetView(LaunchSettingsViewModel* viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
         IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
 
