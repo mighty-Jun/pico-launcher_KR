@@ -1,15 +1,14 @@
 #pragma once
 #include <memory>
-#include "core/EnableSharedFromThis.h"
 #include "View.h"
 #include "RecyclerAdapter.h"
 #include "gui/FocusManager.h"
 #include "animation/Animator.h"
 #include "RecyclerViewBase.h"
 
-class RecyclerView : public RecyclerViewBase, public EnableSharedFromThis<RecyclerView>
+class RecyclerView : public RecyclerViewBase
 {
-    struct Private { explicit Private() = default; };
+    SHARED_ONLY(RecyclerView)
 
 public:
     enum class Mode
@@ -23,13 +22,6 @@ public:
         /// @brief A multi-column grid that grows vertically.
         VerticalGrid
     };
-
-    RecyclerView(Private, int x, int y, int width, int height, Mode mode);
-
-    static SharedPtr<RecyclerView> CreateShared(int x, int y, int width, int height, Mode mode)
-    {
-        return SharedPtr<RecyclerView>::MakeShared(Private(), x, y, width, height, mode);
-    }
 
     ~RecyclerView();
 
@@ -47,6 +39,9 @@ public:
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
 
     void Focus(FocusManager& focusManager) override
     {
@@ -107,6 +102,12 @@ private:
     int _curRangeStart;
     int _curRangeLength;
     Animator<int> _scrollOffsetAnimator;
+    bool _penDown = false;
+    Point _penDownPosition = Point(0, 0);
+    bool _hasScrollStarted = false;
+    int _penDownScrollOffset = 0;
+
+    RecyclerView(int x, int y, int width, int height, Mode mode);
 
     void UpdatePosition(ViewPoolEntry& viewPoolEntry);
     ViewPoolEntry* GetViewPoolEntryByItemIndex(int itemIdx);

@@ -207,3 +207,10 @@ private:
         }
     }
 };
+
+#define SHARED_ONLY(className) \
+    friend class MakeSharedRefCount<className>; \
+public: \
+    static SharedPtr<className> CreateShared(auto&&... args) \
+    { return SharedPtr<className>::MakeShared(std::forward<decltype(args)>(args)...); } \
+private:

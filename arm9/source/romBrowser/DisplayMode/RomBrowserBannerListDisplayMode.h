@@ -10,7 +10,7 @@ public:
 
     bool IsVertical() const override { return true; }
 
-    std::unique_ptr<AppBarView> CreateAppBarView(const IRomBrowserViewFactory* romBrowserViewFactory,
+    SharedPtr<AppBarView> CreateAppBarView(const IRomBrowserViewFactory* romBrowserViewFactory,
         int startButtonCount, int endButtonCount) const override
     {
         return romBrowserViewFactory->CreateAppBarView(0, 0,
@@ -29,7 +29,7 @@ public:
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory, VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return SharedPtr<BannerListFileRecyclerAdapter>::MakeShared(
+        return SharedPtr<BannerListFileRecyclerAdapter>::MakeShared(viewModel->GetRomBrowserController(),
             &viewModel->GetFileInfoManager(), viewModel->GetIoTaskQueue(), themeFileIconFactory,
             romBrowserViewFactory, vblankTextureLoader);
     }

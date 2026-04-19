@@ -7,9 +7,10 @@
 class CheatsAdapter : public RecyclerAdapter
 {
 public:
-    CheatsAdapter(const CheatEntry* cheatCategory, const MaterialColorScheme* materialColorScheme,
-        const IFontRepository* fontRepository, const CheatListItemView::VramOffsets& vramOffsets)
-        : _cheatCategory(cheatCategory), _materialColorScheme(materialColorScheme)
+    CheatsAdapter(const CheatEntry* cheatCategory, SharedPtr<CheatsViewModel> cheatsViewModel,
+        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
+        const CheatListItemView::VramOffsets& vramOffsets)
+        : _cheatCategory(cheatCategory), _cheatsViewModel(std::move(cheatsViewModel)), _materialColorScheme(materialColorScheme)
         , _fontRepository(fontRepository), _vramOffsets(vramOffsets) { }
 
     u32 GetItemCount() const override
@@ -27,7 +28,7 @@ public:
 
     SharedPtr<View> CreateView() const override
     {
-        return SharedPtr<CheatListItemView>::MakeShared(_vramOffsets, _materialColorScheme, _fontRepository);
+        return CheatListItemView::CreateShared(_cheatsViewModel, _vramOffsets, _materialColorScheme, _fontRepository);
     }
 
     void BindView(SharedPtr<View> view, int index) const override
@@ -35,7 +36,7 @@ public:
         auto listItemView = static_cast<CheatListItemView*>(view.GetPointer());
         u32 numberOfSubEntries = 0;
         auto subEntries = _cheatCategory->GetSubEntries(numberOfSubEntries);
-        listItemView->SetEntry(&subEntries[index]);
+        listItemView->SetEntry(&subEntries[index], index);
     }
 
     void ReleaseView(SharedPtr<View> view, int index) const override
@@ -45,6 +46,7 @@ public:
 
 private:
     const CheatEntry* _cheatCategory;
+    SharedPtr<CheatsViewModel> _cheatsViewModel;
     const MaterialColorScheme* _materialColorScheme;
     const IFontRepository* _fontRepository;
     CheatListItemView::VramOffsets _vramOffsets;

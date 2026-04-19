@@ -4,6 +4,7 @@
 #include "gui/Gx.h"
 #include "gui/materialDesign.h"
 #include "gui/GraphicsContext.h"
+#include "gui/input/InputProvider.h"
 #include "MaterialCoverView.h"
 
 void MaterialCoverView::InitVram(const VramContext& vramContext)
@@ -15,6 +16,11 @@ void MaterialCoverView::InitVram(const VramContext& vramContext)
         _texVramOffset = texVramManager->Alloc(128 * 96);
         _plttVramOffset = texPlttVramManager->Alloc(256 * 2);
     }
+}
+
+void MaterialCoverView::Update()
+{
+    _viewModel->DisposeQueueTaskWhenComplete();
 }
 
 void MaterialCoverView::Draw(GraphicsContext& graphicsContext)
@@ -42,6 +48,27 @@ void MaterialCoverView::Draw(GraphicsContext& graphicsContext)
         REG_GX_VTX_XY = GX_VTX_PACK((_position.x + COVER_WIDTH) << 6, _position.y << 3);
         Gx::End();
     }
+}
+
+bool MaterialCoverView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
+{
+    return _inputHandler.HandleInput(inputProvider, focusManager)
+        || View::HandleInput(inputProvider, focusManager);
+}
+
+void MaterialCoverView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenDown(touchPoint, focusManager);
+}
+
+void MaterialCoverView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenMove(touchPoint, focusManager);
+}
+
+void MaterialCoverView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenUp(lastTouchPoint, focusManager);
 }
 
 void MaterialCoverView::UploadCoverGraphics()

@@ -115,7 +115,6 @@ CoverFlowRecyclerViewBase::ViewPoolEntry* CoverFlowRecyclerViewBase::BindViewPoo
     _viewPoolFreeCount--;
     entry.itemIdx = itemIdx;
     _adapter->BindView(entry.view, itemIdx);
-    UpdateItemPosition(viewPoolIndex, true);
     return &entry;
 }
 
@@ -184,10 +183,5 @@ void CoverFlowRecyclerViewBase::SetSelectedItem(int itemIdx, bool initial)
     else
     {
         _selectedItem = BindViewPoolEntry(itemIdx);
-    }
-
-    for (u32 i = _viewPoolFreeCount; i < _viewPool.size(); i++)
-    {
-        UpdateItemPosition(i, initial);
     }
 }

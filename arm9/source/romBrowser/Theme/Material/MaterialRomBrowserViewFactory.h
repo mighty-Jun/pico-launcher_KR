@@ -18,9 +18,9 @@ public:
         const IFontRepository* fontRepository)
         : _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
-    SharedPtr<IconGridItemView> CreateIconGridItemView() const override
+    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel) const override
     {
-        return SharedPtr<MaterialIconGridItemView>::MakeShared(_materialColorScheme);
+        return MaterialIconGridItemView::CreateShared(std::move(viewModel), _materialColorScheme);
     }
 
     IconGridItemView::VramToken UploadIconGridItemViewGraphics(
@@ -29,9 +29,10 @@ public:
         return MaterialIconGridItemView::UploadGraphics(vramContext);
     }
 
-    SharedPtr<BannerListItemView> CreateBannerListItemView(VBlankTextureLoader* vblankTextureLoader) const override
+    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+        VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return SharedPtr<MaterialBannerListItemView>::MakeShared(_materialColorScheme, _fontRepository);
+        return MaterialBannerListItemView::CreateShared(std::move(viewModel), _materialColorScheme, _fontRepository);
     }
 
     BannerListItemView::VramToken UploadBannerListItemViewGraphics(
@@ -40,15 +41,15 @@ public:
         return MaterialBannerListItemView::UploadGraphics(vramContext);
     }
 
-    std::unique_ptr<AppBarView> CreateAppBarView(int x, int y, AppBarView::Orientation orientation,
+    SharedPtr<AppBarView> CreateAppBarView(int x, int y, AppBarView::Orientation orientation,
         int startButtonCount, int endButtonCount) const override
     {
-        return std::make_unique<MaterialAppBarView>(x, y, orientation, startButtonCount, endButtonCount, _materialColorScheme);
+        return MaterialAppBarView::CreateShared(x, y, orientation, startButtonCount, endButtonCount, _materialColorScheme);
     }
 
-    std::unique_ptr<BannerView> CreateFileInfoView() const override
+    SharedPtr<BannerView> CreateFileInfoView() const override
     {
-        return std::make_unique<MaterialFileInfoCardView>(_materialColorScheme, _fontRepository);
+        return MaterialFileInfoCardView::CreateShared(_materialColorScheme, _fontRepository);
     }
 
     SharedPtr<RecyclerViewBase> CreateCoverFlowRecyclerView() const override
@@ -60,7 +61,7 @@ public:
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return SharedPtr<MaterialCoverFlowFileRecyclerAdapter>::MakeShared(
+        return SharedPtr<MaterialCoverFlowFileRecyclerAdapter>::MakeShared(viewModel->GetRomBrowserController(),
             &viewModel->GetFileInfoManager(), viewModel->GetIoTaskQueue(),
             themeFileIconFactory, this, vblankTextureLoader, &viewModel->GetCoverRepository());
     }

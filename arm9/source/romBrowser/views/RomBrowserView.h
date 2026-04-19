@@ -9,20 +9,13 @@
 
 class IRomBrowserViewFactory;
 
-class RomBrowserView : public View
+class RomBrowserView : public ViewContainer
 {
-public:
-    RomBrowserView(
-        SharedPtr<RomBrowserViewModel> viewModel,
-        const RomBrowserDisplayMode& displayMode,
-        const IThemeFileIconFactory* themeFileIconFactory,
-        const IRomBrowserViewFactory* romBrowserViewFactory,
-        VBlankTextureLoader* vblankTextureLoader);
+    SHARED_ONLY(RomBrowserView)
 
+public:
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
-    void Draw(GraphicsContext& graphicsContext) override;
-    void VBlank() override;
 
     Rectangle GetBounds() const override
     {
@@ -41,11 +34,16 @@ public:
     SharedPtr<View> MoveFocus(
         const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
 
-    bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
-
 private:
     SharedPtr<RomBrowserViewModel> _viewModel;
     SharedPtr<RecyclerViewBase> _fileGridView;
     SharedPtr<FileRecyclerAdapter> _fileRecyclerAdapter;
     bool _isVertical;
+
+    RomBrowserView(
+        SharedPtr<RomBrowserViewModel> viewModel,
+        const RomBrowserDisplayMode& displayMode,
+        const IThemeFileIconFactory* themeFileIconFactory,
+        const IRomBrowserViewFactory* romBrowserViewFactory,
+        VBlankTextureLoader* vblankTextureLoader);
 };

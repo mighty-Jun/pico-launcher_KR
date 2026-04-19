@@ -7,10 +7,10 @@ class IRomBrowserViewFactory;
 class IconGridFileRecyclerAdapter : public FileRecyclerAdapter
 {
 public:
-    IconGridFileRecyclerAdapter(FileInfoManager* fileInfoManager,
+    IconGridFileRecyclerAdapter(IRomBrowserController* romBrowserController, FileInfoManager* fileInfoManager,
         TaskQueueBase* taskQueue, const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory)
-        : FileRecyclerAdapter(fileInfoManager, taskQueue, themeFileIconFactory)
+        : FileRecyclerAdapter(romBrowserController, fileInfoManager, taskQueue, themeFileIconFactory)
         , _romBrowserViewFactory(romBrowserViewFactory) { }
 
     void GetViewSize(int& width, int& height) const override;
@@ -26,4 +26,5 @@ private:
 
     TaskResult<void> BindView(SharedPtr<View> view, int index,
         const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const override;
+    void SetQueueTask(const SharedPtr<View>& view, QueueTask<void> queueTask) const override;
 };

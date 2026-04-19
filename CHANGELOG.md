@@ -2,8 +2,13 @@
 
 ## [Unreleased]
 
-### Added
-- Ability to set the position of the top screen cover image in custom themes
+### 추가됨 (Added)
+- 커스텀 테마 상단 화면의 커버 이미지 위치 설정 기능 추가
+- 커버플로우(Coverflow) 표시 모드에서 L/R 버튼을 이용한 고속 스크롤 지원
+- 터치 입력 지원
+
+### 수정됨 (Fixed)
+- Label3DView의 텍스트 로드 요청 시 발생하던 메모리 오류(Use after free) 수정. 배너 리스트 모드에서 B 버튼을 연타할 때 발생하던 문제를 해결했습니다.
 
 ## [v1.2.0] - 2026년 3월 29일
 
@@ -19,7 +24,7 @@
 - 상단 화면의 파일 이름이 너무 길 경우, 이제 흐르는 자막(Marquee) 효과가 적용됩니다.
 
 ### 수정됨 (Fixed)
-- 롬(ROM) 파일에 유효한 배너가 있는지 더 정확하게 감지할 수 있도록 배너 오류 처리 방식을 개선했습니다.
+- Label3DView의 텍스트 로드 요청 시 발생하던 메모리 오류(Use after free)를 수정했습니다. (배너 리스트 모드에서 B 버튼을 연타할 때 발생하던 문제)
 
 ## [v1.1.0] - 2026년 1월 11일
 

@@ -15,13 +15,15 @@ void CoverFlowFileRecyclerAdapter::GetViewSize(int& width, int& height) const
 
 SharedPtr<View> CoverFlowFileRecyclerAdapter::CreateView() const
 {
-    return SharedPtr<CoverView>::MakeShared(_vblankTextureLoader);
+    return CoverView::CreateShared(
+        std::make_unique<RomBrowserItemViewModel>(_romBrowserController), _vblankTextureLoader);
 }
 
 TaskResult<void> CoverFlowFileRecyclerAdapter::BindView(SharedPtr<View> view, int index,
     const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const
 {
     auto coverView = static_cast<CoverView*>(view.GetPointer());
+    coverView->GetViewModel().SetIndex(index);
     auto cover = _fileInfoManager->GetFileCover(index);
     if (cancelRequested)
     {
@@ -39,11 +41,19 @@ TaskResult<void> CoverFlowFileRecyclerAdapter::BindView(SharedPtr<View> view, in
     return TaskResult<void>::Completed();
 }
 
+void CoverFlowFileRecyclerAdapter::SetQueueTask(const SharedPtr<View>& view, QueueTask<void> queueTask) const
+{
+    auto coverView = static_cast<CoverView*>(view.GetPointer());
+    coverView->GetViewModel().SetQueueTask(std::move(queueTask));
+}
+
 void CoverFlowFileRecyclerAdapter::ReleaseView(SharedPtr<View> view, int index) const
 {
     LOG_DEBUG("Releasing %d\n", index);
     auto coverView = static_cast<CoverView*>(view.GetPointer());
     coverView->ClearCover();
+    coverView->GetViewModel().SetIndex(-1);
+    coverView->GetViewModel().CancelQueueTask();
     _fileInfoManager->ReleaseFileInfo(index);
 }
 

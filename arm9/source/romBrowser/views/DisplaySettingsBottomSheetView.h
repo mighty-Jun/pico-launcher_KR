@@ -14,15 +14,14 @@ class ILanguagePackService;
 
 class DisplaySettingsBottomSheetView : public BottomSheetView
 {
-public:
-    DisplaySettingsBottomSheetView(DisplaySettingsViewModel* viewModel,
-        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
+    SHARED_ONLY(DisplaySettingsBottomSheetView)
 
+public:
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus,
         FocusMoveDirection direction, View* source) override;
 
@@ -33,19 +32,22 @@ public:
         focusManager.Focus(_layoutOptions[0]);
     }
 
+protected:
+    void Close() override;
+
 private:
     DisplaySettingsViewModel* _viewModel;
     IAppSettingsService* _appSettingsService;
     ILanguagePackService* _languagePackService;
 
-    Label2DView _titleLabel;
-    Label2DView _layoutLabel;
-    Label2DView _sortingLabel;
+    SharedPtr<Label2DView> _titleLabel;
+    SharedPtr<Label2DView> _layoutLabel;
+    SharedPtr<Label2DView> _sortingLabel;
 // LabelView _filtersLabel;
-    Label2DView _themeLabel;
+    SharedPtr<Label2DView> _themeLabel;
     SharedPtr<Label2DView> _themeFieldLabel;
     
-    Label2DView _languageLabel;
+    SharedPtr<Label2DView> _languageLabel;
     SharedPtr<Label2DView> _languageFieldLabel;
 
     std::array<SharedPtr<IconButton2DView>, 4> _layoutOptions;
@@ -53,6 +55,7 @@ private:
     // std::array<IconButton2DView, 5> _filterOptions;
 
     const MaterialColorScheme* _materialColorScheme;
+    bool _oobPenDown = false;
 
     String<char, 64> _appliedThemeName;
     String<char, 64> _appliedLanguageName;
@@ -79,16 +82,20 @@ private:
     u32 _leftArrowIconVramOffset = 0;
     u32 _rightArrowIconVramOffset = 0;
 
-    IconButton2DView _themeLeftArrow;
-    IconButton2DView _themeRightArrow;
-    IconButton2DView _langLeftArrow;
-    IconButton2DView _langRightArrow;
+    SharedPtr<IconButton2DView> _themeLeftArrow;
+    SharedPtr<IconButton2DView> _themeRightArrow;
+    SharedPtr<IconButton2DView> _langLeftArrow;
+    SharedPtr<IconButton2DView> _langRightArrow;
     
-    IconButton2DView CreateArrowIcon();
+    SharedPtr<IconButton2DView> CreateArrowIcon();
 
     SharedPtr<IconButton2DView> CreateLayoutOptionIconButton();
     SharedPtr<IconButton2DView> CreateSortOptionIconButton();
     // IconButton2DView CreateFilterOptionIconButton();
+
+    DisplaySettingsBottomSheetView(DisplaySettingsViewModel* viewModel, 
+        const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository, 
+        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
 
     void UpdateLabels();
     //Theme, Language function

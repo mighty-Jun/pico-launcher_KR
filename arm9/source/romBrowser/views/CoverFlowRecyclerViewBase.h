@@ -1,9 +1,8 @@
 #pragma once
 #include <array>
-#include "core/EnableSharedFromThis.h"
 #include "gui/views/RecyclerViewBase.h"
 
-class CoverFlowRecyclerViewBase : public RecyclerViewBase, public EnableSharedFromThis<CoverFlowRecyclerViewBase>
+class CoverFlowRecyclerViewBase : public RecyclerViewBase
 {
 public:
     ~CoverFlowRecyclerViewBase() override;
@@ -53,8 +52,7 @@ protected:
     void BindRange(int start, int end);
     void ReleaseViewPoolEntry(int itemIdx);
     void ReleaseRange(int start, int end);
-    void SetSelectedItem(int itemIdx, bool initial);
-    virtual void UpdateItemPosition(int viewPoolIndex, bool initial) = 0;
+    virtual void SetSelectedItem(int itemIdx, bool initial);
 
     virtual void SwapViewPoolEntry(int indexA, int indexB)
     {

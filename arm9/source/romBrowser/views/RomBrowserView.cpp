@@ -13,7 +13,7 @@ RomBrowserView::RomBrowserView(
     : _viewModel(std::move(viewModel)), _isVertical(displayMode.IsVertical())
 {
     _fileGridView = displayMode.CreateRecyclerView(romBrowserViewFactory);
-    _fileGridView->SetParent(this);
+    AddChildTail(_fileGridView.GetPointer());
     _fileRecyclerAdapter = displayMode.CreateRecyclerAdapter(
         _viewModel.GetPointer(), themeFileIconFactory, romBrowserViewFactory, vblankTextureLoader);
 }
@@ -30,16 +30,6 @@ void RomBrowserView::Update()
     _fileRecyclerAdapter->SetIconFrameCounter(_viewModel->GetIconFrameCounter());
     _fileGridView->Update();
     _viewModel->SetSelectedItem(_fileGridView->GetSelectedItem());
-}
-
-void RomBrowserView::Draw(GraphicsContext& graphicsContext)
-{
-    _fileGridView->Draw(graphicsContext);
-}
-
-void RomBrowserView::VBlank()
-{
-    _fileGridView->VBlank();
 }
 
 SharedPtr<View> RomBrowserView::MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source)
@@ -71,33 +61,4 @@ SharedPtr<View> RomBrowserView::MoveFocus(const SharedPtr<View>& currentFocus, F
         return View::MoveFocus(currentFocus, direction, source);
     }
     return nullptr;
-}
-
-bool RomBrowserView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
-{
-    if (inputProvider.Triggered(InputKey::A))
-    {
-        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
-        {
-            _viewModel->ItemActivated();
-            return true;
-        }
-    }
-    else if (inputProvider.Triggered(InputKey::Y))
-    {
-        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
-        {
-            _viewModel->ShowGameInfo();
-            return true;
-        }
-    }
-    else if (inputProvider.Triggered(InputKey::X))
-    {
-        if (focusManager.IsFocusInside(_fileGridView.GetPointer()))
-        {
-            _viewModel->ShowLaunchSettings();
-            return true;
-        }
-    }
-    return View::HandleInput(inputProvider, focusManager);
 }

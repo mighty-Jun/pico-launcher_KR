@@ -24,7 +24,7 @@
 이 저장소를 컴파일하려면 WSL(Windows Subsystem for Linux) 또는 MSYS2 사용을 권장합니다.
 아래 단계는 해당 환경 중 하나가 이미 설정되어 있다고 가정합니다.
 
-1. [BlocksDS](https://blocksds.skylyrac.net/docs/setup/options/)를 설치해 주십시오.
+1. [BlocksDS](https://blocksds.skylyrac.net/docs/setup/)를 설치해 주십시오.
 
 ## 컴파일 방법
 

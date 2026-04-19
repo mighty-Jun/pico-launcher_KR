@@ -3,6 +3,7 @@
 #include "core/task/TaskQueue.h"
 #include "../views/BannerListItemView.h"
 #include "../Theme/IRomBrowserViewFactory.h"
+#include "romBrowser/viewModels/RomBrowserItemViewModel.h"
 #include "BannerListFileRecyclerAdapter.h"
 
 void BannerListFileRecyclerAdapter::GetViewSize(int& width, int& height) const
@@ -13,7 +14,8 @@ void BannerListFileRecyclerAdapter::GetViewSize(int& width, int& height) const
 
 SharedPtr<View> BannerListFileRecyclerAdapter::CreateView() const
 {
-    return _romBrowserViewFactory->CreateBannerListItemView(_vblankTextureLoader);
+    return _romBrowserViewFactory->CreateBannerListItemView(
+        std::make_unique<RomBrowserItemViewModel>(_romBrowserController), _vblankTextureLoader);
 }
 
 void BannerListFileRecyclerAdapter::BindView(SharedPtr<View> view, int index) const
@@ -27,6 +29,7 @@ TaskResult<void> BannerListFileRecyclerAdapter::BindView(SharedPtr<View> view, i
     const InternalFileInfo* internalFileInfo, const vu8& cancelRequested) const
 {
     auto listItemView = static_cast<BannerListItemView*>(view.GetPointer());
+    listItemView->GetViewModel().SetIndex(index);
     const auto& fileInfo = _fileInfoManager->GetItem(index);
     bool fileNameAsTitle = true;
     if (internalFileInfo)
@@ -65,12 +68,20 @@ TaskResult<void> BannerListFileRecyclerAdapter::BindView(SharedPtr<View> view, i
     return TaskResult<void>::Completed();
 }
 
+void BannerListFileRecyclerAdapter::SetQueueTask(const SharedPtr<View>& view, QueueTask<void> queueTask) const
+{
+    auto listItemView = static_cast<BannerListItemView*>(view.GetPointer());
+    listItemView->GetViewModel().SetQueueTask(std::move(queueTask));
+}
+
 void BannerListFileRecyclerAdapter::ReleaseView(SharedPtr<View> view, int index) const
 {
     LOG_DEBUG("Releasing %d\n", index);
     auto listItemView = static_cast<BannerListItemView*>(view.GetPointer());
     listItemView->SetIcon(nullptr);
     listItemView->SetGameTitle(u"");
+    listItemView->GetViewModel().SetIndex(-1);
+    listItemView->GetViewModel().CancelQueueTask();
     _fileInfoManager->ReleaseFileInfo(index);
 }
 

@@ -4,7 +4,7 @@
 #include "gui/input/InputProvider.h"
 #include "RecyclerView.h"
 
-RecyclerView::RecyclerView(Private, int x, int y, int width, int height, Mode mode)
+RecyclerView::RecyclerView(int x, int y, int width, int height, Mode mode)
     : _width(width), _height(height), _mode(mode), _rows(0), _columns(0)
     , _viewPoolFreeCount(0), _viewPoolTotalCount(0)
     , _xOffset(0), _yOffset(0), _xPadding(0), _yPadding(0)
@@ -256,14 +256,20 @@ SharedPtr<View> RecyclerView::MoveFocusVertical(const SharedPtr<View>& currentFo
     if (!_selectedItem || currentFocus.GetPointer() != _selectedItem->view.GetPointer())
     {
         // incoming focus
-        if (direction != FocusMoveDirection::Right)
+        if (direction == FocusMoveDirection::Right)
         {
-            return nullptr;
+            int idx = (-_yOffset + currentFocus->GetPosition().y - _yPadding + ((_ySpacing + _itemHeight) >> 1)) / (_ySpacing + _itemHeight) * _columns;
+            SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _columns * _columns));
+            return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
+        }
+        else if (direction == FocusMoveDirection::Down)
+        {
+            int idx = (-_xOffset + currentFocus->GetPosition().x - _xPadding + ((_xSpacing + _itemWidth) >> 1)) / (_xSpacing + _itemWidth);
+            SetSelectedItem(std::clamp(idx, 0, _columns - 1));
+            return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
         }
 
-        int idx = (-_yOffset + currentFocus->GetPosition().y - _yPadding + ((_ySpacing + _itemHeight) >> 1)) / (_ySpacing + _itemHeight) * _columns;
-        SetSelectedItem(std::clamp(idx, 0, ((int)_itemCount - 1) / _columns * _columns));
-        return _selectedItem != nullptr ? _selectedItem->view : SharedFromThis();
+        return nullptr;
     }
 
     int column = _selectedItem->itemIdx % _columns;
@@ -339,6 +345,117 @@ bool RecyclerView::HandleInput(const InputProvider& inputProvider, FocusManager&
     }
 
     return View::HandleInput(inputProvider, focusManager);
+}
+
+void RecyclerView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (GetBounds().Contains(touchPoint))
+    {
+        _penDown = true;
+        _penDownPosition = touchPoint;
+        _hasScrollStarted = false;
+        _penDownScrollOffset = _scrollOffsetAnimator.GetValue();
+
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+        {
+            _viewPool[i].view->HandlePenDown(touchPoint, focusManager);
+        }
+    }
+}
+
+void RecyclerView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    if (!_penDown)
+    {
+        return;
+    }
+
+    if (!_hasScrollStarted)
+    {
+        for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+        {
+            _viewPool[i].view->HandlePenMove(touchPoint, focusManager);
+            if (focusManager.GetCurrentFocus().GetPointer() == _viewPool[i].view.GetPointer())
+            {
+                SetSelectedItem(_viewPool[i].itemIdx);
+            }
+        }
+
+        int dx = touchPoint.x - _penDownPosition.x;
+        int dy = touchPoint.y - _penDownPosition.y;
+        if (dx * dx + dy * dy > 7 * 7)
+        {
+            bool shouldScrollStart = (_mode == Mode::HorizontalGrid || _mode == Mode::HorizontalList)
+                ? (std::abs(touchPoint.x - _penDownPosition.x) > std::abs(touchPoint.y - _penDownPosition.y))
+                : (std::abs(touchPoint.x - _penDownPosition.x) < std::abs(touchPoint.y - _penDownPosition.y));
+
+            if (shouldScrollStart)
+            {
+                _hasScrollStarted = true;
+            }
+            else
+            {
+                _penDown = false; //wrong direction drag, so cancel it
+            }
+
+            for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+            {
+                _viewPool[i].view->HandlePenUp(Point(-1, -1), focusManager);
+            }
+        }
+    }
+    else
+    {
+        int newScrollOffset;
+        if (_mode == Mode::HorizontalGrid || _mode == Mode::HorizontalList)
+        {
+            newScrollOffset = _penDownScrollOffset + touchPoint.x - _penDownPosition.x;
+            if (-newScrollOffset < 0)
+            {
+                newScrollOffset = 0;
+                _penDownScrollOffset = 0;
+                _penDownPosition.x = touchPoint.x;
+            }
+            else if (newScrollOffset < GetMaxScrollOffset())
+            {
+                newScrollOffset = GetMaxScrollOffset();
+                _penDownScrollOffset = newScrollOffset;
+                _penDownPosition.x = touchPoint.x;
+            }
+        }
+        else
+        {
+            newScrollOffset = _penDownScrollOffset + touchPoint.y - _penDownPosition.y;
+            if (-newScrollOffset < 0)
+            {
+                newScrollOffset = 0;
+                _penDownScrollOffset = 0;
+                _penDownPosition.y = touchPoint.y;
+            }
+            else if (newScrollOffset < GetMaxScrollOffset())
+            {
+                newScrollOffset = GetMaxScrollOffset();
+                _penDownScrollOffset = newScrollOffset;
+                _penDownPosition.y = touchPoint.y;
+            }
+        }
+
+        SetScrollOffset(newScrollOffset, false);
+    }
+}
+
+void RecyclerView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    for (u32 i = _viewPoolFreeCount; i < _viewPoolTotalCount; i++)
+    {
+        _viewPool[i].view->HandlePenUp(lastTouchPoint, focusManager);
+        if (focusManager.GetCurrentFocus().GetPointer() == _viewPool[i].view.GetPointer())
+        {
+            SetSelectedItem(_viewPool[i].itemIdx);
+        }
+    }
+
+    _penDown = false;
 }
 
 Point RecyclerView::GetItemPosition(int itemIdx)

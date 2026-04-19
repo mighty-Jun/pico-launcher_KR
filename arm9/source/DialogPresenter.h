@@ -15,7 +15,7 @@ public:
 
     /// @brief Requests to show the given dialog.
     /// @param dialog The dialog to show.
-    void ShowDialog(std::unique_ptr<DialogView> dialog);
+    void ShowDialog(SharedPtr<DialogView> dialog);
 
     /// @brief Closes the current dialog.
     void CloseDialog();
@@ -42,6 +42,21 @@ public:
     /// @brief Initializes vram that is needed for showing dialogs.
     void InitVram();
 
+    /// @brief Handles a pen down event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager);
+
+    /// @brief Handles a pen move event.
+    /// @param touchPoint The touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager);
+
+    /// @brief Handles a pen up event.
+    /// @param lastTouchPoint The last touch point.
+    /// @param focusManager The focus manager.
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager);
+
     /// @brief Clears the focus that was stored when a dialog was opened.
     void ClearOldFocus()
     {
@@ -54,8 +69,11 @@ public:
     {
         return _oldFocus;
     }
-    /// @brief Returns true if no dialog is being shown or animated.
-    bool IsIdle() const { return _curState == State::Idle && !_nextDialog; }
+
+    bool IsBottomSheetVisible() const
+    {
+        return _curState != State::Idle;
+    }
 
 private:
     enum class State
@@ -68,8 +86,8 @@ private:
     FocusManager* _focusManager;
     StackVramManager* _vramManager;
     u32 _baseVramState;
-    std::unique_ptr<DialogView> _currentDialog;
-    std::unique_ptr<DialogView> _nextDialog;
+    SharedPtr<DialogView> _currentDialog;
+    SharedPtr<DialogView> _nextDialog;
     bool _initVram = false;
     SharedPtr<View> _oldFocus = nullptr;
     Animator<int> _scrimAnimator;

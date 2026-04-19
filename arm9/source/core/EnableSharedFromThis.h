@@ -20,7 +20,7 @@ class EnableSharedFromThis : public EnableSharedFromThisBase
     template <class Y>
     friend class SharedPtr;
 
-protected:
+public:
     SharedPtr<T> SharedFromThis()
     {
         return __sharedFromThisWeakPtr.Lock();

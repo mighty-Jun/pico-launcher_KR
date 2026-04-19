@@ -4,6 +4,7 @@
 #include "gui/Gx.h"
 #include "gui/materialDesign.h"
 #include "gui/GraphicsContext.h"
+#include "gui/input/InputProvider.h"
 #include "CoverView.h"
 
 void CoverView::InitVram(const VramContext& vramContext)
@@ -15,6 +16,11 @@ void CoverView::InitVram(const VramContext& vramContext)
         _texVramOffset = texVramManager->Alloc(128 * 96);
         _plttVramOffset = texPlttVramManager->Alloc(256 * 2);
     }
+}
+
+void CoverView::Update()
+{
+    _viewModel->DisposeQueueTaskWhenComplete();
 }
 
 void CoverView::Draw(GraphicsContext& graphicsContext)
@@ -92,4 +98,25 @@ void CoverView::UploadCoverGraphics()
         _textureLoadRequest = cover->CreateTextureLoadRequest();
         _vblankTextureLoader->RequestLoad(_textureLoadRequest);
     }
+}
+
+bool CoverView::HandleInput(const InputProvider& inputProvider, FocusManager& focusManager)
+{
+    return _inputHandler.HandleInput(inputProvider, focusManager)
+        || View::HandleInput(inputProvider, focusManager);
+}
+
+void CoverView::HandlePenDown(const Point& touchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenDown(touchPoint, focusManager);
+}
+
+void CoverView::HandlePenMove(const Point& touchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenMove(touchPoint, focusManager);
+}
+
+void CoverView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
+{
+    _inputHandler.HandlePenUp(lastTouchPoint, focusManager);
 }

@@ -60,14 +60,15 @@ App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILang
     , _appSettingsService(appSettingsService)
     , _bgmService(bgmService)
     , _languagePackService(languagePackService)
-    , _inputProvider(&_inputSource)
+    , _inputProvider(&_keyInputSource, &_touchInputSource)
     , _inputRepeater(&_inputProvider,
         InputKey::DpadLeft | InputKey::DpadRight | InputKey::DpadUp | InputKey::DpadDown | InputKey::L | InputKey::R,
         25, 8)
     , _romBrowserController(&appSettingsService, &_ioTaskQueue, &_bgTaskQueue)
     , _displaySettingsBottomSheetViewModel(&_romBrowserController)
     , _romBrowserBottomScreenViewModel(&_romBrowserController)
-    , _dialogPresenter(&_focusManager, &_mainObjDialogVram) { }
+    , _dialogPresenter(&_focusManager, &_mainObjDialogVram)
+    , _launchSettingsBottomSheetViewModel(&_romBrowserController) { }
 
 void App::InitVramMapping() const
 {
@@ -151,7 +152,7 @@ void App::Run()
 
     StoreVramState(_vramStateBeforeMakeBottomScreenView);
 
-    _romBrowserBottomScreenView = std::make_unique<RomBrowserBottomScreenView>(
+    _romBrowserBottomScreenView = RomBrowserBottomScreenView::CreateShared(
         &_romBrowserBottomScreenViewModel,
         RomBrowserDisplayModeFactory().GetRomBrowserDisplayMode(
             _romBrowserController.GetRomBrowserDisplaySettings().layout),
@@ -336,8 +337,8 @@ void App::HandleShowGameInfoTrigger()
     // gameInfoDialog->SetGraphics(_chipViewVram);
     // _dialogPresenter.ShowDialog(std::move(gameInfoDialog));
 
-    auto cheatsViewModel = std::make_unique<CheatsViewModel>(_romBrowserController.GetTriggerFileInfo(), &_romBrowserController);
-    auto cheatsDialog = std::make_unique<CheatsBottomSheetView>(
+    auto cheatsViewModel = SharedPtr<CheatsViewModel>::MakeShared(_romBrowserController.GetTriggerFileInfo(), &_romBrowserController);
+    auto cheatsDialog = CheatsBottomSheetView::CreateShared(
         std::move(cheatsViewModel), &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_focusManager, &_languagePackService);
     _dialogPresenter.ShowDialog(std::move(cheatsDialog));
 }
@@ -351,7 +352,7 @@ void App::HandleHideGameInfoTrigger()
 
 void App::HandleShowDisplaySettingsTrigger()
 {
-    auto displaySettingsDialog = std::make_unique<DisplaySettingsBottomSheetView>(
+    auto displaySettingsDialog = DisplaySettingsBottomSheetView::CreateShared(
         &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_appSettingsService, &_languagePackService);
     displaySettingsDialog->SetGraphics(_iconButtonViewVram);
     _dialogPresenter.ShowDialog(std::move(displaySettingsDialog));
@@ -372,8 +373,8 @@ void App::HandleHideDisplaySettingsTrigger()
 
 void App::HandleShowLaunchSettingsTrigger()
 {
-    auto launchSettingsDialog = std::make_unique<LaunchSettingsBottomSheetView>(
-        _romBrowserController.GetRomBrowserViewModel().GetPointer(), 
+    auto launchSettingsDialog = LaunchSettingsBottomSheetView::CreateShared(
+        &_launchSettingsBottomSheetViewModel, 
         &_theme->GetMaterialColorScheme(), 
         _theme->GetFontRepository(), 
         &_appSettingsService, 
@@ -398,11 +399,11 @@ void App::HandleNavigateTrigger()
 
 void App::HandleFolderLoadDoneTrigger()
 {
-    _romBrowserTopScreenView.reset();
+    _romBrowserTopScreenView.Reset();
     RestoreVramState(_vramStateAfterMakeBottomScreenView);
     auto displayMode = RomBrowserDisplayModeFactory().GetRomBrowserDisplayMode(
         _romBrowserController.GetRomBrowserDisplaySettings().layout);
-    _romBrowserTopScreenView = std::make_unique<RomBrowserTopScreenView>(
+    _romBrowserTopScreenView = RomBrowserTopScreenView::CreateShared(
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
         _materialThemeFileIconFactory.get(),
@@ -419,7 +420,7 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
     RestoreVramState(_vramStateBeforeMakeBottomScreenView);
     auto displayMode = RomBrowserDisplayModeFactory().GetRomBrowserDisplayMode(
         _romBrowserController.GetRomBrowserDisplaySettings().layout);
-    _romBrowserBottomScreenView = std::make_unique<RomBrowserBottomScreenView>(
+    _romBrowserBottomScreenView = RomBrowserBottomScreenView::CreateShared(
         &_romBrowserBottomScreenViewModel,
         displayMode,
         _materialThemeFileIconFactory.get(),
@@ -427,7 +428,7 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
         &_vblankTextureLoader);
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
     StoreVramState(_vramStateAfterMakeBottomScreenView);
-    _romBrowserTopScreenView = std::make_unique<RomBrowserTopScreenView>(
+    _romBrowserTopScreenView = RomBrowserTopScreenView::CreateShared(
         _romBrowserController.GetRomBrowserViewModel(),
         displayMode,
         _materialThemeFileIconFactory.get(),
@@ -467,7 +468,7 @@ void App::Update()
     bool isRomBrowserVisible = IsRomBrowserVisible();
     if (isRomBrowserVisible && !_exit && curState != RomBrowserState::Launching)
     {
-        _focusManager.Update(_inputRepeater);
+        HandleInput();
     }
 
     if (_topBackground)
@@ -477,7 +478,7 @@ void App::Update()
 
     _dialogPresenter.Update();
     
-    if (_pendingAppRestart && _dialogPresenter.IsIdle())
+    if (_pendingAppRestart && _dialogPresenter.IsBottomSheetVisible())
     {
         _pendingAppRestart = false;
 
@@ -637,4 +638,50 @@ void App::RestoreVramState(const VramState& vramState)
     _textureVram.SetState(vramState._texVramState);
     _texturePaletteVram.SetState(vramState._texPlttVramState);
     _subObjVram.SetState(vramState._subObjVramState);
+}
+
+void App::HandleInput()
+{
+    _focusManager.Update(_inputRepeater);
+    Point touchPoint;
+    if (_inputRepeater.Triggered(InputKey::Touch) &&
+        _inputRepeater.GetCurrentTouchPoint(touchPoint))
+    {
+        // pen down
+        if (_dialogPresenter.IsBottomSheetVisible())
+        {
+            _dialogPresenter.HandlePenDown(touchPoint, _focusManager);
+        }
+        else
+        {
+            _romBrowserBottomScreenView->HandlePenDown(touchPoint, _focusManager);
+        }
+        _lastTouchPoint = touchPoint;
+    }
+    else if (_inputRepeater.Released(InputKey::Touch))
+    {
+        // pen up
+        if (_dialogPresenter.IsBottomSheetVisible())
+        {
+            _dialogPresenter.HandlePenUp(_lastTouchPoint, _focusManager);
+        }
+        else
+        {
+            _romBrowserBottomScreenView->HandlePenUp(_lastTouchPoint, _focusManager);
+        }
+    }
+    else if (_inputRepeater.Current(InputKey::Touch)
+        && _inputRepeater.GetCurrentTouchPoint(touchPoint))
+    {
+        // pen move
+        if (_dialogPresenter.IsBottomSheetVisible())
+        {
+            _dialogPresenter.HandlePenMove(touchPoint, _focusManager);
+        }
+        else
+        {
+            _romBrowserBottomScreenView->HandlePenMove(touchPoint, _focusManager);
+        }
+        _lastTouchPoint = touchPoint;
+    }
 }

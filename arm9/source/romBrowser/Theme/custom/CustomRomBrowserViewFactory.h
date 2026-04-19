@@ -21,15 +21,16 @@ public:
         const IFontRepository* fontRepository)
         : _customThemeInfo(customThemeInfo), _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
-    SharedPtr<IconGridItemView> CreateIconGridItemView() const override
+    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel) const override
     {
-        return SharedPtr<CustomIconGridItemView>::MakeShared(_customThemeInfo, _gridCellTexVramOffset, _gridCellPlttVramOffset,
+        return CustomIconGridItemView::CreateShared(std::move(viewModel), _customThemeInfo, _gridCellTexVramOffset, _gridCellPlttVramOffset,
             _gridCellSelectedTexVramOffset, _gridCellSelectedPlttVramOffset);
     }
 
-    SharedPtr<BannerListItemView> CreateBannerListItemView(VBlankTextureLoader* vblankTextureLoader) const override
+    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+        VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return SharedPtr<CustomBannerListItemView>::MakeShared(_customThemeInfo, _materialColorScheme, _fontRepository,
+        return CustomBannerListItemView::CreateShared(std::move(viewModel), _customThemeInfo, _materialColorScheme, _fontRepository,
             _bannerListCellTexVramOffset, _bannerListCellPlttVramOffset,
             _bannerListCellSelectedTexVramOffset, _bannerListCellSelectedPlttVramOffset, vblankTextureLoader);
     }
@@ -39,16 +40,16 @@ public:
         return BannerListItemView::VramToken(0);
     }
 
-    std::unique_ptr<AppBarView> CreateAppBarView(int x, int y, AppBarView::Orientation orientation,
+    SharedPtr<AppBarView> CreateAppBarView(int x, int y, AppBarView::Orientation orientation,
         int startButtonCount, int endButtonCount) const override
     {
-        return std::make_unique<CustomAppBarView>(x, y, orientation, startButtonCount, endButtonCount, _materialColorScheme,
+        return CustomAppBarView::CreateShared(x, y, orientation, startButtonCount, endButtonCount, _materialColorScheme,
             _scrimTexVramOffset, _scrimPlttVramOffset);
     }
 
-    std::unique_ptr<BannerView> CreateFileInfoView() const override
+    SharedPtr<BannerView> CreateFileInfoView() const override
     {
-        return std::make_unique<CustomFileInfoView>(_customThemeInfo, _fontRepository);
+        return CustomFileInfoView::CreateShared(_customThemeInfo, _fontRepository);
     }
 
     SharedPtr<RecyclerViewBase> CreateCoverFlowRecyclerView() const override
@@ -60,7 +61,7 @@ public:
         RomBrowserViewModel* viewModel, const IThemeFileIconFactory* themeFileIconFactory,
         VBlankTextureLoader* vblankTextureLoader) const override
     {
-        return SharedPtr<CoverFlowFileRecyclerAdapter>::MakeShared(
+        return SharedPtr<CoverFlowFileRecyclerAdapter>::MakeShared(viewModel->GetRomBrowserController(),
             &viewModel->GetFileInfoManager(), viewModel->GetIoTaskQueue(),
             themeFileIconFactory, this, vblankTextureLoader, &viewModel->GetCoverRepository());
     }

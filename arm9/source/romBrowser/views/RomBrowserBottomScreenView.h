@@ -13,14 +13,9 @@ class VBlankTextureLoader;
 
 class RomBrowserBottomScreenView : public View
 {
-public:
-    RomBrowserBottomScreenView(
-        RomBrowserBottomScreenViewModel* viewModel,
-        const RomBrowserDisplayMode* displayMode,
-        const IThemeFileIconFactory* themeFileIconFactory,
-        const IRomBrowserViewFactory* romBrowserViewFactory,
-        VBlankTextureLoader* vblankTextureLoader);
+    SHARED_ONLY(RomBrowserBottomScreenView)
 
+public:
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
@@ -36,16 +31,21 @@ public:
     void Focus(FocusManager& focusManager)
     {
         if (!_romBrowserView || !_romBrowserView->Focus(focusManager))
-            _romBrowserAppBarView.Focus(focusManager);
+        {
+            _romBrowserAppBarView->Focus(focusManager);
+        }
     }
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
+    void HandlePenDown(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenMove(const Point& touchPoint, FocusManager& focusManager) override;
+    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
 
     void RomBrowserViewModelInvalidated(const VramContext& vramContext);
 
     bool IsAppBarFocused(const FocusManager& focusManager) const
     {
-        return focusManager.IsFocusInside(&_romBrowserAppBarView);
+        return focusManager.IsFocusInside(_romBrowserAppBarView.GetPointer());
     }
 
 private:
@@ -54,7 +54,14 @@ private:
 
     const RomBrowserDisplayMode* _romBrowserDisplayMode;
     const IThemeFileIconFactory* _themeFileIconFactory;
-    RomBrowserAppBarView _romBrowserAppBarView;
-    std::unique_ptr<RomBrowserView> _romBrowserView;
+    SharedPtr<RomBrowserAppBarView> _romBrowserAppBarView;
+    SharedPtr<RomBrowserView> _romBrowserView;
     VBlankTextureLoader* _vblankTextureLoader;
+
+    RomBrowserBottomScreenView(
+        RomBrowserBottomScreenViewModel* viewModel,
+        const RomBrowserDisplayMode* displayMode,
+        const IThemeFileIconFactory* themeFileIconFactory,
+        const IRomBrowserViewFactory* romBrowserViewFactory,
+        VBlankTextureLoader* vblankTextureLoader);
 };
