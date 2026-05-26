@@ -1,7 +1,7 @@
 #include "common.h"
 #include "gui/GraphicsContext.h"
 #include "gui/PaletteManager.h"
-#include "gui/font/nitroFont2.h"
+#include "gui/font/nitroFont3.h"
 #include "core/math/RgbMixer.h"
 #include "gui/OamBuilder.h"
 #include "largeFolderIcon.h"
@@ -34,14 +34,14 @@ void MaterialFileIcon::UploadGraphics()
         u8 tileBuffer[32 * 16 / 2];
         memset(tileBuffer, 0, sizeof(tileBuffer));
         u32 textWidth, textHeight;
-        nft2_measureString(font, _displayName, textWidth, textHeight);
-        nft2_string_render_params_t renderParams;
+        nft3_measureString(font, _displayName, textWidth, textHeight);
+        nft3_string_render_params_t renderParams;
         renderParams.x = ((int)32 - (int)textWidth) / 2;
         renderParams.y = 0;
         renderParams.width = 32;
         renderParams.height = 16;
         renderParams.a5i3 = false;
-        nft2_renderString(font, _displayName, tileBuffer, 32, &renderParams);
+        nft3_renderString(font, _displayName, tileBuffer, 32, &renderParams);
         memcpy((u8*)_vramAddress + largeFolderIconTilesLen, tileBuffer, sizeof(tileBuffer));
     }
 }

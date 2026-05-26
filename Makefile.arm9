@@ -67,6 +67,7 @@ endif
 ifneq ($(BINDIRS),)
     SOURCES_BIN	:= $(shell find -L $(BINDIRS) -name "*.bin")
     SOURCES_NFT2 := $(shell find -L $(BINDIRS) -name "*.nft2")
+	SOURCES_NFT3 := $(shell find -L $(BINDIRS) -name "*.nft3")
     INCLUDEDIRS	+= $(addprefix $(BUILDDIR)/,$(BINDIRS))
 endif
 ifneq ($(GFXDIRS),)
@@ -131,10 +132,12 @@ LDFLAGS		:= $(ARCH) $(LIBDIRSFLAGS) -Wl,-Map,$(MAP),--gc-sections,--use-blx $(DE
 
 OBJS_ASSETS	:= $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_BIN))) \
            $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_NFT2))) \
+		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_NFT3))) \
 		   $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
 
 HEADERS_ASSETS	:= $(patsubst %.bin,%_bin.h,$(addprefix $(BUILDDIR)/,$(SOURCES_BIN))) \
            $(patsubst %.nft2,%_nft2.h,$(addprefix $(BUILDDIR)/,$(SOURCES_NFT2))) \
+		   $(patsubst %.nft3,%_nft3.h,$(addprefix $(BUILDDIR)/,$(SOURCES_NFT3))) \
 		   $(patsubst %.png,%.h,$(addprefix $(BUILDDIR)/,$(SOURCES_PNG)))
 
 ifneq ($(SOURCES_AUDIO),)
@@ -210,6 +213,12 @@ $(BUILDDIR)/%.nft2.o $(BUILDDIR)/%_nft2.h : %.nft2
 	@$(MKDIR) -p $(@D)
 	$(V)$(BLOCKSDS)/tools/bin2c/bin2c $< $(@D)
 	$(V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.nft2.o $(BUILDDIR)/$*_nft2.c
+
+$(BUILDDIR)/%.nft3.o $(BUILDDIR)/%_nft3.h : %.nft3
+	@echo "  BIN2C.9 $<"
+	@$(MKDIR) -p $(@D)
+	$(V)$(BLOCKSDS)/tools/bin2c/bin2c $< $(@D)
+	$(V)$(CC) $(CFLAGS) -MMD -MP -c -o $(BUILDDIR)/$*.nft3.o $(BUILDDIR)/$*_nft3.c
 
 $(BUILDDIR)/%.png.o $(BUILDDIR)/%.h : %.png %.grit
 	@echo "  GRIT.9  $<"

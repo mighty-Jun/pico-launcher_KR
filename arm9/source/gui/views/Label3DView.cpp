@@ -7,7 +7,7 @@
 #include "core/StringUtil.h"
 #include "Label3DView.h"
 
-Label3DView::Label3DView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font,
+Label3DView::Label3DView(u32 width, u32 height, u32 maxStringLength, const nft3_header_t* font,
     VBlankTextureLoader* vblankTextureLoader)
     : LabelView(width, height, maxStringLength, font, true)
     , _vblankTextureLoader(vblankTextureLoader) { }

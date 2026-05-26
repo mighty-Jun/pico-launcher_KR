@@ -5,7 +5,7 @@
 #include "IFontRepository.h"
 #include "background/IThemeBackground.h"
 #include "material/MaterialColorScheme.h"
-#include "gui/font/nitroFont2.h"
+#include "gui/font/nitroFont3.h"
 #include "fat/File.h"
 
 class VramContext;

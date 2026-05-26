@@ -4,5 +4,5 @@
 class DefaultFontRepository : public IFontRepository
 {
 public:
-    const nft2_header_t* GetFont(FontType fontType) const override;
+    const nft3_header_t* GetFont(FontType fontType) const override;
 };

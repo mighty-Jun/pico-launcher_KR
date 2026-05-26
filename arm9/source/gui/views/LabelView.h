@@ -1,7 +1,7 @@
 #pragma once
 #include "common.h"
 #include <memory>
-#include "gui/font/nitroFont2.h"
+#include "gui/font/nitroFont3.h"
 #include "core/task/TaskQueue.h"
 #include "gui/Alignment.h"
 #include "gui/materialDesign.h"
@@ -70,7 +70,7 @@ protected:
     std::unique_ptr<char16_t[]> _textBuffer;
     u32 _tileBufferSize;
     std::unique_ptr<u8[]> _tileBuffer;
-    const nft2_header_t* _font;
+    const nft3_header_t* _font;
     Alignment _hAlign;
     u32 _stringWidth;
     u32 _newStringWidth;
@@ -80,7 +80,7 @@ protected:
     EllipsisStyle _ellipsisStyle = EllipsisStyle::None;
     bool _a5i3;
 
-    LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font, bool a5i3);
+    LabelView(u32 width, u32 height, u32 maxStringLength, const nft3_header_t* font, bool a5i3);
 
     void SetTextBuffer(const char* text);
     void SetTextBuffer(const char16_t* text);

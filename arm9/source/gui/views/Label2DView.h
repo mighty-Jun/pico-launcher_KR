@@ -11,7 +11,7 @@ public:
     void VBlank() override;
 
 private:
-    Label2DView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font)
+    Label2DView(u32 width, u32 height, u32 maxStringLength, const nft3_header_t* font)
         : LabelView(width, height, maxStringLength, font, false) { }
 
     void UpdateTileBuffer() override;

@@ -13,7 +13,7 @@
 #define MARQUEE_STEP_FRAMES     3
 #define MARQUEE_END_FRAMES      90
 
-LabelView::LabelView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font, bool a5i3)
+LabelView::LabelView(u32 width, u32 height, u32 maxStringLength, const nft3_header_t* font, bool a5i3)
     : _width(width), _height(height)
     , _maxStringLength(maxStringLength), _font(font)
     , _hAlign(Alignment::Start)
@@ -78,7 +78,7 @@ void LabelView::UpdateTileBuffer()
     memset(_tileBuffer.get(), 0, _tileBufferSize);
     if (_textBuffer[0] != 0)
     {
-        nft2_string_render_params_t renderParams;
+        nft3_string_render_params_t renderParams;
         renderParams.x = 0;
         renderParams.y = 0;
         renderParams.width = _width;
@@ -86,7 +86,7 @@ void LabelView::UpdateTileBuffer()
         renderParams.a5i3 = _a5i3;
         if (_ellipsisStyle == EllipsisStyle::Ellipsis)
         {
-            nft2_renderStringEllipsis(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams, u" ... ");
+            nft3_renderStringEllipsis(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams, u" ... ");
         }
         else
         {
@@ -95,7 +95,7 @@ void LabelView::UpdateTileBuffer()
                 renderParams.x = -_marqueeOffset;
                 renderParams.onlyRenderWholeGlyphs = false;
             }
-            nft2_renderString(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams);
+            nft3_renderString(_font, _textBuffer.get(), _tileBuffer.get(), _actualWidth, &renderParams);
         }
         _newStringWidth = renderParams.textWidth;
     }

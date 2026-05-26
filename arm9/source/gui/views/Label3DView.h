@@ -13,7 +13,7 @@ public:
     void Draw(GraphicsContext& graphicsContext) override;
 
 private:
-    Label3DView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font,
+    Label3DView(u32 width, u32 height, u32 maxStringLength, const nft3_header_t* font,
         VBlankTextureLoader* vblankTextureLoader);
 
     void UpdateTileBuffer() override;
