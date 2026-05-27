@@ -3,11 +3,9 @@
 
 bool nft3_unpack(nft3_header_t* font)
 {
-    if (font->signature != NFT3_SIGNATURE) {
-        LOG_DEBUG("[ERROR] Signature mismatch!\n");
+    if (font->signature != NFT3_SIGNATURE)
         return false;
-    }
-
+    
     font->glyphInfoPtr = (const nft3_glyph_t*)((u32)font + (u32)font->glyphInfoPtr);
     font->charMapPtr = (const nft3_char_map_t*)((u32)font + (u32)font->charMapPtr);
     font->glyphDataPtr = (const u8*)((u32)font + (u32)font->glyphDataPtr);
@@ -17,20 +15,18 @@ bool nft3_unpack(nft3_header_t* font)
 
 int nft3_findGlyphIdxForCharacter(const nft3_header_t* font, u16 character)
 {
-    // 컨버터에 의해 파일 내부에 직렬화되어 구워진(Baked) 매핑 배열을 직접 가리킴
     const nft3_char_map_t* mapArray = font->charMapPtr;
     
     int left = 0;
     int right = (int)font->mappedCharCount - 1;
 
-    // 완벽한 O(log N) 고정 크기 인덱스 기반 이진 탐색 수행
     while (left <= right)
     {
         int mid = left + (right - left) / 2;
         u16 midUnicode = mapArray[mid].unicode;
 
         if (midUnicode == character) {
-            return mapArray[mid].glyphIdx; // 일치하는 글리프 인덱스 즉시 반환
+            return mapArray[mid].glyphIdx;
         }
         else if (midUnicode < character) {
             left = mid + 1;
@@ -40,7 +36,6 @@ int nft3_findGlyphIdxForCharacter(const nft3_header_t* font, u16 character)
         }
     }
 
-    // 폰트 변환 시 누락되었거나 정의되지 않은 문자는 안전하게 0번(기본/공백) 인덱스로 처리
     return 0;
 }
 
@@ -64,7 +59,7 @@ static inline void renderGlyph(const nft3_header_t* font, const nft3_glyph_t* gl
     int yEnd = glyph->glyphHeight;
     if (yPos + yOffset + yEnd > (int)renderParams->height)
     {
-        yEnd = renderParams->height - (yPos + yOffset); 
+        yEnd = renderParams->height - (yPos + yOffset); // allow partial glyphs in the vertical direction
     }
 
     const u8* glyphData = &font->glyphDataPtr[glyph->dataOffset];
@@ -257,6 +252,7 @@ ITCM_CODE void nft3_renderStringEllipsis(const nft3_header_t* font, const char16
     nft3_measureString(font, string, stringWidth, stringHeight);
     if (stringWidth <= renderParams->width)
     {
+        // no ellipsis needed
         nft3_renderString(font, string, dst, stride, renderParams);
         return;
     }
