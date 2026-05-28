@@ -15,7 +15,7 @@ bool nft3_unpack(nft3_header_t* font)
 
 int nft3_findGlyphIdxForCharacter(const nft3_header_t* font, u16 character)
 {
-    const nft3_char_map_t* mapArray = font->charMapPtr;
+    const nft3_char_map_t* charMapArray = font->charMapPtr;
     
     int left = 0;
     int right = (int)font->mappedCharCount - 1;
@@ -23,12 +23,12 @@ int nft3_findGlyphIdxForCharacter(const nft3_header_t* font, u16 character)
     while (left <= right)
     {
         int mid = left + (right - left) / 2;
-        u16 midUnicode = mapArray[mid].unicode;
+        u16 midCodePoint = charMapArray[mid].codePoint;
 
-        if (midUnicode == character) {
-            return mapArray[mid].glyphIdx;
+        if (midCodePoint == character) {
+            return charMapArray[mid].glyphIdx;
         }
-        else if (midUnicode < character) {
+        else if (midCodePoint < character) {
             left = mid + 1;
         }
         else {

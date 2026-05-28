@@ -14,7 +14,7 @@ struct nft3_glyph_t
 
 struct nft3_char_map_t
 {
-    u16 unicode;
+    u16 codePoint;
     u16 glyphIdx;
 };
 
