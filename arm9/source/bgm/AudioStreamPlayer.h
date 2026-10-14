@@ -93,8 +93,8 @@ private:
     rtos_thread_t _thread;
     rtos_event_t _event;
     volatile bool _isPlaying = false;
-    volatile u8 _readBlock;
-    volatile u8 _writeBlock;
+    volatile u8 _readBlock = 0;
+    volatile u8 _writeBlock = 0;
     std::unique_ptr<IAudioStream> _audioStream;
 
     static AudioStreamPlayer* sCurrentPlayer;
