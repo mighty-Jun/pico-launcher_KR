@@ -10,7 +10,8 @@
 #include "cheats/EmptyCheatRepository.h"
 #include "cheats/PicoLoaderCheatDataFactory.h"
 #include "RomBrowserController.h"
-#include "NdsBootstrap/NdsBootstrapProcess.h"
+#include "NdsBootstrap/NdsBootstrapLauncher.h"
+#include "FileType/Nds/NdsFileType.h"
 
 RomBrowserController::RomBrowserController(
     IAppSettingsService* appSettingsService, TaskQueueBase* ioTaskQueue,
@@ -192,35 +193,15 @@ void RomBrowserController::HandleLaunchTrigger()
     _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
     {
         UpdateLastUsedFilepath();
-
-        LoaderType loaderType = _appSettingsService->GetAppSettings().loaderType;
-
-        if (loaderType == LoaderType::NDS_Bootstrap)
+        if (IsLaunchingWithNdsBootstrap())
         {
-            LOG_DEBUG("Routing to NdsBootstrapProcess...\n");
-            auto loadParams = pload_getLoadParams();
-            loadParams->savePath[0] = 0;
-            loadParams->arguments[0] = 0;
-            loadParams->argumentsLength = 0;
-            
-            if (_triggerFileInfo.GetFileType()->TrySetLaunchParameters(loadParams, _navigatePath))
-            {
-                auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
-                NdsBootstrapProcess::PrepareCheats(cheats.get());
-
-                NdsBootstrapProcess::Launch();
-            }
-            else
-            {
-                LOG_FATAL("Failed to set launch parameters.\n");
-            }
+            LaunchWithNdsBootstrap();
         }
         else
         {
             SetPicoLoaderParams();
             LoadCheats();
         }
-
         return TaskResult<void>::Completed();
     });
 }
@@ -258,6 +239,19 @@ void RomBrowserController::SetPicoLoaderParams() const
     {
         LOG_FATAL("Failed to set launch parameters.\n");
     }
+}
+
+bool RomBrowserController::IsLaunchingWithNdsBootstrap() const
+{
+    // nds-bootstrap can only boot nds roms; everything else keeps going through pico loader.
+    return _appSettingsService->GetAppSettings().loaderType == LoaderType::NDS_Bootstrap
+        && _triggerFileInfo.GetFileType() == &NdsFileType::sInstance;
+}
+
+void RomBrowserController::LaunchWithNdsBootstrap() const
+{
+    auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
+    NdsBootstrapLauncher::Launch(_navigatePath, cheats.get());
 }
 
 void RomBrowserController::LoadCheats() const

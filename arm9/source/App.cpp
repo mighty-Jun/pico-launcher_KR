@@ -31,7 +31,6 @@
 #include "splashTop.h"
 #include "App.h"
 #include "PicoLoaderProcess.h"
-#include "NdsBootstrap/NdsBootstrapProcess.h"
 
 #define SPLASH_FRAMES       44
 
@@ -66,9 +65,9 @@ App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILang
         25, 8)
     , _romBrowserController(&appSettingsService, &_ioTaskQueue, &_bgTaskQueue)
     , _displaySettingsBottomSheetViewModel(&_romBrowserController)
+    , _launchSettingsBottomSheetViewModel(&_romBrowserController)
     , _romBrowserBottomScreenViewModel(&_romBrowserController)
-    , _dialogPresenter(&_focusManager, &_mainObjDialogVram)
-    , _launchSettingsBottomSheetViewModel(&_romBrowserController) { }
+    , _dialogPresenter(&_focusManager, &_mainObjDialogVram) { }
 
 void App::InitVramMapping() const
 {
@@ -437,6 +436,13 @@ void App::HandleChangeDisplayModeTrigger(RomBrowserState newState)
         _romBrowserBottomScreenView->Focus(_focusManager);
 }
 
+bool App::IsLoadingViewVisible() const
+{
+    return _loadingView
+        && _romBrowserController.GetStateMachine().GetCurrentState() == RomBrowserState::Launching
+        && _romBrowserController.IsLaunchingWithNdsBootstrap();
+}
+
 bool App::IsRomBrowserVisible() const
 {
     const auto& stateMachine = _romBrowserController.GetStateMachine();
@@ -475,7 +481,7 @@ void App::Update()
         _bottomBackground->Update();
 
     _dialogPresenter.Update();
-    
+
     if (_pendingAppRestart && _dialogPresenter.IsBottomSheetVisible())
     {
         _pendingAppRestart = false;
@@ -496,22 +502,19 @@ void App::Update()
         return;
     }
 
-    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
-    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
-
     _romBrowserBottomScreenView->Update();
-
-    if (IsRomBrowserVisible())
+    if (isRomBrowserVisible)
     {
         _romBrowserTopScreenView->Update();
         _romBrowserController.GetRomBrowserViewModel()->SetIconFrameCounter(
             _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter() + 1);
     }
 
-    if (showLoadingView && _loadingView)
+    if (IsLoadingViewVisible())
     {
         _loadingView->Update();
-        if(!_isBgmStoppedForLaunch){
+        if (!_isBgmStoppedForLaunch)
+        {
             _bgmService.StopBgm();
             _isBgmStoppedForLaunch = true;
         }
@@ -550,10 +553,6 @@ void App::Draw()
     if (_bottomBackground)
         _bottomBackground->Draw(mainGraphicsContext);
 
-    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
-    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
-    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
-
     if (!_changeDisplayMode && IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->Draw(subGraphicsContext);
@@ -564,7 +563,7 @@ void App::Draw()
     {
         _romBrowserBottomScreenView->Draw(mainGraphicsContext);
 
-        if (showLoadingView && _loadingView)
+        if (IsLoadingViewVisible())
         {
             _loadingView->Draw(mainGraphicsContext);
         }
@@ -600,20 +599,15 @@ void App::VBlank()
     if (_bottomBackground)
         _bottomBackground->VBlank();
 
-    auto curState = _romBrowserController.GetStateMachine().GetCurrentState();
-    bool isNdsBootstrap = (_appSettingsService.GetAppSettings().loaderType == LoaderType::NDS_Bootstrap);
-    bool showLoadingView = (curState == RomBrowserState::Launching && isNdsBootstrap);
-
     _dialogPresenter.VBlank();
 
     if (IsRomBrowserVisible())
     {
         _romBrowserTopScreenView->VBlank();
     }
-    
     _romBrowserBottomScreenView->VBlank();
 
-    if (showLoadingView && _loadingView)
+    if (IsLoadingViewVisible())
     {
         _loadingView->VBlank();
     }

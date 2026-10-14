@@ -1,4 +1,4 @@
-#include "NdsBootstrapProcess.h"
+#include "NdsBootstrapLauncher.h"
 #include "core/Environment.h"
 #include "core/StringUtil.h"
 #include "core/mini-printf.h"
@@ -14,7 +14,7 @@
 
 extern ProcessManager gProcessManager;
 
-bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
+bool NdsBootstrapLauncher::HasValidDsiBinary(const char* romPath)
 {
     FIL file;
     if (f_open(&file, romPath, FA_READ) != FR_OK)
@@ -98,7 +98,7 @@ bool NdsBootstrapProcess::HasValidDsiBinary(const char* romPath)
     return true;
 }
 
-bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, bool isDsiRom)
+bool NdsBootstrapLauncher::PrepareIni(const char* romPath, const char* savePath, bool isDsiRom)
 {
     f_mkdir("fat:/_nds");
 
@@ -149,7 +149,7 @@ bool NdsBootstrapProcess::PrepareIni(const char* romPath, const char* savePath, 
     return true;
 }
 
-u32 NdsBootstrapProcess::WriteActiveCheats(FIL* file, const CheatEntry* entry)
+u32 NdsBootstrapLauncher::WriteActiveCheats(FIL* file, const CheatEntry* entry)
 {
     if (entry == nullptr) return 0;
     
@@ -186,7 +186,7 @@ u32 NdsBootstrapProcess::WriteActiveCheats(FIL* file, const CheatEntry* entry)
     return totalWritten;
 }
 
-bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
+bool NdsBootstrapLauncher::PrepareCheats(const GameCheats* cheats)
 {
     const char* cheatPath = "fat:/_nds/nds-bootstrap/cheatData.bin";
 
@@ -238,14 +238,14 @@ bool NdsBootstrapProcess::PrepareCheats(const GameCheats* cheats)
     return true;
 }
 
-void NdsBootstrapProcess::Launch()
+void NdsBootstrapLauncher::Launch(const char* romPath, const GameCheats* cheats)
 {
-    auto loadParams = pload_getLoadParams();
+    PrepareCheats(cheats);
 
     static char targetRom[256];
     static char targetSave[256];
-    
-    StringUtil::Copy(targetRom, loadParams->romPath, 256);
+
+    StringUtil::Copy(targetRom, romPath, sizeof(targetRom));
 
     static nds_header_twl_t twlHeader;
     static FIL romFile;
@@ -264,22 +264,15 @@ void NdsBootstrapProcess::Launch()
         }
     }
 
-    if (loadParams->savePath[0] != '\0')
+    StringUtil::Copy(targetSave, targetRom, sizeof(targetSave));
+    char* ext = strrchr(targetSave, '.');
+    if (ext != nullptr)
     {
-        StringUtil::Copy(targetSave, loadParams->savePath, 256);
+        strcpy(ext, ".sav");
     }
     else
     {
-        StringUtil::Copy(targetSave, targetRom, 256);
-        char* ext = strrchr(targetSave, '.');
-        if (ext != nullptr)
-        {
-            strcpy(ext, ".sav");
-        }
-        else
-        {
-            strcat(targetSave, ".sav");
-        }
+        strcat(targetSave, ".sav");
     }
 
     if(!isDsiWareSave){
@@ -301,9 +294,9 @@ void NdsBootstrapProcess::Launch()
         return;
     }
 
+    auto loadParams = pload_getLoadParams();
     StringUtil::Copy(loadParams->romPath, "fat:/_nds/nds-bootstrap-release.nds", sizeof(loadParams->romPath));
-    
-    loadParams->savePath[0] = 0; 
+    loadParams->savePath[0] = 0;
     loadParams->arguments[0] = 0;
     loadParams->argumentsLength = 0;
     pload_setCheatData(nullptr);
