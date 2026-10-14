@@ -156,6 +156,11 @@ void RomBrowserController::HandleNavigateTrigger()
                 _cheatRepository = std::make_unique<EmptyCheatRepository>();
             }
         }
+        if (!_languageRepositoryInitialized)
+        {
+            _languageRepository.Initialize();
+            _languageRepositoryInitialized = true;
+        }
 
         u64 startTick = gTickCounter.GetValue();
         _navigateFileName = nullptr;
@@ -279,19 +284,15 @@ void RomBrowserController::LoadCheats() const
     pload_setCheatData(cheatData);
 }
 
-void RomBrowserController::SaveSettingsNow()
+void RomBrowserController::SetLanguage(const char* language)
 {
-    _saveSettingsPending = false;
-    SaveSettingsAsync();
-}
-
-void RomBrowserController::SaveSettingsAsync()
-{
+    _appSettingsService->GetAppSettings().language = language;
     _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
     {
         _appSettingsService->Save();
         return TaskResult<void>::Completed();
     });
+    _restartRequested = true;
 }
 
 void RomBrowserController::ShowLaunchSettings(const FileInfo& fileInfo)

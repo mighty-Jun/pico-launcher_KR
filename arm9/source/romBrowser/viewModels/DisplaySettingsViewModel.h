@@ -1,6 +1,7 @@
 #pragma once
 #include "../IRomBrowserController.h"
 #include "services/settings/RomBrowserDisplaySettings.h"
+#include "services/Language/LanguageRepository.h"
 
 /// @brief View model for the display settings screen.
 class DisplaySettingsViewModel
@@ -43,14 +44,20 @@ public:
         _romBrowserController->HideDisplaySettings();
     }
 
-    void SaveSettingsNow()
+    const LanguageRepository& GetLanguageRepository() const
     {
-        _romBrowserController->SaveSettingsNow();
+        return _romBrowserController->GetLanguageRepository();
     }
 
-    void RequestThemeReload()
+    const char* GetLanguage() const
     {
-        _romBrowserController->RequestThemeReload();
+        return _romBrowserController->GetLanguage();
+    }
+
+    /// @brief Stores the language; the launcher restarts after the settings are closed.
+    void SetLanguage(const char* language)
+    {
+        _romBrowserController->SetLanguage(language);
     }
 
 private:

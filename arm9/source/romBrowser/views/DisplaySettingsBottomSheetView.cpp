@@ -20,9 +20,7 @@
 #include "themes/material/MaterialColorScheme.h"
 #include "themes/IFontRepository.h"
 #include "DisplaySettingsBottomSheetView.h"
-#include <services/settings/IAppSettingsService.h>
 #include <services/Language/ILanguagePackService.h>
-#include "fat/Directory.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -56,10 +54,8 @@ static RomBrowserSortMode sRomBrowserSortModes[4] =
 
 DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     DisplaySettingsViewModel* viewModel, const MaterialColorScheme* materialColorScheme,
-    const IFontRepository* fontRepository, IAppSettingsService* appSettingsService,
-    ILanguagePackService* languagePackService)
+    const IFontRepository* fontRepository, const ILanguagePackService* languagePackService)
     : _viewModel(viewModel)
-    , _appSettingsService(appSettingsService)
     , _languagePackService(languagePackService)
     , _titleLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
     , _layoutLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
@@ -74,20 +70,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _sortingLabel->SetText(langPack.displaySettings_sorting.GetString());
     _languageField->SetLabel(langPack.displaySettings_language.GetString());
 
-    const char* currLang = _appSettingsService->GetAppSettings().language.GetString();
-    _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
-    _appliedLanguageName = _pendingLanguageName;
-
-    _languageField->SetValue(_pendingLanguageName.GetString());
+    _selectedLanguage = _viewModel->GetLanguage();
+    _languageField->SetValue(_selectedLanguage.GetString());
     _languageField->SetSelectAction([] (int direction, void* arg)
     {
-        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
-        self->EnsureLanguagesLoaded();
-        if (self->_languageCount > 0)
-        {
-            int newIdx = (self->_selectedLanguageIdx + direction + self->_languageCount) % self->_languageCount;
-            self->ChangeLanguage(newIdx);
-        }
+        reinterpret_cast<DisplaySettingsBottomSheetView*>(arg)->SelectLanguage(direction);
     }, this);
 
     AddChildTail(_titleLabel.GetPointer());
@@ -270,18 +257,11 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    bool langFocused = _languageField->GetFocusView()->IsFocused();
-    if (langFocused)
-        EnsureLanguagesLoaded();
-
-    if (langFocused && inputProvider.Triggered(InputKey::A))
+    if (_languageField->GetFocusView()->IsFocused() && inputProvider.Triggered(InputKey::A))
     {
-        _appSettingsService->GetAppSettings().language = _pendingLanguageName.GetString();
-        _viewModel->SaveSettingsNow();
-
-        if (strcasecmp(_pendingLanguageName.GetString(), _appliedLanguageName.GetString()) != 0)
+        if (strcasecmp(_selectedLanguage.GetString(), _viewModel->GetLanguage()) != 0)
         {
-            _viewModel->RequestThemeReload();
+            _viewModel->SetLanguage(_selectedLanguage.GetString());
         }
 
         _viewModel->Close();
@@ -456,97 +436,15 @@ u32 DisplaySettingsBottomSheetView::LoadIcon(IVramManager& vramManager,
     return vramOffset;
 }
 
-void DisplaySettingsBottomSheetView::ChangeLanguage(int newIdx)
+void DisplaySettingsBottomSheetView::SelectLanguage(int direction)
 {
-    EnsureLanguagesLoaded();
-    if (_languageCount <= 0)
-        return;
-    
-    _selectedLanguageIdx = newIdx;
-    _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
-    UpdateLanguageUI();
-}
-
-void DisplaySettingsBottomSheetView::LoadLanguages()
-{
-    _languageCount = 0;
-    Directory directory;
-    if (directory.Open("/_pico/lang") != FR_OK)
-    {
-        _languageEntries[0].fileName = "english";
-        _languageCount = 1;
-    }
-    else
-    {
-        FILINFO fileInfo;
-        while (true)
-        {
-            if (directory.Read(&fileInfo) != FR_OK)
-                break;
-            if (fileInfo.fname[0] == 0)
-                break;
-            if (fileInfo.fname[0] == '.')
-                continue;
-            if (fileInfo.fattrib & AM_DIR)
-                continue;
-            if (_languageCount >= kMaxLanguageCount)
-                break;
-
-            const char* dot = strrchr(fileInfo.fname, '.');
-            if (!dot || strcasecmp(dot, ".json") != 0)
-                continue;
-
-            char baseName[64];
-            size_t len = (size_t)(dot - fileInfo.fname);
-            if (len >= sizeof(baseName))
-                len = sizeof(baseName) - 1;
-            memcpy(baseName, fileInfo.fname, len);
-            baseName[len] = '\0';
-
-            auto& entry = _languageEntries[_languageCount];
-            entry.fileName = baseName;
-            for (size_t i = 0; i < len && i < 63; ++i)
-                entry.displayName[i] = (char16_t)baseName[i];
-            entry.displayName[len < 63 ? len : 63] = 0;
-            _languageCount++;
-        }
-    }
-
-    // If no languages found, add a default English entry
-    if (_languageCount == 0)
-    {
-        _languageEntries[0].fileName = "english";
-        StringUtil::Copy(_languageEntries[0].displayName, u"english", 64);
-        _languageCount = 1;
-    }
-}
-
-void DisplaySettingsBottomSheetView::EnsureLanguagesLoaded()
-{
-    if (_languagesLoaded)
+    const auto& languageRepository = _viewModel->GetLanguageRepository();
+    int count = languageRepository.GetLanguageCount();
+    if (count == 0)
         return;
 
-    LoadLanguages();
-    _languagesLoaded = true;
-    _selectedLanguageIdx = 0;
-
-    for (int i = 0; i < _languageCount; ++i)
-    {
-        if (strcasecmp(_pendingLanguageName.GetString(), _languageEntries[i].fileName.GetString()) == 0)
-        {
-            _selectedLanguageIdx = i;
-            break;
-        }
-    }
-
-    _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
-    UpdateLanguageUI();
-}
-
-void DisplaySettingsBottomSheetView::UpdateLanguageUI()
-{
-    if (_languagesLoaded && _languageCount > 0)
-        _languageField->SetValue(_languageEntries[_selectedLanguageIdx].displayName);
-    else
-        _languageField->SetValue(_pendingLanguageName.GetString());
+    int idx = languageRepository.FindLanguage(_selectedLanguage.GetString());
+    idx = idx < 0 ? 0 : (idx + direction + count) % count;
+    _selectedLanguage = languageRepository.GetLanguage(idx);
+    _languageField->SetValue(_selectedLanguage.GetString());
 }
