@@ -2,15 +2,14 @@
 #include "BottomSheetView.h"
 #include "gui/views/Label2DView.h"
 #include "IconButton2DView.h"
-#include "../viewModels/RomBrowserViewModel.h"
-#include "services/settings/AppSettings.h"
 #include "../viewModels/LaunchSettingsViewModel.h"
 
 class IFontRepository;
-class IAppSettingsService;
 class ILanguagePackService;
+class LanguagePack;
 class MaterialColorScheme;
 
+/// @brief Bottom sheet for choosing the loader of a single game.
 class LaunchSettingsBottomSheetView : public BottomSheetView
 {
     SHARED_ONLY(LaunchSettingsBottomSheetView)
@@ -32,9 +31,8 @@ protected:
     void Close() override;
 
 private:
-    LaunchSettingsViewModel* _viewModel;
-    IAppSettingsService* _appSettingsService;
-    ILanguagePackService* _languagePackService;
+    SharedPtr<LaunchSettingsViewModel> _viewModel;
+    const LanguagePack* _languagePack;
 
     SharedPtr<Label2DView> _titleLabel;
     SharedPtr<Label2DView> _loaderLabel;
@@ -42,22 +40,15 @@ private:
 
     const MaterialColorScheme* _materialColorScheme;
 
-    LoaderType _pendingLoaderType;
-
-    u32 _leftArrowIconVramOffset = 0;
-    u32 _rightArrowIconVramOffset = 0;
-
     SharedPtr<IconButton2DView> _loaderLeftArrow;
     SharedPtr<IconButton2DView> _loaderRightArrow;
 
-    SharedPtr<IconButton2DView> CreateArrowIcon();
-
-    
-    LaunchSettingsBottomSheetView(LaunchSettingsViewModel* viewModel,
+    LaunchSettingsBottomSheetView(SharedPtr<LaunchSettingsViewModel> viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
+        const ILanguagePackService* languagePackService);
 
+    SharedPtr<IconButton2DView> CreateArrowIcon(IconButtonView::button_action_t action);
     void UpdateLabels();
-    void ToggleLoaderType();
+    void UpdateLoaderText();
     u32 LoadIcon(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;
 };

@@ -47,7 +47,8 @@ static bool TryGetThemeReloadLauncherPath(const char*& outLauncherPath)
     return false;
 }
 
-App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILanguagePackService& languagePackService)
+App::App(IAppSettingsService& appSettingsService, IGameSettingsService& gameSettingsService,
+    IBgmService& bgmService, ILanguagePackService& languagePackService)
     : _mainObjPltt(GFX_PLTT_OBJ_MAIN)
     , _mainObjVram(GFX_OBJ_MAIN)
     , _mainObjDialogVram(GFX_OBJ_MAIN, 128 * 1024)
@@ -63,9 +64,8 @@ App::App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILang
     , _inputRepeater(&_inputProvider,
         InputKey::DpadLeft | InputKey::DpadRight | InputKey::DpadUp | InputKey::DpadDown | InputKey::L | InputKey::R,
         25, 8)
-    , _romBrowserController(&appSettingsService, &_ioTaskQueue, &_bgTaskQueue)
+    , _romBrowserController(&appSettingsService, &gameSettingsService, &_ioTaskQueue, &_bgTaskQueue)
     , _displaySettingsBottomSheetViewModel(&_romBrowserController)
-    , _launchSettingsBottomSheetViewModel(&_romBrowserController)
     , _romBrowserBottomScreenViewModel(&_romBrowserController)
     , _dialogPresenter(&_focusManager, &_mainObjDialogVram) { }
 
@@ -370,13 +370,9 @@ void App::HandleHideDisplaySettingsTrigger()
 
 void App::HandleShowLaunchSettingsTrigger()
 {
+    auto launchSettingsViewModel = SharedPtr<LaunchSettingsViewModel>::MakeShared(&_romBrowserController);
     auto launchSettingsDialog = LaunchSettingsBottomSheetView::CreateShared(
-        &_launchSettingsBottomSheetViewModel, 
-        &_theme->GetMaterialColorScheme(), 
-        _theme->GetFontRepository(), 
-        &_appSettingsService, 
-        &_languagePackService);
-        
+        std::move(launchSettingsViewModel), &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_languagePackService);
     _dialogPresenter.ShowDialog(std::move(launchSettingsDialog));
 }
 
@@ -450,7 +446,7 @@ bool App::IsRomBrowserVisible() const
     return curState == RomBrowserState::Browser
         || curState == RomBrowserState::GameInfo
         || curState == RomBrowserState::DisplaySettings
-        || curState == RomBrowserState::ShowLaunchSettings
+        || curState == RomBrowserState::LaunchSettings
         || curState == RomBrowserState::Launching;
 }
 

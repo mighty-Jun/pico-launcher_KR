@@ -20,6 +20,7 @@
 #define KEY_CHEAT_SETTINGS_NO_CHEATS "cheatSettings.noCheatsMsg"
 #define KEY_LAUNCH_SETTINGS_TITLE "launchSettings.title"
 #define KEY_LAUNCH_SETTINGS_LOADER "launchSettings.loader"
+#define KEY_LAUNCH_SETTINGS_DEFAULT "launchSettings.default"
 
 static void readJson(LanguagePack* languagePack, const JsonDocument& json)
 {
@@ -33,6 +34,7 @@ static void readJson(LanguagePack* languagePack, const JsonDocument& json)
     languagePack->cheatSettings_noCheatsMsg = json[KEY_CHEAT_SETTINGS_NO_CHEATS] | languagePack->cheatSettings_noCheatsMsg.GetString();
     languagePack->launchSettings_title = json[KEY_LAUNCH_SETTINGS_TITLE] | languagePack->launchSettings_title.GetString();
     languagePack->launchSettings_loader = json[KEY_LAUNCH_SETTINGS_LOADER] | languagePack->launchSettings_loader.GetString();
+    languagePack->launchSettings_default = json[KEY_LAUNCH_SETTINGS_DEFAULT] | languagePack->launchSettings_default.GetString();
 }
 
 bool JsonLanguagePackSerializer::Deserialize(LanguagePack* languagePack, const char* filePath) const

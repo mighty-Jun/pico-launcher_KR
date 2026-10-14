@@ -20,7 +20,7 @@ public:
         return state == RomBrowserState::Browser
             || state == RomBrowserState::GameInfo
             || state == RomBrowserState::DisplaySettings
-            || state == RomBrowserState::ShowLaunchSettings
+            || state == RomBrowserState::LaunchSettings
             || state == RomBrowserState::Launching;
     }
 
