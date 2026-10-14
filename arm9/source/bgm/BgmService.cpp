@@ -12,7 +12,7 @@ bool BgmService::StartBgm(const TCHAR* filePath)
     auto stream = std::make_unique<BcstmAudioStream>();
     if (!stream->Open(filePath))
         return false;
-        
+
     return _audioStreamPlayer->StartPlayback(std::move(stream));
 }
 

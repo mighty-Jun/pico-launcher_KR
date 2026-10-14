@@ -32,7 +32,7 @@ bool AudioStreamPlayer::StartPlaybackIntern(std::unique_ptr<IAudioStream> audioS
         StopPlaybackIntern();
 
     _audioStream = std::move(audioStream);
-    
+
     // fill buffer
     _readBlock = 0;
     _writeBlock = 0;
@@ -83,10 +83,10 @@ void AudioStreamPlayer::StopPlaybackIntern()
         return;
 
     _isPlaying = false;
-    rtos_wakeupThread(&_thread);
     ipc_sendFifoMessage(IPC_CHANNEL_SOUND, (u32)&_soundStopCmdList);
     tmr_stop(AUDIO_STREAM_PLAYER_TIMER);
     rtos_disableIrqMask(RTOS_IRQ_TIMER(AUDIO_STREAM_PLAYER_TIMER));
+    rtos_signalEvent(&_event);
     rtos_joinThread(&_thread);
     sCurrentPlayer = nullptr;
     _audioStream.reset();
@@ -97,7 +97,7 @@ void AudioStreamPlayer::ThreadMain()
     do
     {
         bool doUpdate = true;
-        while(_isPlaying && doUpdate)
+        while (_isPlaying && doUpdate)
         {
             rtos_lockMutex(&_mutex);
             {
