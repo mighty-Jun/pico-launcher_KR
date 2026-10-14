@@ -31,7 +31,6 @@
 #include "DialogPresenter.h"
 #include "themes/ITheme.h"
 #include "animation/Animator.h"
-#include "romBrowser/viewModels/LoadingViewModel.h"
 #include "romBrowser/views/LoadingView.h"
 #include "romBrowser/viewModels/LaunchSettingsViewModel.h"
 
@@ -113,7 +112,7 @@ private:
     bool _pendingAppRestart = false;
 
     Point _lastTouchPoint = Point(0, 0);
-    
+
     void InitVramMapping() const;
     void DisplaySplashScreen() const;
     void LoadTheme();
@@ -141,8 +140,6 @@ private:
     void HandleShowLaunchSettingsTrigger();
     void HandleHideLaunchSettingsTrigger();
 
-    LoadingViewModel _loadingViewModel { &_romBrowserController };
     std::unique_ptr<LoadingView> _loadingView;
-    int _launchDelayFrames = 0;
     bool _isBgmStoppedForLaunch = false;
 };

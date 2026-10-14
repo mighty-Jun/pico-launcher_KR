@@ -41,7 +41,6 @@ private:
     SharedPtr<Label2DView> _loaderFieldLabel;
 
     const MaterialColorScheme* _materialColorScheme;
-    bool _oobPenDown = false;
 
     LoaderType _pendingLoaderType;
 

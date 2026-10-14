@@ -27,10 +27,6 @@ public:
 
     void NavigateUp();
 
-    void ShowLaunchSettings();
-    void HideLaunchSettings();
-    void SaveSettingsNow();
-
 private:
     IRomBrowserController* _romBrowserController;
     std::unique_ptr<FileInfoManager> _fileInfoManager;

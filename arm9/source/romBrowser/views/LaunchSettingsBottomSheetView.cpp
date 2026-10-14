@@ -169,13 +169,6 @@ void LaunchSettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, Foc
 {
     BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
 
-    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
-    {
-        _viewModel -> Close();
-    }
-
-    _oobPenDown = false;
-
     if (_loaderLeftArrow->IsFocused() || _loaderRightArrow->IsFocused())
     {
         focusManager.Focus(_loaderFieldLabel);

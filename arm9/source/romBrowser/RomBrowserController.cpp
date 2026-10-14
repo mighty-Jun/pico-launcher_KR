@@ -11,7 +11,6 @@
 #include "cheats/PicoLoaderCheatDataFactory.h"
 #include "RomBrowserController.h"
 #include "NdsBootstrap/NdsBootstrapProcess.h"
-#include "FileType/Nds/NdsInternalFileInfo.h"
 
 RomBrowserController::RomBrowserController(
     IAppSettingsService* appSettingsService, TaskQueueBase* ioTaskQueue,
@@ -208,9 +207,6 @@ void RomBrowserController::HandleLaunchTrigger()
             {
                 auto cheats = _cheatRepository->GetCheatsForGame(_triggerFileInfo.GetFastFileRef());
                 NdsBootstrapProcess::PrepareCheats(cheats.get());
-
-                std::unique_ptr<InternalFileInfo> internalInfo(_triggerFileInfo.CreateInternalFileInfo());
-
 
                 NdsBootstrapProcess::Launch();
             }

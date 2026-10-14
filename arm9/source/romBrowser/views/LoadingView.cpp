@@ -10,11 +10,8 @@
 #include "loadingBg_1.h"
 #include "loadingBg_2.h"
 
-LoadingView::LoadingView(LoadingViewModel* viewModel, 
-                         const IFontRepository* fontRepository, 
-                         const MaterialColorScheme* colorScheme)
-    : _viewModel(viewModel)
-    , _loadingLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
+LoadingView::LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme)
+    : _loadingLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
 {
     _loadingLabel->SetText(u"로딩 중..");
     _loadingLabel->SetHorizontalAlignment(Alignment::Start);
@@ -88,9 +85,4 @@ void LoadingView::VBlank()
     }
 
     _loadingLabel->VBlank();
-}
-
-void LoadingView::ShowError()
-{
-    _loadingLabel->SetText("DSiWare 실행 불가");
 }
