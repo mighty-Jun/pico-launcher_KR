@@ -1,5 +1,6 @@
 #pragma once
 #include "LabelView.h"
+#include <libtwl/rtos/rtosMutex.h>
 #include "gui/VBlankTextureLoader.h"
 
 class alignas(32) Label3DView : public LabelView
@@ -21,4 +22,8 @@ private:
     u32 _texVramOffset = 0;
     VBlankTextureLoader* _vblankTextureLoader;
     VBlankTextureLoadRequest _textureLoadRequest;
+
+    // UpdateTileBuffer runs on task threads (text set while binding list items) and on the
+    // main thread (ellipsis/marquee changes); see UpdateTileBuffer.
+    rtos_mutex_t _updateMutex;
 };
