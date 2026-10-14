@@ -28,6 +28,6 @@ private:
     const MaterialColorScheme* _materialColorScheme;
     u32 _bgVramOffset;
 
-    MaterialBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+    MaterialBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository);
 };

@@ -18,7 +18,7 @@ public:
         const IFontRepository* fontRepository)
         : _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
-    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel) const override
+    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel) const override
     {
         return MaterialIconGridItemView::CreateShared(std::move(viewModel), _materialColorScheme);
     }
@@ -29,7 +29,7 @@ public:
         return MaterialIconGridItemView::UploadGraphics(vramContext);
     }
 
-    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
         VBlankTextureLoader* vblankTextureLoader) const override
     {
         return MaterialBannerListItemView::CreateShared(std::move(viewModel), _materialColorScheme, _fontRepository);

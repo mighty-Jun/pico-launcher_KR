@@ -3,13 +3,13 @@
 
 class InputProvider;
 class FocusManager;
-class RomBrowserItemViewModel;
+class IRomBrowserItemViewModel;
 class View;
 
 class RomBrowserItemInputHandler
 {
 public:
-    RomBrowserItemInputHandler(View* view, RomBrowserItemViewModel* viewModel)
+    RomBrowserItemInputHandler(View* view, IRomBrowserItemViewModel* viewModel)
         : _view(view), _viewModel(viewModel) { }
 
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager);
@@ -21,7 +21,7 @@ public:
 
 private:
     View* _view;
-    RomBrowserItemViewModel* _viewModel;
+    IRomBrowserItemViewModel* _viewModel;
     bool _penDown = false;
     int _penDownFrames = 0;
 };

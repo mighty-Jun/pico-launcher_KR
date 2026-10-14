@@ -24,6 +24,15 @@ public:
             _firstLine->SetText(firstLine);
     }
 
+    void SetFirstLineAsync(TaskQueueBase* taskQueue, const char16_t* firstLine, bool ellipsis) override
+    {
+        _firstLine->SetEllipsisStyle(ellipsis ? LabelView::EllipsisStyle::Ellipsis : LabelView::EllipsisStyle::None);
+        if (taskQueue)
+            _firstLine->SetTextAsync(taskQueue, firstLine);
+        else
+            _firstLine->SetText(firstLine);
+    }
+
     void SetFirstLineAsync(TaskQueueBase* taskQueue, const char16_t* firstLine, u32 length, bool ellipsis) override
     {
         _firstLine->SetEllipsisStyle(ellipsis ? LabelView::EllipsisStyle::Ellipsis : LabelView::EllipsisStyle::None);
@@ -33,12 +42,28 @@ public:
             _firstLine->SetText(firstLine, length);
     }
 
+    void SetSecondLineAsync(TaskQueueBase* taskQueue, const char16_t* secondLine) override
+    {
+        if (taskQueue)
+            _secondLine->SetTextAsync(taskQueue, secondLine);
+        else
+            _secondLine->SetText(secondLine);
+    }
+
     void SetSecondLineAsync(TaskQueueBase* taskQueue, const char16_t* secondLine, u32 length) override
     {
         if (taskQueue)
             _secondLine->SetTextAsync(taskQueue, secondLine, length);
         else
             _secondLine->SetText(secondLine, length);
+    }
+
+    void SetThirdLineAsync(TaskQueueBase* taskQueue, const char16_t* thirdLine) override
+    {
+        if (taskQueue)
+            _thirdLine->SetTextAsync(taskQueue, thirdLine);
+        else
+            _thirdLine->SetText(thirdLine);
     }
 
     void SetThirdLineAsync(TaskQueueBase* taskQueue, const char16_t* thirdLine, u32 length) override

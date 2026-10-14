@@ -26,7 +26,7 @@ public:
     /// @param resultCount Will contain the number of results.
     /// @return A unique pointer to an array of FileInfo pointers containing the results.
     std::unique_ptr<const FileInfo*[]> FilterAndSort(
-        const SdFolderFilterSortParams& filterSortParams, int& resultCount) const;
+        const SdFolderFilterSortParams& filterSortParams, u32& resultCount) const;
 
     void SortByNameInPlace();
     const FileInfo* BinarySearch(const char* fileName) const;

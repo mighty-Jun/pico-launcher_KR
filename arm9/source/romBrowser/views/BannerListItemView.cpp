@@ -4,7 +4,7 @@
 #include "gui/input/InputProvider.h"
 #include "BannerListItemView.h"
 
-BannerListItemView::BannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+BannerListItemView::BannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
     SharedPtr<LabelView> firstLine, SharedPtr<LabelView> secondLine, SharedPtr<LabelView> thirdLine)
     : _viewModel(std::move(viewModel))
     , _firstLine(std::move(firstLine))
@@ -20,6 +20,19 @@ BannerListItemView::BannerListItemView(std::unique_ptr<RomBrowserItemViewModel> 
 void BannerListItemView::Update()
 {
     _viewModel->DisposeQueueTaskWhenComplete();
+
+    if (IsFocused())
+    {
+        _firstLine->SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
+        _secondLine->SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
+        _thirdLine->SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
+    }
+    else
+    {
+        _firstLine->SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
+        _secondLine->SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
+        _thirdLine->SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
+    }
 
     ViewContainer::Update();
 

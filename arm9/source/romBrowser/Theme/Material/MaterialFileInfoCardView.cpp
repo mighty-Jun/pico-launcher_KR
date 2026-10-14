@@ -13,10 +13,10 @@
 
 MaterialFileInfoCardView::MaterialFileInfoCardView(const MaterialColorScheme* materialColorScheme,
     const IFontRepository* fontRepository)
-    : _firstLine(Label2DView::CreateShared(176, 16, 50, fontRepository->GetFont(FontType::Medium11)))
-    , _secondLine(Label2DView::CreateShared(176, 16, 50, fontRepository->GetFont(FontType::Regular10)))
-    , _thirdLine(Label2DView::CreateShared(176, 16, 50, fontRepository->GetFont(FontType::Regular10)))
-    , _filenameLabelView(Label2DView::CreateShared(220, 16, 200, fontRepository->GetFont(FontType::Medium7_5)))
+    : _firstLine(Label2DView::CreateShared(168, 16, 128, fontRepository->GetFont(FontType::Medium11)))
+    , _secondLine(Label2DView::CreateShared(168, 16, 128, fontRepository->GetFont(FontType::Regular10)))
+    , _thirdLine(Label2DView::CreateShared(168, 16, 128, fontRepository->GetFont(FontType::Regular10)))
+    , _filenameLabelView(Label2DView::CreateShared(220, 16, 256, fontRepository->GetFont(FontType::Medium7_5)))
     , _materialColorScheme(materialColorScheme)
 {
     AddChildTail(_firstLine.GetPointer());

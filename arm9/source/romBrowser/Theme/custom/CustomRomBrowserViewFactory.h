@@ -21,13 +21,13 @@ public:
         const IFontRepository* fontRepository)
         : _customThemeInfo(customThemeInfo), _materialColorScheme(materialColorScheme), _fontRepository(fontRepository) { }
 
-    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel) const override
+    SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel) const override
     {
         return CustomIconGridItemView::CreateShared(std::move(viewModel), _customThemeInfo, _gridCellTexVramOffset, _gridCellPlttVramOffset,
             _gridCellSelectedTexVramOffset, _gridCellSelectedPlttVramOffset);
     }
 
-    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+    SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
         VBlankTextureLoader* vblankTextureLoader) const override
     {
         return CustomBannerListItemView::CreateShared(std::move(viewModel), _customThemeInfo, _materialColorScheme, _fontRepository,

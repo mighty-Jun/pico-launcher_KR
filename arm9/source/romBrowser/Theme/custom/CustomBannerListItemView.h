@@ -26,7 +26,7 @@ private:
     u32 _selectedTexVramOffset = 0;
     u32 _selectedPlttVramOffset = 0;
 
-    CustomBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel, const CustomThemeInfo* customThemeInfo,
+    CustomBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel, const CustomThemeInfo* customThemeInfo,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
         u32 texVramOffset, u32 plttVramOffset, u32 selectedTexVramOffset, u32 selectedPlttVramOffset,
         VBlankTextureLoader* vblankTextureLoader);

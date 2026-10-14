@@ -5,6 +5,7 @@
 #include "CustomMainBackground.h"
 #include "CustomSubBackground.h"
 #include "romBrowser/Theme/custom/CustomRomBrowserViewFactory.h"
+#include "romBrowser/Theme/Material/MaterialThemeFileIconFactory.h"
 #include "CustomTopBackgroundType.h"
 #include "../DefaultFontRepository.h"
 #include "CustomThemeInfo.h"
@@ -22,7 +23,7 @@ public:
 
     const IThemeFileIconFactory* GetThemeFileIconFactory() const override
     {
-        return nullptr;
+        return &_themeFileIconFactory;
     }
 
     const IRomBrowserViewFactory* GetRomBrowserViewFactory() const override
@@ -48,4 +49,5 @@ private:
     CustomRomBrowserViewFactory _romBrowserViewFactory;
     CustomTopBackgroundType _topBackgroundType;
     DefaultFontRepository _fontRepository;
+    MaterialThemeFileIconFactory _themeFileIconFactory;
 };

@@ -12,5 +12,6 @@ enum class RomBrowserStateTrigger
     ShowDisplaySettings,
     HideDisplaySettings,
     ShowLaunchSettings,
-    HideLaunchSettings
+    HideLaunchSettings,
+    GotoSettingsScreen
 };

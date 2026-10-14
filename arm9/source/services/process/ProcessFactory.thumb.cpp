@@ -8,6 +8,7 @@
 #include "bgm/BgmService.h"
 #include "App.h"
 #include "PicoLoaderProcess.h"
+#include "settings/SettingsProcess.h"
 #include "ProcessFactory.h"
 
 namespace di = boost::di;
@@ -39,3 +40,4 @@ static auto diConfig = [] { return di::make_injector<injected_and_bound>(
 
 REGISTER_PROCESS(App);
 REGISTER_PROCESS(PicoLoaderProcess);
+REGISTER_PROCESS(SettingsProcess);

@@ -85,19 +85,19 @@
     },
     "topBannerTextLine0": {
         "position": { "x": 70, "y": 126 },
-        "width": 176,
+        "width": 168,
         "textColor": { "r": 30, "g": 30, "b": 30 },
         "blendColor": { "r": 200, "g": 200, "b": 200 }
     },
     "topBannerTextLine1": {
         "position": { "x": 70, "y": 141 },
-        "width": 176,
+        "width": 168,
         "textColor": { "r": 30, "g": 30, "b": 30 },
         "blendColor": { "r": 200, "g": 200, "b": 200 }
     },
     "topBannerTextLine2": {
         "position": { "x": 70, "y": 155 },
-        "width": 176,
+        "width": 168,
         "textColor": { "r": 30, "g": 30, "b": 30 },
         "blendColor": { "r": 200, "g": 200, "b": 200 }
     },
@@ -130,3 +130,9 @@
 
 ## 배경 음악 (BGM)
 테마 폴더 내의 `bgm` 폴더에 DSP-ADPCM으로 인코딩된 `.bcstm` 파일을 배치하여 배경 음악을 재생할 수 있습니다. 반복 재생(Looping)이 지원됩니다. 여러 개의 `.bcstm` 파일이 있는 경우, Pico Launcher가 실행될 때마다 배경 음악이 무작위로 선택됩니다.
+
+## 테마 선택 아이콘
+테마 폴더에 `icon.bmp` 파일을 넣으면 테마 선택 목록에 해당 아이콘이 표시됩니다. **32×32 픽셀, 4bpp(16색), 비압축 `.bmp`** 파일이어야 하며, 팔레트의 첫 번째 색은 투명색으로 처리됩니다.
+
+## 테마 선택 미리보기 이미지
+테마 폴더에 `preview.bin` 파일을 넣으면 테마 선택 화면에서 상단 화면에 미리보기로 표시됩니다. 256x192 픽셀, 15bpp 비트맵이어야 합니다(`topbg.bin`, `bottombg.bin`과 같은 형식). 이 파일이 없으면 `topbg.bin`이 대신 표시되며, 그것도 없으면 상단 화면에 아무것도 표시되지 않습니다.

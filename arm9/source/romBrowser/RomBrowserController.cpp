@@ -2,6 +2,7 @@
 #include <array>
 #include "picoLoaderBootstrap.h"
 #include "PicoLoaderProcess.h"
+#include "settings/SettingsProcess.h"
 #include "FileType/ExtensionFileTypeProvider.h"
 #include "FileType/FileType.h"
 #include "SdFolderFactory.h"
@@ -62,6 +63,11 @@ void RomBrowserController::HideDisplaySettings()
         });
     }
     _stateMachine.Fire(RomBrowserStateTrigger::HideDisplaySettings);
+}
+
+void RomBrowserController::GotoSettingsScreen()
+{
+    _stateMachine.Fire(RomBrowserStateTrigger::GotoSettingsScreen);
 }
 
 void RomBrowserController::SetRomBrowserDisplaySettings(
@@ -132,6 +138,10 @@ void RomBrowserController::HandleTrigger()
             HandleChangeDisplayModeTrigger();
             break;
 
+        case RomBrowserStateTrigger::GotoSettingsScreen:
+            HandleGotoSettingsScreenTrigger();
+            break;
+
         default:
             break;
     }
@@ -146,6 +156,16 @@ void RomBrowserController::HandleNavigateTrigger()
         {
             _coverRepository = std::make_unique<CoverRepository>();
             _coverRepository->Initialize();
+        }
+        if (!_iconRepository)
+        {
+            _iconRepository = std::make_unique<IconRepository>();
+            _iconRepository->Initialize();
+        }
+        if (!_bannerRepository)
+        {
+            _bannerRepository = std::make_unique<BannerRepository>();
+            _bannerRepository->Initialize();
         }
         if (!_cheatRepository)
         {
@@ -218,6 +238,11 @@ void RomBrowserController::HandleChangeDisplayModeTrigger()
 {
     LOG_DEBUG("RomBrowserStateTrigger::ChangeDisplayMode\n");
     _romBrowserViewModel = SharedPtr<RomBrowserViewModel>::MakeShared(this);
+}
+
+void RomBrowserController::HandleGotoSettingsScreenTrigger()
+{
+    gProcessManager.Goto<SettingsProcess>();
 }
 
 void RomBrowserController::UpdateLastUsedFilepath()
