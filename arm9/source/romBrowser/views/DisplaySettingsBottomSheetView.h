@@ -3,6 +3,7 @@
 #include "BottomSheetView.h"
 #include "gui/views/Label2DView.h"
 #include "IconButton2DView.h"
+#include "SelectorFieldView.h"
 #include "../viewModels/DisplaySettingsViewModel.h"
 
 class IRomBrowserController;
@@ -20,11 +21,11 @@ public:
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
-    void HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager) override;
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus,
         FocusMoveDirection direction, View* source) override;
 
-    void SetGraphics(const IconButton2DView::VramToken& iconButtonVramToken);
+    void SetGraphics(const IconButton2DView::VramToken& iconButtonVramToken,
+        const SelectorFieldView::VramToken& selectorFieldVramToken);
 
     void Focus(FocusManager& focusManager) override
     {
@@ -43,8 +44,7 @@ private:
     SharedPtr<Label2DView> _layoutLabel;
     SharedPtr<Label2DView> _sortingLabel;
     // LabelView _filtersLabel;
-    SharedPtr<Label2DView> _languageLabel;
-    SharedPtr<Label2DView> _languageFieldLabel;
+    SharedPtr<SelectorFieldView> _languageField;
 
     std::array<SharedPtr<IconButton2DView>, 4> _layoutOptions;
     std::array<SharedPtr<IconButton2DView>, /*3*/2> _sortOptions;
@@ -65,14 +65,6 @@ private:
     int _selectedLanguageIdx = 0;
     bool _languagesLoaded = false;
     String<char, 64> _pendingLanguageName;
-
-    u32 _leftArrowIconVramOffset = 0;
-    u32 _rightArrowIconVramOffset = 0;
-
-    SharedPtr<IconButton2DView> _langLeftArrow;
-    SharedPtr<IconButton2DView> _langRightArrow;
-    
-    SharedPtr<IconButton2DView> CreateArrowIcon();
 
     SharedPtr<IconButton2DView> CreateLayoutOptionIconButton();
     SharedPtr<IconButton2DView> CreateSortOptionIconButton();

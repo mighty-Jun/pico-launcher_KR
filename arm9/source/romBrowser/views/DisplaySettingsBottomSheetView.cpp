@@ -23,8 +23,6 @@
 #include <services/settings/IAppSettingsService.h>
 #include <services/Language/ILanguagePackService.h>
 #include "fat/Directory.h"
-#include "left_icon.h"
-#include "right_icon.h"
 
 #define TITLE_LABEL_X       20
 #define TITLE_LABEL_Y       16
@@ -38,10 +36,8 @@
 #define FILTERS_LABEL_X     20
 #define FILTERS_LABEL_Y     112
 
-#define LANGUAGE_LABEL_X    20
-#define LANGUAGE_LABEL_Y    107
-
-#define LANGUAGE_FIELD_X    80
+#define LANGUAGE_FIELD_X    20
+#define LANGUAGE_FIELD_Y    107
 
 static RomBrowserLayout sRomBrowserDisplayModes[4] =
 {
@@ -68,8 +64,7 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     , _titleLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
     , _layoutLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
     , _sortingLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
-    , _languageLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Regular10)))
-    , _languageFieldLabel(SharedPtr<Label2DView>::MakeShared(120, 16, 20, fontRepository->GetFont(FontType::Regular10)))
+    , _languageField(SelectorFieldView::CreateShared(fontRepository, materialColorScheme))
     , _materialColorScheme(materialColorScheme)
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
@@ -77,45 +72,29 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     _titleLabel->SetText(langPack.displaySettings_title.GetString());
     _layoutLabel->SetText(langPack.displaySettings_layout.GetString());
     _sortingLabel->SetText(langPack.displaySettings_sorting.GetString());
-    _languageLabel->SetText(langPack.displaySettings_language.GetString());
+    _languageField->SetLabel(langPack.displaySettings_language.GetString());
 
     const char* currLang = _appSettingsService->GetAppSettings().language.GetString();
     _pendingLanguageName = (currLang && currLang[0] != 0) ? currLang : "english";
     _appliedLanguageName = _pendingLanguageName;
 
-    _languageFieldLabel->SetHorizontalAlignment(Alignment::Center);
-
-    _languageFieldLabel->SetText(_pendingLanguageName.GetString());
+    _languageField->SetValue(_pendingLanguageName.GetString());
+    _languageField->SetSelectAction([] (int direction, void* arg)
+    {
+        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
+        self->EnsureLanguagesLoaded();
+        if (self->_languageCount > 0)
+        {
+            int newIdx = (self->_selectedLanguageIdx + direction + self->_languageCount) % self->_languageCount;
+            self->ChangeLanguage(newIdx);
+        }
+    }, this);
 
     AddChildTail(_titleLabel.GetPointer());
     AddChildTail(_layoutLabel.GetPointer());
     AddChildTail(_sortingLabel.GetPointer());
-    AddChildTail(_languageLabel.GetPointer());
-    AddChildTail(_languageFieldLabel.GetPointer());
+    AddChildTail(_languageField.GetPointer());
 
-    _langLeftArrow = CreateArrowIcon();
-    _langRightArrow = CreateArrowIcon();
-
-    _langLeftArrow->SetAction([](IconButtonView* sender, void* arg) {
-        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
-        self->EnsureLanguagesLoaded();
-        if (self->_languageCount > 0) {
-            int newIdx = (self->_selectedLanguageIdx - 1 + self->_languageCount) % self->_languageCount;
-            self->ChangeLanguage(newIdx);
-        }
-    }, this);
-
-    _langRightArrow->SetAction([](IconButtonView* sender, void* arg) {
-        auto self = reinterpret_cast<DisplaySettingsBottomSheetView*>(arg);
-        self->EnsureLanguagesLoaded();
-        if (self->_languageCount > 0) {
-            int newIdx = (self->_selectedLanguageIdx + 1) % self->_languageCount;
-            self->ChangeLanguage(newIdx);
-        }
-    }, this);
-
-    AddChildTail(_langLeftArrow.GetPointer());
-    AddChildTail(_langRightArrow.GetPointer());
 
     for (auto& layoutOption : _layoutOptions)
     {
@@ -220,13 +199,6 @@ void DisplaySettingsBottomSheetView::InitVram(const VramContext& vramContext)
         // _filterOptions[2].SetIconVramOffset(LoadIcon(objVramManager, musicIconTiles, musicIconTilesLen));
         // _filterOptions[3].SetIconVramOffset(LoadIcon(objVramManager, moviesIconTiles, moviesIconTilesLen));
         // _filterOptions[4].SetIconVramOffset(LoadIcon(objVramManager, unknownIconTiles, unknownIconTilesLen));
-        
-        
-        _leftArrowIconVramOffset = LoadIcon(*objVramManager, left_iconTiles, left_iconTilesLen);
-        _rightArrowIconVramOffset = LoadIcon(*objVramManager, right_iconTiles, right_iconTilesLen);
-
-        _langLeftArrow->SetIconVramOffset(_leftArrowIconVramOffset);
-        _langRightArrow->SetIconVramOffset(_rightArrowIconVramOffset);
     }
 }
 
@@ -236,11 +208,7 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
     _layoutLabel->SetPosition(LAYOUT_LABEL_X, _position.y + LAYOUT_LABEL_Y);
     _sortingLabel->SetPosition(SORTING_LABEL_X, _position.y + SORTING_LABEL_Y);
     // _filtersLabel.SetPosition(FILTERS_LABEL_X, _position.y + FILTERS_LABEL_Y);
-    _languageLabel->SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
-    _languageFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
-
-    _langLeftArrow->SetPosition(60, _position.y + LANGUAGE_LABEL_Y - 8);
-    _langRightArrow->SetPosition(186, _position.y + LANGUAGE_LABEL_Y - 8);
+    _languageField->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_FIELD_Y);
 }
 
 void DisplaySettingsBottomSheetView::Update()
@@ -293,16 +261,6 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
         _sortingLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
         // _filtersLabel.SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
         // _filtersLabel.SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-        _languageLabel->SetBackgroundColor(_materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _languageLabel->SetForegroundColor(_materialColorScheme->onSurfaceVariant);
-
-        bool langFocused = _languageFieldLabel->IsFocused();
-        _languageFieldLabel->SetBackgroundColor(langFocused
-            ? _materialColorScheme->GetColor(md::sys::color::secondaryContainer)
-            : _materialColorScheme->GetColor(md::sys::color::surfaceContainerLow));
-        _languageFieldLabel->SetForegroundColor(langFocused
-            ? _materialColorScheme->GetColor(md::sys::color::primary)
-            : _materialColorScheme->onSurfaceVariant);
         BottomSheetView::Draw(graphicsContext);
     }
     graphicsContext.SetPriority(oldPrio);
@@ -312,14 +270,7 @@ void DisplaySettingsBottomSheetView::Draw(GraphicsContext& graphicsContext)
 bool DisplaySettingsBottomSheetView::HandleInput(
     const InputProvider& inputProvider, FocusManager& focusManager)
 {
-    bool langFocused = _languageFieldLabel->IsFocused();
-    
-    bool isLeftHeld = inputProvider.Current(InputKey::DpadLeft); 
-    bool isRightHeld = inputProvider.Current(InputKey::DpadRight);
-
-    _langLeftArrow->SetState((langFocused && isLeftHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
-    _langRightArrow->SetState((langFocused && isRightHeld) ? IconButtonView::State::ToggleSelected : IconButtonView::State::ToggleUnselected);
-
+    bool langFocused = _languageField->GetFocusView()->IsFocused();
     if (langFocused)
         EnsureLanguagesLoaded();
 
@@ -343,16 +294,6 @@ bool DisplaySettingsBottomSheetView::HandleInput(
         return true;
     }
     return false;
-}
-
-void DisplaySettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
-{
-    BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
-
-    if (_langLeftArrow->IsFocused() || _langRightArrow->IsFocused())
-    {
-        focusManager.Focus(_languageFieldLabel);
-    }
 }
 
 SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>& currentFocus,
@@ -383,7 +324,7 @@ SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>&
             // }
             else if (direction == FocusMoveDirection::Up)
             {
-                return _languageFieldLabel;
+                return _languageField->GetFocusView();
             }
             else //if (direction == FocusMoveDirection::Down)
             {
@@ -419,7 +360,7 @@ SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>&
             }
             else // Down
             {
-                return _languageFieldLabel;
+                return _languageField->GetFocusView();
             }
             //else //if (direction == FocusMoveDirection::Up)
             //{
@@ -469,31 +410,14 @@ SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>&
     //     idx++;
     // }
 
-    if (currentFocus.GetPointer() == _languageFieldLabel.GetPointer())
+    // Left and right are handled by the language field itself
+    if (currentFocus.GetPointer() == _languageField->GetFocusView().GetPointer())
     {
-        EnsureLanguagesLoaded();
-        
-        if (direction == FocusMoveDirection::Left)
-        {
-            if (_languageCount > 0) {
-                int newIdx = (_selectedLanguageIdx - 1 + _languageCount) % _languageCount;
-                ChangeLanguage(newIdx);
-            }
-            return _languageFieldLabel;
-        }
-        else if (direction == FocusMoveDirection::Right)
-        {
-            if (_languageCount > 0) {
-                int newIdx = (_selectedLanguageIdx + 1) % _languageCount;
-                ChangeLanguage(newIdx);
-            }
-            return _languageFieldLabel;
-        }
-        else if (direction == FocusMoveDirection::Up)
+        if (direction == FocusMoveDirection::Up)
         {
             return _sortOptions[0];
         }
-        else //if (direction == FocusMoveDirection::Down)
+        else if (direction == FocusMoveDirection::Down)
         {
             if (idx >= (int)_layoutOptions.size())
                 idx = _layoutOptions.size() - 1;
@@ -504,8 +428,9 @@ SharedPtr<View> DisplaySettingsBottomSheetView::MoveFocus(const SharedPtr<View>&
 }
 
 void DisplaySettingsBottomSheetView::SetGraphics(
-    const IconButton2DView::VramToken& iconButtonVramToken)
+    const IconButton2DView::VramToken& iconButtonVramToken, const SelectorFieldView::VramToken& selectorFieldVramToken)
 {
+    _languageField->SetGraphics(iconButtonVramToken, selectorFieldVramToken);
     for (auto& layoutOption : _layoutOptions)
     {
         layoutOption->SetGraphics(iconButtonVramToken);
@@ -620,20 +545,8 @@ void DisplaySettingsBottomSheetView::EnsureLanguagesLoaded()
 
 void DisplaySettingsBottomSheetView::UpdateLanguageUI()
 {
-    _languageLabel->SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
-    _languageFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
     if (_languagesLoaded && _languageCount > 0)
-        _languageFieldLabel->SetText(_languageEntries[_selectedLanguageIdx].displayName);
+        _languageField->SetValue(_languageEntries[_selectedLanguageIdx].displayName);
     else
-        _languageFieldLabel->SetText(_pendingLanguageName.GetString());
-}
-
-SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateArrowIcon()
-{
-    return SharedPtr<IconButton2DView>::MakeShared(
-        IconButtonView::Type::Standard,
-        IconButtonView::State::ToggleUnselected,
-        md::sys::color::onPrimary,
-        _materialColorScheme
-    );
+        _languageField->SetValue(_pendingLanguageName.GetString());
 }

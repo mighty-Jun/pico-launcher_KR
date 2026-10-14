@@ -137,6 +137,7 @@ void App::Run()
 
     _chipViewVram = ChipView::UploadGraphics(_mainObjVram);
     _iconButtonViewVram = IconButton2DView::UploadGraphics(_mainObjVram);
+    _selectorFieldViewVram = SelectorFieldView::UploadGraphics(_mainObjVram);
 
     mem_setVramEMapping(MEM_VRAM_E_LCDC);
     _rgb6Palette.UploadGraphics(_mainVramContext);
@@ -351,7 +352,7 @@ void App::HandleShowDisplaySettingsTrigger()
 {
     auto displaySettingsDialog = DisplaySettingsBottomSheetView::CreateShared(
         &_displaySettingsBottomSheetViewModel, &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_appSettingsService, &_languagePackService);
-    displaySettingsDialog->SetGraphics(_iconButtonViewVram);
+    displaySettingsDialog->SetGraphics(_iconButtonViewVram, _selectorFieldViewVram);
     _dialogPresenter.ShowDialog(std::move(displaySettingsDialog));
 }
 
@@ -373,6 +374,7 @@ void App::HandleShowLaunchSettingsTrigger()
     auto launchSettingsViewModel = SharedPtr<LaunchSettingsViewModel>::MakeShared(&_romBrowserController);
     auto launchSettingsDialog = LaunchSettingsBottomSheetView::CreateShared(
         std::move(launchSettingsViewModel), &_theme->GetMaterialColorScheme(), _theme->GetFontRepository(), &_languagePackService);
+    launchSettingsDialog->SetGraphics(_iconButtonViewVram, _selectorFieldViewVram);
     _dialogPresenter.ShowDialog(std::move(launchSettingsDialog));
 }
 

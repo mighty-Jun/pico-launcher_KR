@@ -33,6 +33,7 @@
 #include "themes/ITheme.h"
 #include "animation/Animator.h"
 #include "romBrowser/views/LoadingView.h"
+#include "romBrowser/views/SelectorFieldView.h"
 
 class alignas(32) App : public IProcess
 {
@@ -107,6 +108,7 @@ private:
 
     ChipView::VramToken _chipViewVram;
     IconButton2DView::VramToken _iconButtonViewVram;
+    SelectorFieldView::VramToken _selectorFieldViewVram;
 
     bool _vcountIrqStarted = false;
     bool _pendingAppRestart = false;
