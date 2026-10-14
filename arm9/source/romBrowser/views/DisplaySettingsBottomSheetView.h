@@ -9,7 +9,6 @@
 class IRomBrowserController;
 class MaterialColorScheme;
 class IFontRepository;
-class IAppSettingsService;
 class ILanguagePackService;
 
 class DisplaySettingsBottomSheetView : public BottomSheetView
@@ -37,8 +36,7 @@ protected:
 
 private:
     DisplaySettingsViewModel* _viewModel;
-    IAppSettingsService* _appSettingsService;
-    ILanguagePackService* _languagePackService;
+    const ILanguagePackService* _languagePackService;
 
     SharedPtr<Label2DView> _titleLabel;
     SharedPtr<Label2DView> _layoutLabel;
@@ -52,19 +50,8 @@ private:
 
     const MaterialColorScheme* _materialColorScheme;
 
-    String<char, 64> _appliedLanguageName;
-
-    static constexpr int kMaxLanguageCount = 16;
-    struct LanguageEntry
-    {
-        String<char, 64> fileName;
-        char16_t displayName[64];
-    };
-    std::array<LanguageEntry, kMaxLanguageCount> _languageEntries;
-    int _languageCount = 0;
-    int _selectedLanguageIdx = 0;
-    bool _languagesLoaded = false;
-    String<char, 64> _pendingLanguageName;
+    /// @brief The language shown in the language field; only stored when A is pressed.
+    String<char, 32> _selectedLanguage;
 
     SharedPtr<IconButton2DView> CreateLayoutOptionIconButton();
     SharedPtr<IconButton2DView> CreateSortOptionIconButton();
@@ -72,13 +59,10 @@ private:
 
     DisplaySettingsBottomSheetView(DisplaySettingsViewModel* viewModel, 
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository, 
-        IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
+        const ILanguagePackService* languagePackService);
 
     void UpdateLabels();
-    void LoadLanguages();
-    void EnsureLanguagesLoaded();
-    void UpdateLanguageUI();
-    void ChangeLanguage(int newIdx);
+    void SelectLanguage(int direction);
 
     u32 LoadIcon(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;
 };

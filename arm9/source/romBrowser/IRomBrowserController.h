@@ -10,6 +10,7 @@ class FileInfo;
 class TaskQueueBase;
 class ICoverRepository;
 class ICheatRepository;
+class LanguageRepository;
 
 class IRomBrowserController
 {
@@ -36,6 +37,7 @@ public:
     virtual TaskQueueBase* GetBgTaskQueue() const = 0;
     virtual const ICoverRepository& GetCoverRepository() const = 0;
     virtual const ICheatRepository& GetCheatRepository() const = 0;
+    virtual const LanguageRepository& GetLanguageRepository() const = 0;
 
     virtual const RomBrowserDisplaySettings& GetRomBrowserDisplaySettings() const = 0;
 
@@ -44,10 +46,11 @@ public:
 
     virtual const FileInfo& GetTriggerFileInfo() const = 0;
 
-    /// @brief Immediately serializes and enqueues an async write of settings.json.
-    virtual void SaveSettingsNow() = 0;
+    virtual const char* GetLanguage() const = 0;
 
-    virtual void RequestThemeReload() = 0;
+    /// @brief Stores the language in settings.json; the launcher restarts when the
+    ///        display settings are closed so the new language pack gets loaded.
+    virtual void SetLanguage(const char* language) = 0;
 
     virtual void ShowLaunchSettings(const FileInfo& fileInfo) = 0;
     virtual void HideLaunchSettings() = 0;

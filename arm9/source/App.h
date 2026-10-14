@@ -111,7 +111,6 @@ private:
     SelectorFieldView::VramToken _selectorFieldViewVram;
 
     bool _vcountIrqStarted = false;
-    bool _pendingAppRestart = false;
 
     Point _lastTouchPoint = Point(0, 0);
 
