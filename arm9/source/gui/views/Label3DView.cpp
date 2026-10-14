@@ -10,7 +10,10 @@
 Label3DView::Label3DView(u32 width, u32 height, u32 maxStringLength, const nft2_header_t* font,
     VBlankTextureLoader* vblankTextureLoader)
     : LabelView(width, height, maxStringLength, font, true)
-    , _vblankTextureLoader(vblankTextureLoader) { }
+    , _vblankTextureLoader(vblankTextureLoader)
+{
+    rtos_createMutex(&_updateMutex);
+}
 
 Label3DView::~Label3DView()
 {
@@ -28,11 +31,20 @@ void Label3DView::InitVram(const VramContext& vramContext)
 
 void Label3DView::UpdateTileBuffer()
 {
-    _vblankTextureLoader->CancelLoad(_textureLoadRequest);
-    LabelView::UpdateTileBuffer();
-    _textureLoadRequest = VBlankTextureLoadRequest(_tileBuffer.get(), _tileBufferSize,
-        _texVramOffset, nullptr, 0, 0, nullptr, nullptr);
-    _vblankTextureLoader->RequestLoad(_textureLoadRequest);
+    // The main thread has a higher priority than the task threads and can interrupt a task
+    // thread halfway through this function. Without the lock the main thread could queue
+    // _textureLoadRequest again, after which the task thread overwrites the request while it
+    // is linked in the texture loader's list. That breaks the list and drops other labels'
+    // pending uploads, leaving their text blank until they are re-rendered.
+    rtos_lockMutex(&_updateMutex);
+    {
+        _vblankTextureLoader->CancelLoad(_textureLoadRequest);
+        LabelView::UpdateTileBuffer();
+        _textureLoadRequest = VBlankTextureLoadRequest(_tileBuffer.get(), _tileBufferSize,
+            _texVramOffset, nullptr, 0, 0, nullptr, nullptr);
+        _vblankTextureLoader->RequestLoad(_textureLoadRequest);
+    }
+    rtos_unlockMutex(&_updateMutex);
 }
 
 void Label3DView::Draw(GraphicsContext& graphicsContext)
