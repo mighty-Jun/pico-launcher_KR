@@ -11,7 +11,6 @@ class IFontRepository;
 class IAppSettingsService;
 class ILanguagePackService;
 
-
 class DisplaySettingsBottomSheetView : public BottomSheetView
 {
     SHARED_ONLY(DisplaySettingsBottomSheetView)
@@ -44,9 +43,6 @@ private:
     SharedPtr<Label2DView> _layoutLabel;
     SharedPtr<Label2DView> _sortingLabel;
     // LabelView _filtersLabel;
-    SharedPtr<Label2DView> _themeLabel;
-    SharedPtr<Label2DView> _themeFieldLabel;
-    
     SharedPtr<Label2DView> _languageLabel;
     SharedPtr<Label2DView> _languageFieldLabel;
 
@@ -56,15 +52,7 @@ private:
 
     const MaterialColorScheme* _materialColorScheme;
 
-    String<char, 64> _appliedThemeName;
     String<char, 64> _appliedLanguageName;
-
-    static constexpr int kMaxThemeCount = 16;
-    std::array<String<char, 64>, kMaxThemeCount> _themeNames;
-    int _themeCount = 0;
-    int _selectedThemeIdx = 0;
-    bool _themesLoaded = false;
-    String<char, 64> _pendingThemeName;
 
     static constexpr int kMaxLanguageCount = 16;
     struct LanguageEntry
@@ -81,8 +69,6 @@ private:
     u32 _leftArrowIconVramOffset = 0;
     u32 _rightArrowIconVramOffset = 0;
 
-    SharedPtr<IconButton2DView> _themeLeftArrow;
-    SharedPtr<IconButton2DView> _themeRightArrow;
     SharedPtr<IconButton2DView> _langLeftArrow;
     SharedPtr<IconButton2DView> _langRightArrow;
     
@@ -97,11 +83,6 @@ private:
         IAppSettingsService* appSettingsService, ILanguagePackService* languagePackService);
 
     void UpdateLabels();
-    //Theme, Language function
-    void LoadThemes();
-    void EnsureThemesLoaded();
-    void UpdateThemeUI();
-    void ChangeTheme(int newIdx);
     void LoadLanguages();
     void EnsureLanguagesLoaded();
     void UpdateLanguageUI();

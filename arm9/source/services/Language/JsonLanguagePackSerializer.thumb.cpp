@@ -4,7 +4,7 @@
 #include "LanguagePack.h"
 #include "fat/File.h"
 #include "JsonLanguagePackSerializer.h"
-#include <nds.h>
+#include <nds/arm9/cache.h>
 
 #pragma GCC optimize("Os")
 
@@ -15,7 +15,6 @@
 #define KEY_DISPLAY_SETTINGS_LAYOUT  "displaySettings.layout"
 #define KEY_DISPLAY_SETTINGS_SORTING "displaySettings.sorting"
 #define KEY_DISPLAY_SETTINGS_FILTERS "displaySettings.filters"
-#define KEY_DISPLAY_SETTINGS_THEME "displaySettings.theme"
 #define KEY_DISPLAY_SETTINGS_LANGUAGE "displaySettings.language"
 #define KEY_CHEAT_SETTINGS_TITLE     "cheatSettings.title"
 #define KEY_CHEAT_SETTINGS_NO_CHEATS "cheatSettings.noCheatsMsg"
@@ -29,7 +28,6 @@ static void readJson(LanguagePack* languagePack, const JsonDocument& json)
     languagePack->displaySettings_layout = json[KEY_DISPLAY_SETTINGS_LAYOUT] | languagePack->displaySettings_layout.GetString();
     languagePack->displaySettings_sorting = json[KEY_DISPLAY_SETTINGS_SORTING] | languagePack->displaySettings_sorting.GetString();
     languagePack->displaySettings_filters = json[KEY_DISPLAY_SETTINGS_FILTERS] | languagePack->displaySettings_filters.GetString();
-    languagePack->displaySettings_theme = json[KEY_DISPLAY_SETTINGS_THEME] | languagePack->displaySettings_theme.GetString();
     languagePack->displaySettings_language = json[KEY_DISPLAY_SETTINGS_LANGUAGE] | languagePack->displaySettings_language.GetString();
     languagePack->cheatSettings_title = json[KEY_CHEAT_SETTINGS_TITLE] | languagePack->cheatSettings_title.GetString();
     languagePack->cheatSettings_noCheatsMsg = json[KEY_CHEAT_SETTINGS_NO_CHEATS] | languagePack->cheatSettings_noCheatsMsg.GetString();

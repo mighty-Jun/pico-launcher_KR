@@ -11,7 +11,7 @@
     - 가로 및 세로 아이콘 그리드
     - 배너 리스트
     - 커버플로우(Coverflow)
-    - 테마, 언어 변경 기능
+    - 언어 변경 기능
 - [파일 연결](docs/FileAssociations.md) 지원
 - [커버 이미지](docs/Covers.md) 지원
 - [Material Design 3 및 커스텀 테마](docs/Themes.md) 지원
