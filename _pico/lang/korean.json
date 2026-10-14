@@ -8,5 +8,6 @@
   "cheatSettings.noCheatsMsg" : "치트가 없습니다.",
   "launchSettings.title" : "게임 실행 옵션",
   "launchSettings.loader" : "로더",
-  "launchSettings.default" : "기본값"
+  "launchSettings.default" : "기본값",
+  "loading.message" : "로딩 중.."
 }

@@ -1,18 +1,17 @@
 #pragma once
 #include "gui/views/View.h"
 #include "gui/views/Label2DView.h"
-#include "gui/OamManager.h"
-#include "gui/OamBuilder.h"
-#include "gui/VramContext.h"
-#include "libtwl/gfx/gfxPalette.h"
 
 class IFontRepository;
+class LanguagePack;
 class MaterialColorScheme;
 
+/// @brief Shown on the bottom screen while a rom is being prepared for nds-bootstrap.
 class LoadingView : public View
 {
 public:
-    LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme);
+    LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme,
+        const LanguagePack& languagePack);
 
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
@@ -29,6 +28,4 @@ private:
 
     u32 _bg1VramOffset = 0;
     u32 _bg2VramOffset = 0;
-    
-    bool _paletteUploaded = false;
 };

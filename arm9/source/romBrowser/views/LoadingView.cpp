@@ -1,25 +1,28 @@
 #include "common.h"
-#include "LoadingView.h"
 #include "gui/GraphicsContext.h"
+#include "gui/IVramManager.h"
+#include "gui/OamBuilder.h"
+#include "gui/VramContext.h"
+#include "gui/palette/DirectPalette.h"
+#include "services/Language/LanguagePack.h"
 #include "themes/IFontRepository.h"
 #include "themes/material/MaterialColorScheme.h"
-
-#include <libtwl/gfx/gfx.h>
-#include <libtwl/gfx/gfxBackground.h>
-
 #include "loadingBg_1.h"
 #include "loadingBg_2.h"
+#include "LoadingView.h"
 
-LoadingView::LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme)
+#define BACKGROUND_X    64
+#define BACKGROUND_Y    64
+
+LoadingView::LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme,
+    const LanguagePack& languagePack)
     : _loadingLabel(Label2DView::CreateShared(128, 16, 25, fontRepository->GetFont(FontType::Medium11)))
 {
-    _loadingLabel->SetText(u"로딩 중..");
+    _loadingLabel->SetText(languagePack.loading_message.GetString());
     _loadingLabel->SetHorizontalAlignment(Alignment::Start);
-    _loadingLabel->SetPosition(104, 96 - 8); 
-    
+    _loadingLabel->SetPosition(104, 96 - 8);
     _loadingLabel->SetBackgroundColor(colorScheme->GetColor(md::sys::color::primary));
     _loadingLabel->SetForegroundColor(colorScheme->onSurface);
-
     _loadingLabel->SetParent(this);
 }
 
@@ -45,23 +48,23 @@ void LoadingView::Update()
 
 void LoadingView::Draw(GraphicsContext& graphicsContext)
 {
+    auto& paletteManager = graphicsContext.GetPaletteManager();
+    u32 bg1PaletteRow = paletteManager.AllocRow(DirectPalette((const u16*)loadingBg_1Pal),
+        BACKGROUND_Y, BACKGROUND_Y + 64);
+    u32 bg2PaletteRow = paletteManager.AllocRow(DirectPalette((const u16*)loadingBg_2Pal),
+        BACKGROUND_Y, BACKGROUND_Y + 64);
+
     gfx_oam_entry_t* oams = graphicsContext.GetOamManager().AllocOams(2);
-    int prio = graphicsContext.GetPriority(); 
+    int priority = graphicsContext.GetPriority();
 
-    // 왼쪽 조각 (X: 64, Y: 64)
-    OamBuilder::OamWithSize<64, 64>(
-            64, 64, 
-            _bg1VramOffset >> 7)
-        .WithPalette16(14)
-        .WithPriority(prio)
+    // the 128x64 background is made of two 64x64 halves
+    OamBuilder::OamWithSize<64, 64>(BACKGROUND_X, BACKGROUND_Y, _bg1VramOffset >> 7)
+        .WithPalette16(bg1PaletteRow)
+        .WithPriority(priority)
         .Build(oams[0]);
-
-    // 오른쪽 조각 (X: 128, Y: 64)
-    OamBuilder::OamWithSize<64, 64>(
-            128, 64, 
-            _bg2VramOffset >> 7)
-        .WithPalette16(15)
-        .WithPriority(prio)
+    OamBuilder::OamWithSize<64, 64>(BACKGROUND_X + 64, BACKGROUND_Y, _bg2VramOffset >> 7)
+        .WithPalette16(bg2PaletteRow)
+        .WithPriority(priority)
         .Build(oams[1]);
 
     _loadingLabel->Draw(graphicsContext);
@@ -69,20 +72,5 @@ void LoadingView::Draw(GraphicsContext& graphicsContext)
 
 void LoadingView::VBlank()
 {
-    if (!_paletteUploaded)
-    {
-        u16* mainObjPalette = (u16*)GFX_PLTT_OBJ_MAIN;
-        
-        for (int i = 0; i < 16; i++) {
-            mainObjPalette[(14 * 16) + i] = loadingBg_1Pal[i];
-        }
-        
-        for (int i = 0; i < 16; i++) {
-            mainObjPalette[(15 * 16) + i] = loadingBg_2Pal[i];
-        }
-
-        _paletteUploaded = true;
-    }
-
     _loadingLabel->VBlank();
 }
