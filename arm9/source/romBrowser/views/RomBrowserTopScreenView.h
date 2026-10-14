@@ -5,7 +5,7 @@
 #include "gui/views/LabelView.h"
 #include "../FileType/FileIcon.h"
 #include "../DisplayMode/RomBrowserDisplayMode.h"
-#include "battery.h"
+#include "BatteryIndicatorView.h"
 
 class RomBrowserViewModel;
 class IRomBrowserViewFactory;
@@ -19,8 +19,6 @@ public:
     void Update() override;
     void VBlank() override;
 
-    void Draw(GraphicsContext& graphicsContext) override;
-
     Rectangle GetBounds() const override
     {
         return Rectangle(0, 0, 256, 192);
@@ -30,6 +28,7 @@ private:
     SharedPtr<RomBrowserViewModel> _viewModel;
     const IThemeFileIconFactory* _themeFileIconFactory;
     SharedPtr<BannerView> _fileInfoView;
+    SharedPtr<BatteryIndicatorView> _batteryIndicatorView;
     std::unique_ptr<FileIcon> _selectedFileIcon;
     SharedPtr<FileCover> _selectedFileCover;
     int _lastSelectedItem = -1;
@@ -42,12 +41,4 @@ private:
         const RomBrowserDisplayMode* displayMode,
         const IThemeFileIconFactory* themeFileIconFactory,
         const IRomBrowserViewFactory* romBrowserViewFactory);
-
-    u32 _batteryVramOffset = 0;
-    bool _batteryPaletteUploaded = false;
-
-    int _batteryFrame = -1; // 현재 보여줄 프레임 인덱스 (0~6)
-    int _batteryCheckTimer = 10;
-
-    void UpdateBatteryLevel();
 };

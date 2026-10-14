@@ -133,6 +133,7 @@ static void initializeArm7()
         
         i2cWriteRegister(I2C_PM, 0x71, byteBak);
     }
+    SHARED_BATTERY_LEVEL = getBatteryLevel(); // so arm9 has a value before the first periodic update
 
     pmic_setAmplifierEnable(true);
     sys_setSoundPower(true);
