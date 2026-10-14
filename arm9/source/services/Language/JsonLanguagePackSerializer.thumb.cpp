@@ -21,6 +21,7 @@
 #define KEY_LAUNCH_SETTINGS_TITLE "launchSettings.title"
 #define KEY_LAUNCH_SETTINGS_LOADER "launchSettings.loader"
 #define KEY_LAUNCH_SETTINGS_DEFAULT "launchSettings.default"
+#define KEY_LOADING_MESSAGE "loading.message"
 
 static void readJson(LanguagePack* languagePack, const JsonDocument& json)
 {
@@ -35,6 +36,7 @@ static void readJson(LanguagePack* languagePack, const JsonDocument& json)
     languagePack->launchSettings_title = json[KEY_LAUNCH_SETTINGS_TITLE] | languagePack->launchSettings_title.GetString();
     languagePack->launchSettings_loader = json[KEY_LAUNCH_SETTINGS_LOADER] | languagePack->launchSettings_loader.GetString();
     languagePack->launchSettings_default = json[KEY_LAUNCH_SETTINGS_DEFAULT] | languagePack->launchSettings_default.GetString();
+    languagePack->loading_message = json[KEY_LOADING_MESSAGE] | languagePack->loading_message.GetString();
 }
 
 bool JsonLanguagePackSerializer::Deserialize(LanguagePack* languagePack, const char* filePath) const

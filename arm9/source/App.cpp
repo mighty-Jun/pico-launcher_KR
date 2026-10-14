@@ -149,8 +149,7 @@ void App::Run()
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
 
     _loadingView = std::make_unique<LoadingView>(
-        _theme->GetFontRepository(),
-        &_theme->GetMaterialColorScheme());
+        _theme->GetFontRepository(), &_theme->GetMaterialColorScheme(), _languagePackService.GetLanguagePack());
 
     _loadingView->InitVram(_mainVramContext);
 

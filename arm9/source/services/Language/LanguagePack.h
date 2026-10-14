@@ -14,4 +14,5 @@ public:
     String<char, 32> launchSettings_title = "Launch Settings";
     String<char, 32> launchSettings_loader = "Loader";
     String<char, 32> launchSettings_default = "Default";
+    String<char, 32> loading_message = "Loading..";
 };

@@ -8,5 +8,6 @@
   "cheatSettings.noCheatsMsg" : "No cheats found.",
   "launchSettings.title" : "Game Launch Options",
   "launchSettings.loader" : "Loader",
-  "launchSettings.default" : "Default"
+  "launchSettings.default" : "Default",
+  "loading.message" : "Loading.."
 }
