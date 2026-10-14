@@ -128,6 +128,7 @@ private:
     void HandleChangeDisplayModeTrigger(RomBrowserState newState);
 
     bool IsRomBrowserVisible() const;
+    bool IsLoadingViewVisible() const;
 
     void MainLoop();
     void Update();

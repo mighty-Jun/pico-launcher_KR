@@ -67,6 +67,9 @@ public:
     void ShowLaunchSettings() override;
     void HideLaunchSettings() override;
 
+    /// @brief Returns whether the file that is being launched goes through nds-bootstrap.
+    bool IsLaunchingWithNdsBootstrap() const;
+
 private:
     IAppSettingsService* _appSettingsService;
     TaskQueueBase* _ioTaskQueue;
@@ -93,6 +96,7 @@ private:
     void HandleChangeDisplayModeTrigger();
     void UpdateLastUsedFilepath();
     void SetPicoLoaderParams() const;
+    void LaunchWithNdsBootstrap() const;
     void LoadCheats() const;
     void SaveSettingsAsync();
 };
