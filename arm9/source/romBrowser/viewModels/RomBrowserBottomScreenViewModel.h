@@ -21,7 +21,8 @@ public:
             || state == RomBrowserState::GameInfo
             || state == RomBrowserState::DisplaySettings
             || state == RomBrowserState::LaunchSettings
-            || state == RomBrowserState::Launching;
+            || state == RomBrowserState::Launching
+            || state == RomBrowserState::GoingToSettingsScreen;
     }
 
     const SharedPtr<RomBrowserViewModel>& GetRomBrowserViewModel()

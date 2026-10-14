@@ -5,6 +5,7 @@
 #include "../Theme/IRomBrowserViewFactory.h"
 #include "../FileType/UnknownFileCover.h"
 #include "romBrowser/ICoverRepository.h"
+#include "romBrowser/viewModels/RomBrowserItemViewModel.h"
 #include "CoverFlowFileRecyclerAdapter.h"
 
 void CoverFlowFileRecyclerAdapter::GetViewSize(int& width, int& height) const

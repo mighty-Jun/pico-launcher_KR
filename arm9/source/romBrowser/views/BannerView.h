@@ -42,12 +42,15 @@ public:
 
 protected:
     std::unique_ptr<FileIcon> _icon = nullptr;
-    vu16* _iconVram;
-    u32 _iconVramOffset;
-    u32 _lines;
+    vu16* _iconVram = nullptr;
+    u32 _iconVramOffset = 0;
+    u32 _lines = 3;
 
     virtual void SetFirstLineAsync(TaskQueueBase* taskQueue, const char* firstLine, bool ellipsis) = 0;
+    virtual void SetFirstLineAsync(TaskQueueBase* taskQueue, const char16_t* firstLine, bool ellipsis) = 0;
     virtual void SetFirstLineAsync(TaskQueueBase* taskQueue, const char16_t* firstLine, u32 length, bool ellipsis) = 0;
+    virtual void SetSecondLineAsync(TaskQueueBase* taskQueue, const char16_t* secondLine) = 0;
     virtual void SetSecondLineAsync(TaskQueueBase* taskQueue, const char16_t* secondLine, u32 length) = 0;
+    virtual void SetThirdLineAsync(TaskQueueBase* taskQueue, const char16_t* thirdLine) = 0;
     virtual void SetThirdLineAsync(TaskQueueBase* taskQueue, const char16_t* thirdLine, u32 length) = 0;
 };

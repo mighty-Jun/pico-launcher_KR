@@ -2,7 +2,7 @@
 #include "gui/FocusManager.h"
 #include "gui/input/InputProvider.h"
 #include "gui/views/View.h"
-#include "romBrowser/viewModels/RomBrowserItemViewModel.h"
+#include "romBrowser/viewModels/IRomBrowserItemViewModel.h"
 #include "RomBrowserItemInputHandler.h"
 
 #define LONG_PRESS_FRAMES   30

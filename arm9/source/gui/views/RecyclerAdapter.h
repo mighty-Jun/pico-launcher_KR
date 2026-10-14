@@ -1,4 +1,6 @@
 #pragma once
+#include "core/SharedPtr.h"
+
 class View;
 
 /// @brief Adapter class providing the content to show in a \see RecyclerView.

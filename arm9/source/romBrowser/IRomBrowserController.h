@@ -9,6 +9,8 @@ class RomBrowserViewModel;
 class FileInfo;
 class TaskQueueBase;
 class ICoverRepository;
+class IIconRepository;
+class IBannerRepository;
 class ICheatRepository;
 class LanguageRepository;
 
@@ -24,6 +26,7 @@ public:
     virtual void HideGameInfo() = 0;
     virtual void ShowDisplaySettings() = 0;
     virtual void HideDisplaySettings() = 0;
+    virtual void GotoSettingsScreen() = 0;
 
     virtual void Update() = 0;
 
@@ -36,6 +39,8 @@ public:
     virtual TaskQueueBase* GetIoTaskQueue() const = 0;
     virtual TaskQueueBase* GetBgTaskQueue() const = 0;
     virtual const ICoverRepository& GetCoverRepository() const = 0;
+    virtual const IIconRepository& GetIconRepository() const = 0;
+    virtual const IBannerRepository& GetBannerRepository() const = 0;
     virtual const ICheatRepository& GetCheatRepository() const = 0;
     virtual const LanguageRepository& GetLanguageRepository() const = 0;
 

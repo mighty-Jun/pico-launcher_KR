@@ -12,18 +12,18 @@ class VBlankTextureLoader;
 class RomBrowserViewModel;
 class IThemeFileIconFactory;
 class FileRecyclerAdapter;
-class RomBrowserItemViewModel;
+class IRomBrowserItemViewModel;
 
 class IRomBrowserViewFactory
 {
 public:
     virtual ~IRomBrowserViewFactory() = 0;
 
-    virtual SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel) const = 0;
+    virtual SharedPtr<IconGridItemView> CreateIconGridItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel) const = 0;
     virtual IconGridItemView::VramToken UploadIconGridItemViewGraphics(
         const VramContext& vramContext) const { return IconGridItemView::VramToken(0); }
 
-    virtual SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+    virtual SharedPtr<BannerListItemView> CreateBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
         VBlankTextureLoader* vblankTextureLoader) const = 0;
     virtual BannerListItemView::VramToken UploadBannerListItemViewGraphics(
         const VramContext& vramContext) const { return BannerListItemView::VramToken(0); }

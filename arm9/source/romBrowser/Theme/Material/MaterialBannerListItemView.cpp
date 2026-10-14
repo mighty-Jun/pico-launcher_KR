@@ -18,12 +18,12 @@
 #include "gui/views/Label2DView.h"
 #include "MaterialBannerListItemView.h"
 
-MaterialBannerListItemView::MaterialBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+MaterialBannerListItemView::MaterialBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
     const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository)
     : BannerListItemView(std::move(viewModel),
-        Label2DView::CreateShared(160, 16, 50, fontRepository->GetFont(FontType::Medium10)),
-        Label2DView::CreateShared(160, 16, 50, fontRepository->GetFont(FontType::Regular10)),
-        Label2DView::CreateShared(160, 16, 50, fontRepository->GetFont(FontType::Regular10)))
+        Label2DView::CreateShared(152, 16, 128, fontRepository->GetFont(FontType::Medium10)),
+        Label2DView::CreateShared(152, 16, 128, fontRepository->GetFont(FontType::Regular10)),
+        Label2DView::CreateShared(152, 16, 128, fontRepository->GetFont(FontType::Regular10)))
     , _materialColorScheme(materialColorScheme) { }
 
 void MaterialBannerListItemView::Draw(GraphicsContext& graphicsContext)

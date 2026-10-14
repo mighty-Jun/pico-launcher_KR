@@ -1,34 +1,34 @@
 #pragma once
-#include "core/task/TaskQueue.h"
+#include "IRomBrowserItemViewModel.h"
 
 class IRomBrowserController;
 
-class RomBrowserItemViewModel
+class RomBrowserItemViewModel : public IRomBrowserItemViewModel
 {
 public:
     explicit RomBrowserItemViewModel(IRomBrowserController* romBrowserController)
         : _romBrowserController(romBrowserController) { }
 
-    void Activate();
-    void ShowGameInfo();
-    void ShowLaunchSettings();
+    void Activate() override;
+    void ShowGameInfo() override;
+    void ShowLaunchSettings() override;
 
-    void SetIndex(int index)
+    void SetIndex(int index) override
     {
         _index = index;
     }
 
-    void SetQueueTask(QueueTask<void> queueTask)
+    void SetQueueTask(QueueTask<void> queueTask) override
     {
         _queueTask = std::move(queueTask);
     }
 
-    void CancelQueueTask()
+    void CancelQueueTask() override
     {
         _queueTask.CancelTask();
     }
 
-    void DisposeQueueTaskWhenComplete()
+    void DisposeQueueTaskWhenComplete() override
     {
         if (_queueTask.GetTask().IsCompleted())
         {

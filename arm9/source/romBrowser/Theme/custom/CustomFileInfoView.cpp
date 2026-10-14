@@ -7,11 +7,11 @@
 
 CustomFileInfoView::CustomFileInfoView(const CustomThemeInfo* customThemeInfo, const IFontRepository* fontRepository)
     : _firstLine(Label2DView::CreateShared(
-        customThemeInfo->topBannerTextLine0Info.GetWidth(), 16, 50, fontRepository->GetFont(FontType::Medium11)))
+        customThemeInfo->topBannerTextLine0Info.GetWidth(), 16, 128, fontRepository->GetFont(FontType::Medium11)))
     , _secondLine(Label2DView::CreateShared(
-        customThemeInfo->topBannerTextLine1Info.GetWidth(), 16, 50, fontRepository->GetFont(FontType::Regular10)))
+        customThemeInfo->topBannerTextLine1Info.GetWidth(), 16, 128, fontRepository->GetFont(FontType::Regular10)))
     , _thirdLine(Label2DView::CreateShared(
-        customThemeInfo->topBannerTextLine2Info.GetWidth(), 16, 50, fontRepository->GetFont(FontType::Regular10)))
+        customThemeInfo->topBannerTextLine2Info.GetWidth(), 16, 128, fontRepository->GetFont(FontType::Regular10)))
     , _filenameLabelView(Label2DView::CreateShared(
         customThemeInfo->topFileNameTextInfo.GetWidth(), 16, 256, fontRepository->GetFont(FontType::Medium7_5)))
     , _customThemeInfo(customThemeInfo)

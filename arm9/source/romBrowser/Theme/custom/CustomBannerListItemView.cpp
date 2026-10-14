@@ -27,11 +27,11 @@
 #define WIDTH       209
 #define HEIGHT      49
 
-#define LINE_WIDTH              160
+#define LINE_WIDTH              152
 #define LINE_HEIGHT             16
-#define MAX_LINE_STRING_LENGTH  50
+#define MAX_LINE_STRING_LENGTH  128
 
-CustomBannerListItemView::CustomBannerListItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel,
+CustomBannerListItemView::CustomBannerListItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel,
     const CustomThemeInfo* customThemeInfo, const MaterialColorScheme* materialColorScheme,
     const IFontRepository* fontRepository, u32 texVramOffset, u32 plttVramOffset,
     u32 selectedTexVramOffset, u32 selectedPlttVramOffset,

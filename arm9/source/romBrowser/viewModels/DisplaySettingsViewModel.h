@@ -60,6 +60,11 @@ public:
         _romBrowserController->SetLanguage(language);
     }
 
+    void GotoSettingsScreen()
+    {
+        _romBrowserController->GotoSettingsScreen();
+    }
+
 private:
     IRomBrowserController* _romBrowserController;
     RomBrowserDisplaySettings _romBrowserDisplaySettings;

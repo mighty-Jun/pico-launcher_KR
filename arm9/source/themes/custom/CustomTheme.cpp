@@ -182,7 +182,8 @@ static CustomThemeInfo parseCustomThemeInfo(const JsonDocument& json)
 CustomTheme::CustomTheme(const TCHAR* folderName, const Rgb<8, 8, 8>& primaryColor, bool darkMode)
     : Theme(folderName, primaryColor, darkMode)
     , _customThemeInfo(sDefaultCustomThemeInfo)
-    , _romBrowserViewFactory(&_customThemeInfo, &_materialColorScheme, &_fontRepository) { }
+    , _romBrowserViewFactory(&_customThemeInfo, &_materialColorScheme, &_fontRepository)
+    , _themeFileIconFactory(&_materialColorScheme, &_fontRepository) { }
 
 void CustomTheme::LoadRomBrowserResources(const VramContext& mainVramContext, const VramContext& subVramContext)
 {

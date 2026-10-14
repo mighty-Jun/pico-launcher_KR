@@ -14,10 +14,10 @@ SdFolder::~SdFolder()
 }
 
 std::unique_ptr<const FileInfo*[]> SdFolder::FilterAndSort(
-    const SdFolderFilterSortParams& filterSortParams, int& resultCount) const
+    const SdFolderFilterSortParams& filterSortParams, u32& resultCount) const
 {
     auto sortedFilteredFiles = std::make_unique<const FileInfo*[]>(_fileCount);
-    int filteredCount = 0;
+    u32 filteredCount = 0;
     for (int i = 0; i < _fileCount; i++)
     {
         const FileInfo* file = _files[i];

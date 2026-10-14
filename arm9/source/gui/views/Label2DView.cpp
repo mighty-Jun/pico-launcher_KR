@@ -62,7 +62,7 @@ void Label2DView::Draw(GraphicsContext& graphicsContext)
 
 void Label2DView::VBlank()
 {
-    if (_tileBufferUpdated)
+    if (_tileBufferUpdated && _vramAddress)
     {
         memcpy((void*)_vramAddress, _tileBuffer.get(), _tileBufferSize);
         _tileBufferUpdated = false;

@@ -22,7 +22,7 @@ private:
     u32 _selectedTexVramOffset;
     u32 _selectedPlttVramOffset;
 
-    CustomIconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel, const CustomThemeInfo* customThemeInfo,
+    CustomIconGridItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel, const CustomThemeInfo* customThemeInfo,
         u32 texVramOffset, u32 plttVramOffset, u32 selectedTexVramOffset, u32 selectedPlttVramOffset)
         : IconGridItemView(std::move(viewModel)), _customThemeInfo(customThemeInfo), _texVramOffset(texVramOffset), _plttVramOffset(plttVramOffset)
         , _selectedTexVramOffset(selectedTexVramOffset), _selectedPlttVramOffset(selectedPlttVramOffset) { }

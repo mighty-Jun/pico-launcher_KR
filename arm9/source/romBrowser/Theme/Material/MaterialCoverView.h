@@ -3,7 +3,7 @@
 #include "gui/views/View.h"
 #include "romBrowser/FileType/FileCover.h"
 #include "gui/VBlankTextureLoader.h"
-#include "romBrowser/viewModels/RomBrowserItemViewModel.h"
+#include "romBrowser/viewModels/IRomBrowserItemViewModel.h"
 #include "romBrowser/views/RomBrowserItemInputHandler.h"
 
 class MaterialCoverView : public View
@@ -45,13 +45,13 @@ public:
 
     void UploadCoverGraphics();
 
-    RomBrowserItemViewModel& GetViewModel() const
+    IRomBrowserItemViewModel& GetViewModel() const
     {
         return *_viewModel;
     }
 
 private:
-    std::unique_ptr<RomBrowserItemViewModel> _viewModel;
+    std::unique_ptr<IRomBrowserItemViewModel> _viewModel;
     VBlankTextureLoader* _vblankTextureLoader;
     AtomicSharedPtr<FileCover> _cover;
     VBlankTextureLoadRequest _textureLoadRequest;
@@ -59,7 +59,7 @@ private:
     u32 _plttVramOffset = 0;
     RomBrowserItemInputHandler _inputHandler;
 
-    MaterialCoverView(std::unique_ptr<RomBrowserItemViewModel> viewModel, VBlankTextureLoader* vblankTextureLoader)
+    MaterialCoverView(std::unique_ptr<IRomBrowserItemViewModel> viewModel, VBlankTextureLoader* vblankTextureLoader)
         : _viewModel(std::move(viewModel)), _vblankTextureLoader(vblankTextureLoader)
         , _inputHandler(this, _viewModel.get()) { }
 };

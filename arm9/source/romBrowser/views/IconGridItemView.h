@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "romBrowser/viewModels/RomBrowserItemViewModel.h"
+#include "romBrowser/viewModels/IRomBrowserItemViewModel.h"
 #include "gui/views/View.h"
 #include "../FileType/FileIcon.h"
 #include "RomBrowserItemInputHandler.h"
@@ -50,18 +50,18 @@ public:
 
     virtual void SetGraphics(const VramToken& vramToken) { }
 
-    RomBrowserItemViewModel& GetViewModel() const
+    IRomBrowserItemViewModel& GetViewModel() const
     {
         return *_viewModel;
     }
 
 protected:
-    std::unique_ptr<RomBrowserItemViewModel> _viewModel;
+    std::unique_ptr<IRomBrowserItemViewModel> _viewModel;
     std::unique_ptr<FileIcon> _icon;
     vu16* _iconVram;
     u32 _iconVramOffset;
     RomBrowserItemInputHandler _inputHandler;
 
-    explicit IconGridItemView(std::unique_ptr<RomBrowserItemViewModel> viewModel)
+    explicit IconGridItemView(std::unique_ptr<IRomBrowserItemViewModel> viewModel)
         : _viewModel(std::move(viewModel)), _inputHandler(this, _viewModel.get()) { }
 };

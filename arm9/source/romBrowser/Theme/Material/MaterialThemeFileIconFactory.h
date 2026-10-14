@@ -3,6 +3,7 @@
 #include "MaterialFolderIcon.h"
 #include "MaterialGenericFileIcon.h"
 #include "MaterialNdsFileIcon.h"
+#include "MaterialThemeFileIcon.h"
 
 class MaterialColorScheme;
 class IFontRepository;
@@ -27,6 +28,11 @@ public:
     std::unique_ptr<FileIcon> CreateNdsFileIcon(const TCHAR* name) const override
     {
         return std::make_unique<MaterialNdsFileIcon>(name, _materialColorScheme, _fontRepository);
+    }
+
+    std::unique_ptr<FileIcon> CreateThemeFileIcon() const override
+    {
+        return std::make_unique<MaterialThemeFileIcon>(_materialColorScheme, _fontRepository);
     }
 
 private:

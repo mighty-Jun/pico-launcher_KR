@@ -27,7 +27,6 @@
 #include "romBrowser/views/RomBrowserTopScreenView.h"
 #include "romBrowser/views/IconButton2DView.h"
 #include "romBrowser/views/ChipView.h"
-#include "romBrowser/Theme/Material/MaterialThemeFileIconFactory.h"
 #include "romBrowser/RomBrowserController.h"
 #include "DialogPresenter.h"
 #include "themes/ITheme.h"
@@ -96,8 +95,6 @@ private:
 
     FocusManager _focusManager;
 
-    std::unique_ptr<MaterialThemeFileIconFactory> _materialThemeFileIconFactory;
-
     RomBrowserBottomScreenViewModel _romBrowserBottomScreenViewModel;
 
     DialogPresenter _dialogPresenter;
@@ -128,7 +125,6 @@ private:
     void HandleFolderLoadDoneTrigger();
     void HandleChangeDisplayModeTrigger(RomBrowserState newState);
 
-    bool IsRomBrowserVisible() const;
     bool IsLoadingViewVisible() const;
 
     void MainLoop();
