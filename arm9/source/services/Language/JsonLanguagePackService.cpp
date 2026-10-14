@@ -6,8 +6,10 @@ JsonLanguagePackService::JsonLanguagePackService(IAppSettingsService& appSetting
 {
     // AppSettings에서 설정된 언어(예: "korean")를 가져와 경로를 동적으로 조립합니다.
     const char* currentLanguage = appSettingsService.GetAppSettings().language.GetString();
-    mini_snprintf(_filePath, sizeof(_filePath), "/_pico/lang/%s.json", currentLanguage);
+    char filePath[64];
+    mini_snprintf(filePath, sizeof(filePath), "/_pico/lang/%s.json", currentLanguage);
 
-    if (!_serializer.Deserialize(&_languagePack, _filePath))
-        Save();
+    // When the file is missing or invalid, the English defaults in LanguagePack are used.
+    if (!_serializer.Deserialize(&_languagePack, filePath))
+        LOG_WARNING("Failed to load language pack %s\n", filePath);
 }

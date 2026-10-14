@@ -80,13 +80,11 @@ DisplaySettingsBottomSheetView::DisplaySettingsBottomSheetView(
     // , _filtersLabel(64, 16, 25, fontRepository->GetFont(FontType::Regular10))
 {
     const auto& langPack = _languagePackService->GetLanguagePack();
-    //langPack = languagePackService->GetLanguagePack();
-    //load langPack string instead of hard coding
     _titleLabel->SetText(langPack.displaySettings_title.GetString());
     _layoutLabel->SetText(langPack.displaySettings_layout.GetString());
     _sortingLabel->SetText(langPack.displaySettings_sorting.GetString());
     _themeLabel->SetText(langPack.displaySettings_theme.GetString());
-    _languageLabel->SetText(langPack.displaySettings_langugage.GetString());
+    _languageLabel->SetText(langPack.displaySettings_language.GetString());
     
     const char* currTheme = _appSettingsService->GetAppSettings().theme.GetString();
     _pendingThemeName = (currTheme && currTheme[0] != 0) ? currTheme : "material";
@@ -292,20 +290,6 @@ void DisplaySettingsBottomSheetView::UpdateLabels()
 void DisplaySettingsBottomSheetView::Update()
 {
     BottomSheetView::Update();
-    /*if (_themeSettleCounter > 0)
-    {
-        if (--_themeSettleCounter == 0)
-        {
-            _appSettingsService->GetAppSettings().theme = _pendingThemeName.GetString();
-            _settingsDirty = true;
-            SaveIfDirty();
-        }
-    }
-    if (_languageSettleCounter > 0)
-    {
-        if (--_languageSettleCounter == 0)
-            SaveIfDirty();
-    }*/
     
     UpdateLabels();
     auto selectedDisplayMode = _viewModel->GetRomBrowserDisplayMode();
@@ -413,14 +397,12 @@ bool DisplaySettingsBottomSheetView::HandleInput(
             _viewModel->RequestThemeReload();
         }
 
-        ReleaseLazyLists();
         _viewModel->Close();
         return true;
     }
 
     if (inputProvider.Triggered(InputKey::B))
     {
-        ReleaseLazyLists();
 
         _viewModel->Close();
         return true;
@@ -431,13 +413,6 @@ bool DisplaySettingsBottomSheetView::HandleInput(
 void DisplaySettingsBottomSheetView::HandlePenUp(const Point& lastTouchPoint, FocusManager& focusManager)
 {
     BottomSheetView::HandlePenUp(lastTouchPoint, focusManager);
-
-    if (_oobPenDown && !GetBounds().Contains(lastTouchPoint))
-    {
-        _viewModel->Close();
-    }
-
-    _oobPenDown = false;
 
     if (_themeLeftArrow->IsFocused() || _themeRightArrow->IsFocused())
     {
@@ -661,14 +636,6 @@ void DisplaySettingsBottomSheetView::ChangeLanguage(int newIdx)
     _selectedLanguageIdx = newIdx;
     _pendingLanguageName = _languageEntries[_selectedLanguageIdx].fileName;
     UpdateLanguageUI();
-
-    /*const auto& langPack = _languagePackService->GetLanguagePack();
-
-    _titleLabel.SetText(langPack.displaySettings_title.GetString());
-    _layoutLabel.SetText(langPack.displaySettings_layout.GetString());
-    _sortingLabel.SetText(langPack.displaySettings_sorting.GetString());
-    _themeLabel.SetText(langPack.displaySettings_theme.GetString());
-    _languageLabel.SetText(langPack.displaySettings_langugage.GetString());*/
 }
 
 void DisplaySettingsBottomSheetView::EnsureThemesLoaded()
@@ -824,22 +791,11 @@ void DisplaySettingsBottomSheetView::UpdateThemeUI()
 void DisplaySettingsBottomSheetView::UpdateLanguageUI()
 {
     _languageLabel->SetPosition(LANGUAGE_LABEL_X, _position.y + LANGUAGE_LABEL_Y);
-    _themeFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
+    _languageFieldLabel->SetPosition(LANGUAGE_FIELD_X, _position.y + LANGUAGE_LABEL_Y);
     if (_languagesLoaded && _languageCount > 0)
         _languageFieldLabel->SetText(_languageEntries[_selectedLanguageIdx].displayName);
     else
         _languageFieldLabel->SetText(_pendingLanguageName.GetString());
-}
-
-void DisplaySettingsBottomSheetView::ReleaseLazyLists()
-{
-    _themesLoaded = false;
-    _themeCount = 0;
-    _selectedThemeIdx = 0;
-
-    _languagesLoaded = false;
-    _languageCount = 0;
-    _selectedLanguageIdx = 0;
 }
 
 SharedPtr<IconButton2DView> DisplaySettingsBottomSheetView::CreateArrowIcon()

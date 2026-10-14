@@ -1,3 +1,4 @@
+#pragma once
 enum class LoaderType
 {
     Pico_Loader,

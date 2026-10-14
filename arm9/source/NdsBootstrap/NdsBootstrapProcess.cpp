@@ -11,9 +11,6 @@
 #include "sharedMemory.h"
 #include "CardSaveArranger.h"
 #include "ndsHeader.h"
-//#include "NdsInternalFileInfo.h"
-
-#define FIFO_PICO_MSG_IS_3DS 0x1234
 
 extern ProcessManager gProcessManager;
 
@@ -312,15 +309,4 @@ void NdsBootstrapProcess::Launch()
     pload_setCheatData(nullptr);
 
     gProcessManager.Goto<PicoLoaderProcess>();
-}
-
-int NdsBootstrapProcess::GetLanguageCode(const char* langStr)
-{
-    if (langStr == nullptr) return -1;
-    
-    if (strcmp(langStr, "korean") == 0) return 7;
-    if (strcmp(langStr, "english") == 0) return 1;
-    if (strcmp(langStr, "japanese") == 0) return 0;
-
-    return -1; // default
 }

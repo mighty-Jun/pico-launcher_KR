@@ -1,7 +1,6 @@
 #pragma once
 #include "gui/views/View.h"
 #include "gui/views/Label2DView.h"
-#include "../viewModels/LoadingViewModel.h"
 #include "gui/OamManager.h"
 #include "gui/OamBuilder.h"
 #include "gui/VramContext.h"
@@ -13,15 +12,12 @@ class MaterialColorScheme;
 class LoadingView : public View
 {
 public:
-    LoadingView(LoadingViewModel* viewModel, 
-                const IFontRepository* fontRepository, 
-                const MaterialColorScheme* colorScheme);
+    LoadingView(const IFontRepository* fontRepository, const MaterialColorScheme* colorScheme);
 
     void InitVram(const VramContext& vramContext) override;
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     void VBlank() override;
-    void ShowError();
 
     Rectangle GetBounds() const override
     {
@@ -29,7 +25,6 @@ public:
     }
 
 private:
-    LoadingViewModel* _viewModel;
     SharedPtr<Label2DView> _loadingLabel;
 
     u32 _bg1VramOffset = 0;

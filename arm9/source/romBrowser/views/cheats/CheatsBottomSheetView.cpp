@@ -37,7 +37,7 @@
 
 CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewModel,
     const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-    FocusManager* focusManager, ILanguagePackService* languagePackService)
+    FocusManager* focusManager, const ILanguagePackService* languagePackService)
     : _viewModel(std::move(viewModel))
     , _titleLabel(Label2DView::CreateShared(64, 16, 25, fontRepository->GetFont(FontType::Medium11)))
     , _secondaryLabel(Label2DView::CreateShared(153, 16, 64, fontRepository->GetFont(FontType::Regular10)))
@@ -52,7 +52,6 @@ CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewMode
     , _materialColorScheme(materialColorScheme)
     , _fontRepository(fontRepository)
     , _focusManager(focusManager)
-    , _languagePackService(languagePackService)
 {
     const auto& langPack = languagePackService->GetLanguagePack();
 
@@ -60,7 +59,7 @@ CheatsBottomSheetView::CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewMode
     _secondaryLabel->SetText(langPack.cheatSettings_noCheatsMsg.GetString());
     _secondaryLabel->SetEllipsisStyle(LabelView::EllipsisStyle::Ellipsis);
     _descriptionLabel->SetEllipsisStyle(LabelView::EllipsisStyle::Marquee);
-    _descriptionLabel->SetText("");
+    _descriptionLabel->SetText(u"");
     AddChildTail(_titleLabel.GetPointer());
     AddChildTail(_secondaryLabel.GetPointer());
     AddChildTail(_descriptionLabel.GetPointer());
@@ -294,7 +293,7 @@ void CheatsBottomSheetView::UpdateDescriptionText()
     int selectedItem = _viewModel->GetSelectedItem();
     if (selectedItem < 0)
     {
-        _descriptionLabel->SetText("");
+        _descriptionLabel->SetText(u"");
     }
     else
     {

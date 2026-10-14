@@ -3,8 +3,6 @@
 #include <string.h>
 #include "SaveList.h"
 #include "SaveListFactory.h"
-#include "fileInfo.h"
-#include "gameCode.h"
 #include "CardSaveArranger.h"
 #include "ndsHeader.h"
 

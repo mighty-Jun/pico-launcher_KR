@@ -162,7 +162,6 @@ void App::Run()
     _romBrowserBottomScreenView->InitVram(_mainVramContext);
 
     _loadingView = std::make_unique<LoadingView>(
-        &_loadingViewModel,
         _theme->GetFontRepository(),
         &_theme->GetMaterialColorScheme());
 
@@ -279,7 +278,6 @@ void App::HandleTrigger(RomBrowserStateTrigger trigger, RomBrowserState newState
         case RomBrowserStateTrigger::None:
         case RomBrowserStateTrigger::Launch:
         {
-            _launchDelayFrames = 2;
             break;
         }
         case RomBrowserStateTrigger::ShowGameInfo:
@@ -513,7 +511,6 @@ void App::Update()
     if (showLoadingView && _loadingView)
     {
         _loadingView->Update();
-        LOG_DEBUG("Loading view frame counter: %d\n", _romBrowserController.GetRomBrowserViewModel()->GetIconFrameCounter());
         if(!_isBgmStoppedForLaunch){
             _bgmService.StopBgm();
             _isBgmStoppedForLaunch = true;

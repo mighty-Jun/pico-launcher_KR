@@ -43,7 +43,7 @@ private:
     SharedPtr<Label2DView> _titleLabel;
     SharedPtr<Label2DView> _layoutLabel;
     SharedPtr<Label2DView> _sortingLabel;
-// LabelView _filtersLabel;
+    // LabelView _filtersLabel;
     SharedPtr<Label2DView> _themeLabel;
     SharedPtr<Label2DView> _themeFieldLabel;
     
@@ -55,7 +55,6 @@ private:
     // std::array<IconButton2DView, 5> _filterOptions;
 
     const MaterialColorScheme* _materialColorScheme;
-    bool _oobPenDown = false;
 
     String<char, 64> _appliedThemeName;
     String<char, 64> _appliedLanguageName;
@@ -107,10 +106,6 @@ private:
     void EnsureLanguagesLoaded();
     void UpdateLanguageUI();
     void ChangeLanguage(int newIdx);
-    void ReleaseLazyLists();
 
     u32 LoadIcon(IVramManager& vramManager, const unsigned int* tiles, u32 tilesLength) const;
-
-    bool _themeLongPressConsumed = false;
-    bool _usePreloadedIcons = false;
 };

@@ -48,15 +48,6 @@ public:
 
     void SaveSettingsNow() override;
 
-    void MarkStateDirty() override { _saveStateBinPending = true; }
-
-    bool ConsumeStateDirty()
-    {
-        const bool dirty = _saveStateBinPending;
-        _saveStateBinPending = false;
-        return dirty;
-    }
-
     void RequestThemeReload() override { _themeReloadRequested = true; }
 
     bool ConsumeThemeReloadRequest()
@@ -90,8 +81,6 @@ private:
     FileInfo _triggerFileInfo;
     QueueTask<void> _navigateTask;
     bool _saveSettingsPending = false;
-    bool _saveStateBinPending = false;
-    bool _viewModelInvalidated = false;
     bool _themeReloadRequested = false;
     std::unique_ptr<CoverRepository> _coverRepository;
     ExtensionFileTypeProvider _fileTypeProvider;

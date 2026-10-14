@@ -24,7 +24,7 @@ public:
     void Update() override;
     void Draw(GraphicsContext& graphicsContext) override;
     SharedPtr<View> MoveFocus(const SharedPtr<View>& currentFocus, FocusMoveDirection direction, View* source) override;
-    bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;\
+    bool HandleInput(const InputProvider& inputProvider, FocusManager& focusManager) override;
 
     void Focus(FocusManager& focusManager) override
     {
@@ -49,12 +49,10 @@ private:
     CheatListItemView::VramOffsets _vramOffsets;
     u32 _savedVramState = 0;
     const CheatEntry* _currentCheatCategory = nullptr;
-    bool _oobPenDown = false;
 
     CheatsBottomSheetView(SharedPtr<CheatsViewModel> viewModel,
         const MaterialColorScheme* materialColorScheme, const IFontRepository* fontRepository,
-        FocusManager* focusManager, ILanguagePackService* languagePackService);
-    ILanguagePackService* _languagePackService;
+        FocusManager* focusManager, const ILanguagePackService* languagePackService);
 
     void UpdateCheatList();
     void UpdateDescriptionText();
