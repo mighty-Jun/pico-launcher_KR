@@ -13,4 +13,5 @@ public:
     String<char, 64> cheatSettings_noCheatsMsg = "No cheats found.";
     String<char, 32> launchSettings_title = "Launch Settings";
     String<char, 32> launchSettings_loader = "Loader";
+    String<char, 32> launchSettings_default = "Default";
 };

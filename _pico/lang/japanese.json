@@ -7,5 +7,6 @@
   "cheatSettings.title" : "チート",
   "cheatSettings.noCheatsMsg" : "チートが見つかりません",
   "launchSettings.title" : "ゲームの起動オプション",
-  "launchSettings.loader" : "ローダー"
+  "launchSettings.loader" : "ローダー",
+  "launchSettings.default" : "デフォルト"
 }

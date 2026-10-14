@@ -1,5 +1,6 @@
 #pragma once
 #include "core/SharedPtr.h"
+#include <optional>
 #include "services/settings/AppSettings.h"
 
 class SdFolder;
@@ -43,15 +44,19 @@ public:
 
     virtual const FileInfo& GetTriggerFileInfo() const = 0;
 
-    virtual void MarkSettingsDirty() = 0;
-
     /// @brief Immediately serializes and enqueues an async write of settings.json.
     virtual void SaveSettingsNow() = 0;
 
     virtual void RequestThemeReload() = 0;
 
-    virtual void ShowLaunchSettings() = 0;
+    virtual void ShowLaunchSettings(const FileInfo& fileInfo) = 0;
     virtual void HideLaunchSettings() = 0;
+
+    /// @brief Returns the loader chosen for the launch settings file, or \c std::nullopt for the default loader.
+    virtual std::optional<LoaderType> GetGameLoader() const = 0;
+
+    /// @brief Sets the loader for the launch settings file; \c std::nullopt resets it to the default loader.
+    virtual void SetGameLoader(std::optional<LoaderType> loader) = 0;
 };
 
 inline IRomBrowserController::~IRomBrowserController() { }

@@ -13,6 +13,7 @@ Pico Launcher를 실행하면 다음과 같은 화면이 표시됩니다.
 - **B 버튼:** 상위 폴더로 이동하거나 메뉴 닫기
 - **L 및 R 버튼:** 폴더 내 항목이 많을 때 빠르게 스크롤
 - **Y 버튼:** 치트 패널 열기 ([치트](Cheats.md) 참조)
+- **X 버튼:** NDS 롬의 게임 실행 옵션 열기 ([게임 실행 옵션](#게임-실행-옵션) 참조)
 
 하단 화면 왼쪽 상단에 있는 뒤로 가기 화살표를 눌러서 상위 폴더로 이동할 수도 있습니다.
 
@@ -40,6 +41,15 @@ Pico Launcher를 실행하면 다음과 같은 화면이 표시됩니다.
     </tr>
 </table>
 
+## 게임 실행 옵션
+NDS 롬을 선택한 상태에서 X 버튼을 누르면 해당 게임을 실행할 로더를 고를 수 있습니다.
+
+- `기본값` - `settings.json`의 `defaultLoader`에 지정된 로더를 사용합니다.
+- `Pico Loader` - Pico Loader로 실행합니다.
+- `NDS-Bootstrap` - `/_nds/nds-bootstrap-release.nds`를 통해 실행합니다.
+
+좌우 방향키로 값을 바꾸고 A 버튼으로 저장하며, B 버튼을 누르면 저장하지 않고 닫습니다. 게임별 설정은 `/_pico/gameSettings.json`에 롬 경로별로 저장되므로, 롬 파일을 옮기거나 이름을 바꾸면 다시 설정해야 합니다.
+
 ## 설정
 설정 값은 SD 카드의 `/_pico/settings.json`에 저장됩니다. 일반적인 텍스트 편집기로 수정할 수 있으며, 다음 설정 항목들을 사용할 수 있습니다:
 
@@ -48,4 +58,5 @@ Pico Launcher를 실행하면 다음과 같은 화면이 표시됩니다.
 - `romBrowserSortMode` - 폴더 내용을 이름 오름차순(`NameAscending`)으로 정렬할지, 내림차순(`NameDescending`)으로 정렬할지 지정합니다.
 - `theme` - 사용할 테마의 폴더 이름을 지정합니다. 테마를 찾을 수 없는 경우 기본 테마(Fallback)가 사용됩니다.
 - `lastUsedFilePath` - 가장 최근에 실행한 홈브류 또는 게임의 경로를 지정하여, 다음 런처 실행 시 해당 파일이 자동으로 선택되도록 합니다. Pico Launcher에 의해 자동으로 업데이트됩니다.
+- `defaultLoader` - 게임별 실행 옵션이 `기본값`인 NDS 롬을 실행할 로더입니다. `Pico_Loader` 또는 `NDS_Bootstrap`을 지정할 수 있습니다. NDS 롬이 아닌 파일은 항상 Pico Loader로 실행됩니다.
 - `fileAssociations` - 이 설정의 사용법은 [FileAssociations.md](/docs/FileAssociations.md)를 참조해 주십시오.

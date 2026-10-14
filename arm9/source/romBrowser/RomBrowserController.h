@@ -9,12 +9,13 @@
 #include "CoverRepository.h"
 #include "FileType/ExtensionFileTypeProvider.h"
 #include "services/settings/IAppSettingsService.h"
+#include "services/settings/IGameSettingsService.h"
 #include "cheats/ICheatRepository.h"
 
 class RomBrowserController : public IRomBrowserController
 {
 public:
-    RomBrowserController(IAppSettingsService* appSettingsService,
+    RomBrowserController(IAppSettingsService* appSettingsService, IGameSettingsService* gameSettingsService,
         TaskQueueBase* ioTaskQueue, TaskQueueBase* bgTaskQueue);
 
     void NavigateUp() override
@@ -43,8 +44,6 @@ public:
     const ICheatRepository& GetCheatRepository() const override { return *_cheatRepository; }
 
     void SetRomBrowserDisplaySettings(const RomBrowserDisplaySettings& romBrowserDisplaySettings) override;
-    
-    void MarkSettingsDirty() override { _saveSettingsPending = true; }
 
     void SaveSettingsNow() override;
 
@@ -64,14 +63,17 @@ public:
 
     virtual const FileInfo& GetTriggerFileInfo() const override { return _triggerFileInfo; }
 
-    void ShowLaunchSettings() override;
+    void ShowLaunchSettings(const FileInfo& fileInfo) override;
     void HideLaunchSettings() override;
+    std::optional<LoaderType> GetGameLoader() const override;
+    void SetGameLoader(std::optional<LoaderType> loader) override;
 
     /// @brief Returns whether the file that is being launched goes through nds-bootstrap.
-    bool IsLaunchingWithNdsBootstrap() const;
+    bool IsLaunchingWithNdsBootstrap() const { return _launchWithNdsBootstrap; }
 
 private:
     IAppSettingsService* _appSettingsService;
+    IGameSettingsService* _gameSettingsService;
     TaskQueueBase* _ioTaskQueue;
     TaskQueueBase* _bgTaskQueue;
 
@@ -81,10 +83,13 @@ private:
     RomBrowserStateMachine _stateMachine;
     TCHAR _navigatePath[256];
     TCHAR* _navigateFileName;
+    TCHAR _currentFolderPath[256] = "";
     FileInfo _triggerFileInfo;
     QueueTask<void> _navigateTask;
     bool _saveSettingsPending = false;
+    bool _saveGameSettingsPending = false;
     bool _themeReloadRequested = false;
+    bool _launchWithNdsBootstrap = false;
     std::unique_ptr<CoverRepository> _coverRepository;
     ExtensionFileTypeProvider _fileTypeProvider;
     std::unique_ptr<ICheatRepository> _cheatRepository;
@@ -95,6 +100,8 @@ private:
     void HandleLaunchTrigger();
     void HandleChangeDisplayModeTrigger();
     void UpdateLastUsedFilepath();
+    void GetTriggerFilePath(TCHAR* path, u32 length) const;
+    bool ShouldLaunchWithNdsBootstrap() const;
     void SetPicoLoaderParams() const;
     void LaunchWithNdsBootstrap() const;
     void LoadCheats() const;

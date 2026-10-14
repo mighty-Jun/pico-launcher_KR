@@ -14,9 +14,10 @@
 #include "FileType/Nds/NdsFileType.h"
 
 RomBrowserController::RomBrowserController(
-    IAppSettingsService* appSettingsService, TaskQueueBase* ioTaskQueue,
-    TaskQueueBase* bgTaskQueue)
+    IAppSettingsService* appSettingsService, IGameSettingsService* gameSettingsService,
+    TaskQueueBase* ioTaskQueue, TaskQueueBase* bgTaskQueue)
     : _appSettingsService(appSettingsService)
+    , _gameSettingsService(gameSettingsService)
     , _ioTaskQueue(ioTaskQueue), _bgTaskQueue(bgTaskQueue)
     , _fileTypeProvider(appSettingsService->GetAppSettings()) { }
 
@@ -29,6 +30,7 @@ void RomBrowserController::NavigateToPath(const TCHAR* name)
 void RomBrowserController::LaunchFile(const FileInfo& fileInfo)
 {
     _triggerFileInfo = FileInfo(fileInfo);
+    _launchWithNdsBootstrap = ShouldLaunchWithNdsBootstrap();
     _stateMachine.Fire(RomBrowserStateTrigger::Launch);
 }
 
@@ -171,6 +173,7 @@ void RomBrowserController::HandleNavigateTrigger()
             }
         }
         f_chdir(_navigatePath);
+        f_getcwd(_currentFolderPath, sizeof(_currentFolderPath) / sizeof(_currentFolderPath[0]));
         SdFolderFactory sdFolderFactory { &_fileTypeProvider };
         _newSdFolder = sdFolderFactory.CreateFromPath(".");
         u64 endTick = gTickCounter.GetValue();
@@ -241,11 +244,26 @@ void RomBrowserController::SetPicoLoaderParams() const
     }
 }
 
-bool RomBrowserController::IsLaunchingWithNdsBootstrap() const
+void RomBrowserController::GetTriggerFilePath(TCHAR* path, u32 length) const
+{
+    // Same format as UpdateLastUsedFilepath, which is also used as the launch path.
+    StringUtil::Copy(path, _currentFolderPath, length);
+    int idx = strlcat(path, "/", length);
+    if (path[idx - 2] == '/')
+    {
+        path[idx - 1] = 0;
+    }
+    strlcat(path, _triggerFileInfo.GetFileName(), length);
+}
+
+bool RomBrowserController::ShouldLaunchWithNdsBootstrap() const
 {
     // nds-bootstrap can only boot nds roms; everything else keeps going through pico loader.
-    return _appSettingsService->GetAppSettings().loaderType == LoaderType::NDS_Bootstrap
-        && _triggerFileInfo.GetFileType() == &NdsFileType::sInstance;
+    if (_triggerFileInfo.GetFileType() != &NdsFileType::sInstance)
+        return false;
+
+    return GetGameLoader().value_or(_appSettingsService->GetAppSettings().defaultLoader)
+        == LoaderType::NdsBootstrap;
 }
 
 void RomBrowserController::LaunchWithNdsBootstrap() const
@@ -276,17 +294,40 @@ void RomBrowserController::SaveSettingsAsync()
     });
 }
 
-void RomBrowserController::ShowLaunchSettings()
+void RomBrowserController::ShowLaunchSettings(const FileInfo& fileInfo)
 {
+    _triggerFileInfo = FileInfo(fileInfo);
     _stateMachine.Fire(RomBrowserStateTrigger::ShowLaunchSettings);
 }
 
 void RomBrowserController::HideLaunchSettings()
 {
-    if (_saveSettingsPending)
+    if (_saveGameSettingsPending)
     {
-        _saveSettingsPending = false;
-        SaveSettingsAsync();
+        _saveGameSettingsPending = false;
+        _ioTaskQueue->Enqueue([this] (const vu8& cancelRequested)
+        {
+            _gameSettingsService->Save();
+            return TaskResult<void>::Completed();
+        });
     }
     _stateMachine.Fire(RomBrowserStateTrigger::HideLaunchSettings);
+}
+
+std::optional<LoaderType> RomBrowserController::GetGameLoader() const
+{
+    TCHAR path[256];
+    GetTriggerFilePath(path, sizeof(path) / sizeof(path[0]));
+    return _gameSettingsService->GetGameSettings().GetLoader(path);
+}
+
+void RomBrowserController::SetGameLoader(std::optional<LoaderType> loader)
+{
+    if (GetGameLoader() == loader)
+        return;
+
+    TCHAR path[256];
+    GetTriggerFilePath(path, sizeof(path) / sizeof(path[0]));
+    _gameSettingsService->GetGameSettings().SetLoader(path, loader);
+    _saveGameSettingsPending = true;
 }

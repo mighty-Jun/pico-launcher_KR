@@ -16,5 +16,5 @@ public:
     std::unique_ptr<FileAssociation[]> fileAssociations;
     u32 numberOfFileAssociations = 0;
 
-    LoaderType loaderType = LoaderType::Pico_Loader;
+    LoaderType defaultLoader = LoaderType::PicoLoader;
 };

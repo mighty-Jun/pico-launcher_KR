@@ -1,6 +1,7 @@
 #include "common.h"
 #include "core/di.h"
 #include "services/settings/JsonAppSettingsService.h"
+#include "services/settings/JsonGameSettingsService.h"
 #include "services/Language/JsonLanguagePackService.h"
 #include "bgm/AudioStreamPlayer.h"
 #include "bgm/IBgmService.h"
@@ -30,6 +31,7 @@ static auto diConfig = [] { return di::make_injector<injected_and_bound>(
     di::bind<IBgmService>().in(di::singleton).to<BgmService>(),
     di::bind<>().to((const char*)"/_pico/settings.json"),
     di::bind<IAppSettingsService>().in(di::singleton).to<JsonAppSettingsService>(),
+    di::bind<IGameSettingsService>().in(di::singleton).to<JsonGameSettingsService>(),
     di::bind<ILanguagePackService>().in(di::singleton).to<JsonLanguagePackService>()
 ); };
 

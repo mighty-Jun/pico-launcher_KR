@@ -36,6 +36,11 @@ void RomBrowserItemViewModel::ShowLaunchSettings()
 {
     if (_index >= 0)
     {
-        _romBrowserController->ShowLaunchSettings();
+        const auto& item = _romBrowserController->GetRomBrowserViewModel()->GetFileInfoManager().GetItem(_index);
+        // The loader can only be chosen for nds roms
+        if (item.GetFileType() == &NdsFileType::sInstance)
+        {
+            _romBrowserController->ShowLaunchSettings(item);
+        }
     }
 }

@@ -2,6 +2,7 @@
 #include "common.h"
 #include <memory>
 #include "services/settings/IAppSettingsService.h"
+#include "services/settings/IGameSettingsService.h"
 #include "bgm/IBgmService.h"
 #include "services/Language/ILanguagePackService.h"
 #include "services/process/IProcess.h"
@@ -32,12 +33,12 @@
 #include "themes/ITheme.h"
 #include "animation/Animator.h"
 #include "romBrowser/views/LoadingView.h"
-#include "romBrowser/viewModels/LaunchSettingsViewModel.h"
 
 class alignas(32) App : public IProcess
 {
 public:
-    App(IAppSettingsService& appSettingsService, IBgmService& bgmService, ILanguagePackService& languagePackService);
+    App(IAppSettingsService& appSettingsService, IGameSettingsService& gameSettingsService,
+        IBgmService& bgmService, ILanguagePackService& languagePackService);
 
     void Run() override;
     void Exit() override;
@@ -91,7 +92,6 @@ private:
     RomBrowserController _romBrowserController;
 
     DisplaySettingsViewModel _displaySettingsBottomSheetViewModel;
-    LaunchSettingsViewModel _launchSettingsBottomSheetViewModel;
 
     FocusManager _focusManager;
 
