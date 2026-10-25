@@ -31,6 +31,7 @@
 #include "Arm7State.h"
 #include "mmc/tmio.h"
 #include "touchScreen.h"
+#include "lidSleep.h"
 #include <nds/arm7/i2c.h>
 
 static NocashOutputStream sNocashOutputStream;
@@ -169,6 +170,7 @@ static void initializeArm7()
     }
 
     touch_init();
+    lidSleep_init();
 
     ipc_setArm7SyncBits(7);
 }
@@ -183,6 +185,7 @@ static void updateArm7IdleState()
     else
     {
         checkMcuIrq();
+        lidSleep_update();
     }
 
     if (sState == Arm7State::ExitRequested)
